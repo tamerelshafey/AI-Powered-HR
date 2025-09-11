@@ -1,0 +1,7 @@
+{
+  "name": "Bokra AI-Powered HR Management System",
+  "description": "A modern web application for human resource management, designed to integrate with ERPNext and leverage AI capabilities. This system provides a comprehensive suite of modules to manage employees, attendance, payroll, recruitment, and more.",
+  "requestFramePermissions": [
+    "camera"
+  ]
+}
