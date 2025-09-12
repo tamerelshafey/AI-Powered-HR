@@ -2,8 +2,8 @@
 import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 // FIX: Switched to namespace import for react-router-dom to resolve module resolution errors.
 import * as ReactRouterDOM from 'react-router-dom';
-// FIX: Use named imports for react-window to resolve module resolution errors.
-import { FixedSizeList, ListChildComponentProps } from 'react-window';
+// FIX: Switched to namespace import for react-window to resolve module resolution errors.
+import * as ReactWindow from 'react-window';
 import InfiniteLoader from 'react-window-infinite-loader';
 import { Employee, UserRole } from '../../types';
 import { getEmployees } from '../../services/api';
@@ -198,7 +198,7 @@ const EmployeesPage: React.FC = () => {
                         >
                             {({ onItemsRendered, ref }) => (
                                 
-                                <FixedSizeList
+                                <ReactWindow.FixedSizeList
                                     ref={ref}
                                     onItemsRendered={onItemsRendered}
                                     height={listDimensions.height}
@@ -208,7 +208,7 @@ const EmployeesPage: React.FC = () => {
                                 >
                                     
                                     
-                                    {({ index, style }: ListChildComponentProps): React.ReactElement => {
+                                    {({ index, style }: ReactWindow.ListChildComponentProps): React.ReactElement => {
                                         if (!isItemLoaded(index)) {
                                             return (
                                                 <div style={style} className="flex items-center justify-center text-gray-500">
@@ -231,7 +231,7 @@ const EmployeesPage: React.FC = () => {
                                             </div>
                                         );
                                     }}
-                                </FixedSizeList>
+                                </ReactWindow.FixedSizeList>
                             )}
                         </InfiniteLoader>
                     )}

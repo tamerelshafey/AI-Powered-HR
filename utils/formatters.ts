@@ -6,7 +6,8 @@ export const formatCurrency = (
     lang: Language, 
     options: Intl.NumberFormatOptions = {}
 ): string => {
-    const currency = lang === 'ar' ? 'EGP' : 'USD';
+    // FIX: Hardcode currency to EGP as per user request, regardless of language.
+    const currency = 'EGP'; 
     const locale = lang === 'ar' ? 'ar-EG' : 'en-US';
     
     const defaultOptions: Intl.NumberFormatOptions = {

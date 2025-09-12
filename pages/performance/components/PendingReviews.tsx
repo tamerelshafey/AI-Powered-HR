@@ -1,7 +1,7 @@
 
 import React, { useMemo, useRef } from 'react';
-// FIX: Use named imports for react-window to resolve module resolution errors.
-import { FixedSizeList, ListChildComponentProps } from 'react-window';
+// FIX: Switched to namespace import for react-window to resolve module resolution errors.
+import * as ReactWindow from 'react-window';
 import InfiniteLoader from 'react-window-infinite-loader';
 import { PerformanceReview, PerformanceStatus } from '../../../types';
 import ReviewListItem from './ReviewListItem';
@@ -16,8 +16,8 @@ interface AllReviewsProps {
 }
 
 const AllReviews: React.FC<AllReviewsProps> = ({ reviews, onViewReview, filters, onFilterChange, hasMore, loadMoreItems }) => {
-    // FIX: Updated ref type annotation to use named import.
-    const listRef = useRef<FixedSizeList>(null);
+    // FIX: Updated ref type annotation to use namespace import.
+    const listRef = useRef<ReactWindow.FixedSizeList>(null);
     const reviewTypes = useMemo(() => Array.from(new Set(reviews.map(r => r.reviewType))), [reviews]);
 
     const itemCount = hasMore ? reviews.length + 1 : reviews.length;
@@ -55,7 +55,7 @@ const AllReviews: React.FC<AllReviewsProps> = ({ reviews, onViewReview, filters,
                 >
                     {({ onItemsRendered, ref }) => (
                         
-                        <FixedSizeList
+                        <ReactWindow.FixedSizeList
                             ref={(el) => {
                                 ref(el);
                                 // @ts-ignore
@@ -68,7 +68,7 @@ const AllReviews: React.FC<AllReviewsProps> = ({ reviews, onViewReview, filters,
                             itemSize={95}
                         >
                             
-                            {({ index, style }: ListChildComponentProps) => {
+                            {({ index, style }: ReactWindow.ListChildComponentProps) => {
                                 if (!isItemLoaded(index)) {
                                     return (
                                         <div style={style} className="flex items-center justify-center text-gray-500">
@@ -87,7 +87,7 @@ const AllReviews: React.FC<AllReviewsProps> = ({ reviews, onViewReview, filters,
                                     </div>
                                 );
                             }}
-                        </FixedSizeList>
+                        </ReactWindow.FixedSizeList>
                     )}
                 </InfiniteLoader>
             </div>

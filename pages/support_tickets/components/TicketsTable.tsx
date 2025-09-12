@@ -1,7 +1,7 @@
 
 import React, { useRef } from 'react';
-// FIX: Use named imports for react-window to resolve module resolution errors.
-import { FixedSizeList, ListChildComponentProps } from 'react-window';
+// FIX: Switched to namespace import for react-window to resolve module resolution errors.
+import * as ReactWindow from 'react-window';
 import InfiniteLoader from 'react-window-infinite-loader';
 import { SupportTicket, TicketStatus, TicketPriority, TicketDepartment } from '../../../types';
 import TicketListItem from './TicketListItem';
@@ -22,7 +22,7 @@ const TicketsTable: React.FC<TicketsTableProps> = ({
     tickets, onApplySuggestion, filters, onFilterChange, hasMore, loadMoreItems, loading, error 
 }) => {
     // FIX: Updated ref type annotation to use namespace import.
-    const listRef = useRef<FixedSizeList>(null);
+    const listRef = useRef<ReactWindow.FixedSizeList>(null);
 
     const itemCount = hasMore ? tickets.length + 1 : tickets.length;
     const isItemLoaded = (index: number) => !hasMore || index < tickets.length;
@@ -62,7 +62,7 @@ const TicketsTable: React.FC<TicketsTableProps> = ({
                     >
                         {({ onItemsRendered, ref }) => (
                             
-                            <FixedSizeList
+                            <ReactWindow.FixedSizeList
                                 ref={(el) => {
                                     ref(el);
                                     // @ts-ignore
@@ -75,7 +75,7 @@ const TicketsTable: React.FC<TicketsTableProps> = ({
                                 itemSize={95} // Approximate height for each item (including mobile and desktop)
                             >
                                 
-                                {({ index, style }: ListChildComponentProps) => {
+                                {({ index, style }: ReactWindow.ListChildComponentProps) => {
                                     if (!isItemLoaded(index)) {
                                         return (
                                             <div style={style} className="flex items-center justify-center text-gray-500">
@@ -97,7 +97,7 @@ const TicketsTable: React.FC<TicketsTableProps> = ({
                                         </div>
                                     );
                                 }}
-                            </FixedSizeList>
+                            </ReactWindow.FixedSizeList>
                         )}
                     </InfiniteLoader>
                 </div>
