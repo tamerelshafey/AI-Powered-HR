@@ -1,32 +1,17 @@
 
+
 import React from 'react';
 import { AttendanceRecord, AttendanceStatus } from '../../../types';
 import { useI18n } from '../../../context/I18nContext';
+import { ATTENDANCE_STATUS_CLASSES } from '../../../utils/styleUtils';
+import { formatTimeFromString } from '../../../utils/formatters';
 
 interface AttendanceTableProps {
   records: AttendanceRecord[];
 }
 
-const statusClasses: Record<AttendanceStatus, string> = {
-    [AttendanceStatus.PRESENT]: 'bg-green-100 text-green-800',
-    [AttendanceStatus.ABSENT]: 'bg-red-100 text-red-800',
-    [AttendanceStatus.LATE]: 'bg-orange-100 text-orange-800',
-    [AttendanceStatus.EARLY_DEPARTURE]: 'bg-purple-100 text-purple-800',
-    [AttendanceStatus.ON_LEAVE]: 'bg-yellow-100 text-yellow-800',
-};
-
 const AttendanceTable: React.FC<AttendanceTableProps> = ({ records }) => {
     const { t, language } = useI18n();
-    const timeFormatter = new Intl.DateTimeFormat(language === 'ar' ? 'ar-EG' : 'en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
-
-    const formatTime = (timeString: string | null) => {
-        if (!timeString) return '--:--';
-        const [hours, minutes] = timeString.split(':');
-        const date = new Date();
-        date.setHours(parseInt(hours, 10));
-        date.setMinutes(parseInt(minutes, 10));
-        return timeFormatter.format(date);
-    };
 
     const formatHours = (hoursString: string) => {
         const [hours, minutes] = hoursString.split(':');
@@ -63,7 +48,7 @@ const AttendanceTable: React.FC<AttendanceTableProps> = ({ records }) => {
                                     <div className="text-sm text-gray-500">{employee.department}</div>
                                 </div>
                             </div>
-                            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${statusClasses[status]}`}>
+                            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${ATTENDANCE_STATUS_CLASSES[status]}`}>
                                 {t(`enum.attendanceStatus.${status}`)}
                             </span>
                         </div>
@@ -74,8 +59,8 @@ const AttendanceTable: React.FC<AttendanceTableProps> = ({ records }) => {
                             </div>
                         )}
                         <div className="grid grid-cols-3 gap-2 text-center text-sm border-t border-b py-2">
-                            <div><p className="text-xs text-gray-500">{t('page.attendance.table.header.checkIn')}</p><p className="font-medium text-gray-800">{formatTime(checkIn)}</p></div>
-                            <div><p className="text-xs text-gray-500">{t('page.attendance.table.header.checkOut')}</p><p className="font-medium text-gray-800">{formatTime(checkOut)}</p></div>
+                            <div><p className="text-xs text-gray-500">{t('page.attendance.table.header.checkIn')}</p><p className="font-medium text-gray-800">{formatTimeFromString(checkIn, language)}</p></div>
+                            <div><p className="text-xs text-gray-500">{t('page.attendance.table.header.checkOut')}</p><p className="font-medium text-gray-800">{formatTimeFromString(checkOut, language)}</p></div>
                             <div><p className="text-xs text-gray-500">{t('page.attendance.table.header.hours')}</p><p className="font-medium text-gray-800">{formatHours(hours)}</p></div>
                         </div>
                          <div className="flex justify-end space-x-3 space-x-reverse text-sm font-medium">
@@ -118,10 +103,10 @@ const AttendanceTable: React.FC<AttendanceTableProps> = ({ records }) => {
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{employee.department}</td>
                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{shift ? t(`enum.shift.${shift.name}`) : '--'}</td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{formatTime(checkIn)}</td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{formatTime(checkOut)}</td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{formatTimeFromString(checkIn, language)}</td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{formatTimeFromString(checkOut, language)}</td>
                             <td className="px-6 py-4 whitespace-nowrap">
-                                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${statusClasses[status]}`}>
+                                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${ATTENDANCE_STATUS_CLASSES[status]}`}>
                                     {t(`enum.attendanceStatus.${status}`)}
                                 </span>
                             </td>

@@ -1,6 +1,7 @@
 
 import React, { useRef, useEffect } from 'react';
 import { useFocusTrap } from '../hooks/useFocusTrap';
+import { useModalAccessibility } from '../hooks/useModalAccessibility';
 
 interface UpdateNotificationModalProps {
   isOpen: boolean;
@@ -11,22 +12,8 @@ interface UpdateNotificationModalProps {
 const UpdateNotificationModal: React.FC<UpdateNotificationModalProps> = ({ isOpen, onClose, onGoToSettings }) => {
   const modalRef = useRef<HTMLDivElement>(null);
   useFocusTrap(modalRef, isOpen);
+  useModalAccessibility(isOpen, onClose);
 
-  useEffect(() => {
-    const appRoot = document.getElementById('root');
-    if (isOpen) {
-      appRoot?.setAttribute('aria-hidden', 'true');
-      const handleKeyDown = (e: KeyboardEvent) => {
-        if (e.key === 'Escape') {
-          onClose();
-        }
-      };
-      document.addEventListener('keydown', handleKeyDown);
-      return () => document.removeEventListener('keydown', handleKeyDown);
-    } else {
-      appRoot?.removeAttribute('aria-hidden');
-    }
-  }, [isOpen, onClose]);
 
   if (!isOpen) return null;
 

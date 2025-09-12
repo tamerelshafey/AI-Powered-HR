@@ -8,7 +8,7 @@ interface QuickActionButtonProps {
     color: string;
 }
 
-const QuickActionButton: React.FC<QuickActionButtonProps> = ({ icon, labelKey, color }) => {
+const QuickActionButton: React.FC<QuickActionButtonProps> = React.memo(({ icon, labelKey, color }) => {
     const { t } = useI18n();
     return (
         <button className="flex flex-col items-center justify-center p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500">
@@ -16,6 +16,6 @@ const QuickActionButton: React.FC<QuickActionButtonProps> = ({ icon, labelKey, c
             <span className="text-sm font-medium text-gray-900">{t(labelKey)}</span>
         </button>
     );
-};
+});
 
 export default QuickActionButton;

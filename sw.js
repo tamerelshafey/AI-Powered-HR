@@ -1,9 +1,38 @@
 // sw.js
-const CACHE_NAME = 'bokra-hr-cache-v1';
+const CACHE_NAME = 'bokra-hr-cache-v2';
 
 const URLS_TO_CACHE = [
   '/',
-  '/index.html'
+  '/index.html',
+  '/index.tsx',
+  '/App.tsx',
+  '/manifest.json',
+  '/types.ts',
+  '/constants.tsx',
+  '/permissions.ts',
+  '/users.ts',
+  '/locales/ar.json',
+  '/locales/en.json',
+  // Core UI components
+  '/components/Layout.tsx',
+  '/components/Sidebar.tsx',
+  '/components/Header.tsx',
+  '/components/LoadingSpinner.tsx',
+  '/components/ProtectedRoute.tsx',
+  // Contexts
+  '/context/UserContext.tsx',
+  '/context/I18nContext.tsx',
+  // Hooks
+  '/hooks/useOnScreen.ts',
+  '/hooks/useFocusTrap.ts',
+  // Services
+  '/services/api.ts',
+  '/services/supabaseClient.ts',
+  // External assets
+  'https://cdn.tailwindcss.com',
+  'https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Tajawal:wght@400;500;700&display=swap',
+  'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css',
+  'https://cdn.jsdelivr.net/npm/chart.js'
 ];
 
 // Install the service worker and cache the app shell
@@ -12,7 +41,11 @@ self.addEventListener('install', (event) => {
     caches.open(CACHE_NAME)
       .then((cache) => {
         console.log('Opened cache');
+        // Use addAll for atomic caching of essential assets
         return cache.addAll(URLS_TO_CACHE);
+      })
+      .catch(error => {
+        console.error('Failed to cache app shell:', error);
       })
   );
 });

@@ -1,23 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { useUser } from '../../../context/UserContext';
-import { getDevelopmentPlanByEmployeeId } from '../../../services/api';
+import { getDevelopmentPlanByEmployeeId, getEmployeeIdForUser } from '../../../services/api';
 import { IndividualDevelopmentPlan, DevelopmentGoal, DevelopmentGoalStatus } from '../../../types';
 import LoadingSpinner from '../../../components/LoadingSpinner';
-
-const userIdToEmployeeIdMap: Record<string, string> = {
-    'usr_admin': 'EMP001',
-    'usr_hr_manager': 'EMP004',
-    'usr_employee': 'EMP005',
-    'usr_trainee': 'EMP005',
-    'usr_dept_manager': 'EMP002',
-    'usr_board_member': 'EMP001',
-};
 
 const DevelopmentPlanSection: React.FC = () => {
     const { currentUser } = useUser();
     const [plan, setPlan] = useState<IndividualDevelopmentPlan | null>(null);
     const [loading, setLoading] = useState(true);
-    const employeeId = userIdToEmployeeIdMap[currentUser.id] || 'EMP002'; // Default to manager who has a plan
+    const employeeId = getEmployeeIdForUser(currentUser);
 
     useEffect(() => {
         const fetchPlan = async () => {

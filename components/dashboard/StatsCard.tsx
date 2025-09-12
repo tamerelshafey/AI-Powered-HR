@@ -12,7 +12,7 @@ interface StatsCardProps {
     iconColor: string;
 }
 
-const StatsCard: React.FC<StatsCardProps> = ({ icon, labelKey, value, change, changeColor, iconBgColor, iconColor }) => {
+const StatsCard: React.FC<StatsCardProps> = React.memo(({ icon, labelKey, value, change, changeColor, iconBgColor, iconColor }) => {
     const { t } = useI18n();
     return (
         <div className="bg-white p-6 rounded-xl shadow-sm hover:shadow-lg transition-shadow duration-300 border border-gray-100">
@@ -28,6 +28,6 @@ const StatsCard: React.FC<StatsCardProps> = ({ icon, labelKey, value, change, ch
             </div>
         </div>
     );
-};
+});
 
 export default StatsCard;

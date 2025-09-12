@@ -2,6 +2,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useFocusTrap } from '../../../hooks/useFocusTrap';
 import { useI18n } from '../../../context/I18nContext';
+import { useModalAccessibility } from '../../../hooks/useModalAccessibility';
 
 interface BiometricModalProps {
   isOpen: boolean;
@@ -13,22 +14,16 @@ const BiometricModal: React.FC<BiometricModalProps> = ({ isOpen, onClose }) => {
     const modalRef = useRef<HTMLDivElement>(null);
     const { t } = useI18n();
     useFocusTrap(modalRef, isOpen);
+    
 
-    useEffect(() => {
-        const appRoot = document.getElementById('root');
-        if (isOpen) {
-            appRoot?.setAttribute('aria-hidden', 'true');
-            const handleKeyDown = (e: KeyboardEvent) => {
-                if (e.key === 'Escape') {
-                    handleClose();
-                }
-            };
-            document.addEventListener('keydown', handleKeyDown);
-            return () => document.removeEventListener('keydown', handleKeyDown);
-        } else {
-            appRoot?.removeAttribute('aria-hidden');
+    const handleClose = () => {
+        if (status !== 'scanning') {
+            onClose();
+            setStatus('idle');
         }
-    }, [isOpen, onClose]);
+    }
+    
+    useModalAccessibility(isOpen, handleClose);
 
     const handleSimulateScan = () => {
         setStatus('scanning');
@@ -40,13 +35,6 @@ const BiometricModal: React.FC<BiometricModalProps> = ({ isOpen, onClose }) => {
             }, 1500);
         }, 2000);
     };
-
-    const handleClose = () => {
-        if (status !== 'scanning') {
-            onClose();
-            setStatus('idle');
-        }
-    }
 
     if (!isOpen) return null;
     

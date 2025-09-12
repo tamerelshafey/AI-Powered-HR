@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { learningCourses, skills, achievements } from '../data';
 import { LearningCourse, Skill, Achievement, ExternalCourseRecord } from '../../../types';
 import { useUser } from '../../../context/UserContext';
-import { getExternalCoursesByEmployeeId } from '../../../services/api';
+import { getExternalCoursesByEmployeeId, getEmployeeIdForUser } from '../../../services/api';
 import LoadingSpinner from '../../../components/LoadingSpinner';
 
 interface LearningSectionProps {
@@ -61,20 +61,11 @@ const AchievementBadge: React.FC<{ achievement: Achievement }> = ({ achievement 
     );
 }
 
-const userIdToEmployeeIdMap: Record<string, string> = {
-    'usr_admin': 'EMP001',
-    'usr_hr_manager': 'EMP004',
-    'usr_employee': 'EMP005',
-    'usr_trainee': 'EMP005',
-    'usr_dept_manager': 'EMP002',
-    'usr_board_member': 'EMP001',
-};
-
 const LearningSection: React.FC<LearningSectionProps> = ({ onOpenExternalCourseModal }) => {
     const { currentUser } = useUser();
     const [externalCourses, setExternalCourses] = useState<ExternalCourseRecord[]>([]);
     const [loading, setLoading] = useState(true);
-    const employeeId = userIdToEmployeeIdMap[currentUser.id] || 'EMP005'; // Fallback for safety
+    const employeeId = getEmployeeIdForUser(currentUser);
 
     useEffect(() => {
         const fetchExternalCourses = async () => {

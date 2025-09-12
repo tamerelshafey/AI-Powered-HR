@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { Kudo, CompanyValue } from '../../../types';
 import { useI18n } from '../../../context/I18nContext';
+import useOnScreen from '../../../hooks/useOnScreen';
 
 interface KudosCardProps {
     kudo: Kudo;
@@ -19,6 +20,8 @@ const KudosCard: React.FC<KudosCardProps> = ({ kudo }) => {
     const { t } = useI18n();
     const [reactions, setReactions] = useState(kudo.reactions.count);
     const [reacted, setReacted] = useState(false);
+    const cardRef = useRef<HTMLDivElement>(null);
+    const isVisible = useOnScreen(cardRef, '100px');
 
     const handleReaction = () => {
         if (!reacted) {
@@ -31,11 +34,14 @@ const KudosCard: React.FC<KudosCardProps> = ({ kudo }) => {
     }
 
     return (
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 animate-content-fade-in">
+        <div ref={cardRef} className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 animate-content-fade-in">
             <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center space-x-3 space-x-reverse">
-                    <div className={`w-10 h-10 ${kudo.sender.avatarColor} rounded-full flex items-center justify-center font-bold text-white`}>
-                        {kudo.sender.avatarInitials}
+                    <div 
+                        className={`w-10 h-10 ${kudo.sender.avatarColor} rounded-full flex items-center justify-center font-bold text-white bg-cover bg-center`}
+                        style={{ backgroundImage: isVisible && kudo.sender.avatar ? `url(${kudo.sender.avatar})` : 'none' }}
+                    >
+                        {(!isVisible || !kudo.sender.avatar) && kudo.sender.avatarInitials}
                     </div>
                     <div>
                         <p className="text-sm font-semibold text-gray-800">{`${kudo.sender.firstName} ${kudo.sender.lastName}`}</p>
@@ -50,8 +56,11 @@ const KudosCard: React.FC<KudosCardProps> = ({ kudo }) => {
                          <p className="text-sm font-semibold text-gray-800">{`${kudo.receiver.firstName} ${kudo.receiver.lastName}`}</p>
                         <p className="text-xs text-gray-500">{kudo.receiver.jobTitle}</p>
                     </div>
-                    <div className={`w-10 h-10 ${kudo.receiver.avatarColor} rounded-full flex items-center justify-center font-bold text-white`}>
-                        {kudo.receiver.avatarInitials}
+                     <div
+                        className={`w-10 h-10 ${kudo.receiver.avatarColor} rounded-full flex items-center justify-center font-bold text-white bg-cover bg-center`}
+                        style={{ backgroundImage: isVisible && kudo.receiver.avatar ? `url(${kudo.receiver.avatar})` : 'none' }}
+                    >
+                        {(!isVisible || !kudo.receiver.avatar) && kudo.receiver.avatarInitials}
                     </div>
                 </div>
             </div>

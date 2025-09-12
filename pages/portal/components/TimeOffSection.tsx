@@ -2,19 +2,14 @@
 import React, { useState, useEffect } from 'react';
 import { LeaveStatus, EmployeeLeaveBalance, LeaveRequest, LeaveType } from '../../../types';
 import { useUser } from '../../../context/UserContext';
-import { getLeaveBalanceForEmployee, getLeaveRequestsByEmployeeId } from '../../../services/api';
+import { getLeaveBalanceForEmployee, getLeaveRequestsByEmployeeId, getEmployeeIdForUser } from '../../../services/api';
 import LoadingSpinner from '../../../components/LoadingSpinner';
 import { useI18n } from '../../../context/I18nContext';
+import { LEAVE_STATUS_CLASSES } from '../../../utils/styleUtils';
 
 interface TimeOffSectionProps {
     onOpenTimeOffModal: () => void;
 }
-
-const statusClasses: Record<LeaveStatus, string> = {
-    [LeaveStatus.APPROVED]: 'bg-green-100 text-green-800',
-    [LeaveStatus.PENDING]: 'bg-yellow-100 text-yellow-800',
-    [LeaveStatus.REJECTED]: 'bg-red-100 text-red-800',
-};
 
 const leaveTypeIcons: Record<LeaveType, { icon: string; color: string; }> = {
     [LeaveType.VACATION]: { icon: 'fas fa-umbrella-beach', color: 'text-blue-600' },
@@ -29,17 +24,6 @@ const leaveTypeIcons: Record<LeaveType, { icon: string; color: string; }> = {
     [LeaveType.SPECIAL_NEEDS]: { icon: 'fas fa-hands-helping', color: 'text-indigo-600' },
 };
 
-// This is a temporary mapping until user and employee IDs are unified.
-const userIdToEmployeeIdMap: Record<string, string> = {
-    'usr_admin': 'EMP001', // Should not happen, but for safety
-    'usr_hr_manager': 'EMP004', // Sarah Johnson
-    'usr_employee': 'EMP005', // Alex Chen
-    'usr_trainee': 'EMP005', // Alex Chen as trainee example
-    'usr_dept_manager': 'EMP002', // Jane Smith (manager role)
-    'usr_board_member': 'EMP001',
-};
-
-
 const TimeOffSection: React.FC<TimeOffSectionProps> = ({ onOpenTimeOffModal }) => {
     const { currentUser } = useUser();
     const { t } = useI18n();
@@ -47,7 +31,7 @@ const TimeOffSection: React.FC<TimeOffSectionProps> = ({ onOpenTimeOffModal }) =
     const [balance, setBalance] = useState<EmployeeLeaveBalance | null>(null);
     const [requests, setRequests] = useState<LeaveRequest[]>([]);
     
-    const employeeId = userIdToEmployeeIdMap[currentUser.id] || currentUser.id;
+    const employeeId = getEmployeeIdForUser(currentUser);
 
     useEffect(() => {
         const fetchData = async () => {
@@ -108,7 +92,7 @@ const TimeOffSection: React.FC<TimeOffSectionProps> = ({ onOpenTimeOffModal }) =
                                 <th className="px-6 py-3 text-start text-xs font-medium text-gray-500 uppercase">الحالة</th>
                             </tr>
                         </thead>
-                        <tbody className="bg-white divide-y">
+                         <tbody className="bg-white divide-y">
                             {requests.length > 0 ? requests.map(req => {
                                 const typeInfo = leaveTypeIcons[req.leaveType];
                                 return (
@@ -121,7 +105,7 @@ const TimeOffSection: React.FC<TimeOffSectionProps> = ({ onOpenTimeOffModal }) =
                                         </td>
                                         <td className="px-6 py-4">{req.startDate} - {req.endDate}</td>
                                         <td className="px-6 py-4">{req.days}</td>
-                                        <td className="px-6 py-4"><span className={`text-xs px-2 py-1 rounded-full ${statusClasses[req.status]}`}>{t(`enum.leaveStatus.${req.status}`)}</span></td>
+                                        <td className="px-6 py-4"><span className={`text-xs px-2 py-1 rounded-full ${LEAVE_STATUS_CLASSES[req.status]}`}>{t(`enum.leaveStatus.${req.status}`)}</span></td>
                                     </tr>
                                 );
                             }) : (

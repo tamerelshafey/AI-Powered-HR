@@ -2,6 +2,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Candidate, CandidateActivity } from '../../../types';
 import { useFocusTrap } from '../../../hooks/useFocusTrap';
+import { useModalAccessibility } from '../../../hooks/useModalAccessibility';
 
 interface CandidateDetailsModalProps {
   isOpen: boolean;
@@ -35,23 +36,13 @@ const CandidateDetailsModal: React.FC<CandidateDetailsModalProps> = ({ isOpen, o
     const [activeTab, setActiveTab] = useState<ActiveTab>('profile');
     const modalRef = useRef<HTMLDivElement>(null);
     useFocusTrap(modalRef, isOpen);
+    useModalAccessibility(isOpen, onClose);
 
     useEffect(() => {
-        const appRoot = document.getElementById('root');
-        if (isOpen) {
-            appRoot?.setAttribute('aria-hidden', 'true');
-            const handleKeyDown = (e: KeyboardEvent) => {
-                if (e.key === 'Escape') {
-                    onClose();
-                }
-            };
-            document.addEventListener('keydown', handleKeyDown);
-            return () => document.removeEventListener('keydown', handleKeyDown);
-        } else {
-            appRoot?.removeAttribute('aria-hidden');
+        if (!isOpen) {
             setActiveTab('profile'); // Reset tab on close
         }
-    }, [isOpen, onClose]);
+    }, [isOpen]);
 
 
     if (!isOpen || !candidate) return null;

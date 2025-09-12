@@ -2,6 +2,7 @@
 import React from 'react';
 import { Employee, OnlineStatus, EmployeeStatus } from '../../../../types';
 import { useI18n } from '../../../../context/I18nContext';
+import { ONLINE_STATUS_CLASSES, EMPLOYEE_STATUS_CLASSES } from '../../../../utils/styleUtils';
 
 interface ProfileHeaderProps {
   employee: Employee;
@@ -11,11 +12,6 @@ const onlineStatusClasses: Record<OnlineStatus, { text: string; bg: string; dot:
     [OnlineStatus.ONLINE]: { text: 'text-green-700', bg: 'bg-green-100', dot: 'bg-green-500' },
     [OnlineStatus.OFFLINE]: { text: 'text-gray-700', bg: 'bg-gray-100', dot: 'bg-gray-500' },
     [OnlineStatus.AWAY]: { text: 'text-yellow-700', bg: 'bg-yellow-100', dot: 'bg-yellow-500' },
-};
-
-const statusClasses: Record<EmployeeStatus, { text: string; bg: string }> = {
-    [EmployeeStatus.ACTIVE]: { text: 'text-green-800', bg: 'bg-green-100' },
-    [EmployeeStatus.ON_LEAVE]: { text: 'text-yellow-800', bg: 'bg-yellow-100' },
 };
 
 const ProfileHeader: React.FC<ProfileHeaderProps> = ({ employee }) => {
@@ -35,7 +31,7 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = ({ employee }) => {
                         <p className="text-gray-600 mt-1">{employee.jobTitle}</p>
                         <p className="text-sm text-blue-600 font-medium mt-1">{employee.department}</p>
                         <div className="flex items-center justify-center sm:justify-start space-x-4 space-x-reverse mt-3">
-                            <span className={`px-3 py-1 text-xs font-medium rounded-full ${statusClasses[employee.status].bg} ${statusClasses[employee.status].text}`}>{t(`enum.employeeStatus.${employee.status}`)}</span>
+                            <span className={`px-3 py-1 text-xs font-medium rounded-full ${EMPLOYEE_STATUS_CLASSES[employee.status].bg} ${EMPLOYEE_STATUS_CLASSES[employee.status].text}`}>{t(`enum.employeeStatus.${employee.status}`)}</span>
                             <span className={`flex items-center px-3 py-1 text-xs font-medium rounded-full ${onlineStatusClasses[employee.onlineStatus].bg} ${onlineStatusClasses[employee.onlineStatus].text}`}>
                                 <div className={`w-2 h-2 me-1.5 rounded-full ${onlineStatusClasses[employee.onlineStatus].dot}`}></div>
                                 {t(`enum.onlineStatus.${employee.onlineStatus}`)}

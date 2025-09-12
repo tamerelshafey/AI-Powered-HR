@@ -10,6 +10,7 @@ import NotificationsPopover from './NotificationsPopover';
 import { Notification } from '../types';
 import { getNotifications } from '../services/api';
 import UserSwitcher from './UserSwitcher';
+import { formatTime } from '../utils/formatters';
 
 interface HeaderProps {
   onOpenSmartSearch: () => void;
@@ -70,11 +71,7 @@ const Header: React.FC<HeaderProps> = ({ onOpenSmartSearch }) => {
 
   if (!currentUser) return null; // Should not happen within Layout, but good practice
 
-  const timeString = currentTime.toLocaleTimeString(language === 'ar' ? 'ar-EG' : 'en-US', {
-    hour: '2-digit',
-    minute: '2-digit',
-    second: '2-digit',
-  });
+  const timeString = formatTime(currentTime, language, { second: '2-digit' });
 
   const pageInfo: { [key: string]: { titleKey: string, badgeKey?: string, badgeColor?: 'green' | 'blue' } } = {
     '/dashboard': { titleKey: 'header.pageTitle.dashboard', badgeKey: 'header.aiStatus', badgeColor: 'green' },

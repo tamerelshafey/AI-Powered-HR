@@ -1,8 +1,12 @@
+
+
 import React, { useState } from 'react';
 import { leaveTypeSettingsData, publicHolidaysData } from '../data';
 import { LeaveTypeSetting, PublicHoliday } from '../../../types';
 import LeaveTypeModal from './LeaveTypeModal';
 import PublicHolidayModal from './PublicHolidayModal';
+import { useI18n } from '../../../context/I18nContext';
+import { formatDate } from '../../../utils/formatters';
 
 const colorMap: Record<string, string> = {
     blue: 'bg-blue-500',
@@ -18,6 +22,7 @@ const colorMap: Record<string, string> = {
 };
 
 const LeaveSettings: React.FC = () => {
+    const { language } = useI18n();
     const [leaveTypes, setLeaveTypes] = useState<LeaveTypeSetting[]>(leaveTypeSettingsData);
     const [holidays, setHolidays] = useState<PublicHoliday[]>(publicHolidaysData);
     
@@ -155,7 +160,7 @@ const LeaveSettings: React.FC = () => {
                         <div key={holiday.id} className="bg-gray-50 border border-gray-200 rounded-lg p-3 flex items-center justify-between">
                             <div>
                                 <p className="font-medium text-gray-800 text-sm">{holiday.name}</p>
-                                <p className="text-xs text-gray-500">{new Date(holiday.date).toLocaleDateString('ar-EG', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
+                                <p className="text-xs text-gray-500">{formatDate(holiday.date, language)}</p>
                             </div>
                             <button onClick={() => handleOpenHolidayModal(holiday)} className="text-gray-400 hover:text-blue-600"><i className="fas fa-pencil-alt"></i></button>
                         </div>

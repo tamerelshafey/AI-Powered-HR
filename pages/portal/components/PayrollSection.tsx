@@ -1,35 +1,23 @@
+
+
 import React, { useState, useEffect } from 'react';
 import { Payslip } from '../../../types';
 import { useUser } from '../../../context/UserContext';
-import { getPayslipsByEmployeeId } from '../../../services/api';
+import { getPayslipsByEmployeeId, getEmployeeIdForUser } from '../../../services/api';
 import LoadingSpinner from '../../../components/LoadingSpinner';
+import { useI18n } from '../../../context/I18nContext';
+import { formatCurrency } from '../../../utils/formatters';
 
 interface PayrollSectionProps {
     onViewPayslip: (payslip: Payslip) => void;
 }
 
-const userIdToEmployeeIdMap: Record<string, string> = {
-    'usr_admin': 'EMP001',
-    'usr_hr_manager': 'EMP004',
-    'usr_employee': 'EMP005',
-    'usr_trainee': 'EMP005',
-    'usr_dept_manager': 'EMP002',
-    'usr_board_member': 'EMP001',
-};
-
-const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('ar-EG', {
-        style: 'currency',
-        currency: 'EGP',
-        minimumFractionDigits: 2,
-    }).format(amount);
-};
-
 const PayrollSection: React.FC<PayrollSectionProps> = ({ onViewPayslip }) => {
     const { currentUser } = useUser();
+    const { language } = useI18n();
     const [payslips, setPayslips] = useState<Payslip[]>([]);
     const [loading, setLoading] = useState(true);
-    const employeeId = userIdToEmployeeIdMap[currentUser.id] || currentUser.id;
+    const employeeId = getEmployeeIdForUser(currentUser);
 
     useEffect(() => {
         const fetchData = async () => {
@@ -68,15 +56,15 @@ const PayrollSection: React.FC<PayrollSectionProps> = ({ onViewPayslip }) => {
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-center">
                         <div className="p-4 bg-green-50 rounded-lg">
                             <p className="text-sm text-green-700">إجمالي الإيرادات</p>
-                            <p className="text-xl font-bold text-green-800">{formatCurrency(latestPayslip.grossPay)}</p>
+                            <p className="text-xl font-bold text-green-800">{formatCurrency(latestPayslip.grossPay, language)}</p>
                         </div>
                         <div className="p-4 bg-red-50 rounded-lg">
                             <p className="text-sm text-red-700">إجمالي الخصومات</p>
-                            <p className="text-xl font-bold text-red-800">{formatCurrency(latestPayslip.totalDeductions)}</p>
+                            <p className="text-xl font-bold text-red-800">{formatCurrency(latestPayslip.totalDeductions, language)}</p>
                         </div>
                         <div className="p-4 bg-blue-50 rounded-lg">
                             <p className="text-sm text-blue-700">صافي الراتب</p>
-                            <p className="text-xl font-bold text-blue-800">{formatCurrency(latestPayslip.netPay)}</p>
+                            <p className="text-xl font-bold text-blue-800">{formatCurrency(latestPayslip.netPay, language)}</p>
                         </div>
                     </div>
                 </div>
@@ -99,7 +87,7 @@ const PayrollSection: React.FC<PayrollSectionProps> = ({ onViewPayslip }) => {
                                 <tr key={p.run.id} className="hover:bg-gray-50">
                                     <td className="px-6 py-4 font-medium">{p.run.period}</td>
                                     <td className="px-6 py-4 text-gray-600">{p.run.payDate}</td>
-                                    <td className="px-6 py-4 font-semibold text-green-600">{formatCurrency(p.netPay)}</td>
+                                    <td className="px-6 py-4 font-semibold text-green-600">{formatCurrency(p.netPay, language)}</td>
                                     <td className="px-6 py-4">
                                         <button onClick={() => onViewPayslip(p)} className="text-blue-600 hover:underline text-sm font-medium">
                                             عرض التفاصيل

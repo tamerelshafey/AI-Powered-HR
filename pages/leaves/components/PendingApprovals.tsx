@@ -1,24 +1,13 @@
+
 import React from 'react';
 import { LeaveRequest, LeaveType, LeaveStatus } from '../../../types';
 import { useI18n } from '../../../context/I18nContext';
+import { LEAVE_TYPE_CLASSES } from '../../../utils/styleUtils';
 
 interface PendingApprovalsProps {
     requests: LeaveRequest[];
     onAction: (requestId: string, newStatus: LeaveStatus) => void;
 }
-
-const leaveTypeClasses: Record<LeaveType, string> = {
-    [LeaveType.VACATION]: 'bg-blue-100 text-blue-800',
-    [LeaveType.SICK]: 'bg-red-100 text-red-800',
-    [LeaveType.PERSONAL]: 'bg-purple-100 text-purple-800',
-    [LeaveType.CASUAL]: 'bg-yellow-100 text-yellow-800',
-    [LeaveType.PILGRIMAGE]: 'bg-green-100 text-green-800',
-    [LeaveType.UNPAID]: 'bg-gray-100 text-gray-800',
-    [LeaveType.EXAMINATION]: 'bg-indigo-100 text-indigo-800',
-    [LeaveType.MATERNITY]: 'bg-pink-100 text-pink-800',
-    [LeaveType.NEWBORN]: 'bg-teal-100 text-teal-800',
-    [LeaveType.SPECIAL_NEEDS]: 'bg-cyan-100 text-cyan-800',
-};
 
 const PendingApprovals: React.FC<PendingApprovalsProps> = ({ requests, onAction }) => {
     const { t } = useI18n();
@@ -50,7 +39,7 @@ const PendingApprovals: React.FC<PendingApprovalsProps> = ({ requests, onAction 
                                         <div className="flex items-center flex-wrap gap-x-4 gap-y-1 mt-2 text-sm text-gray-500">
                                             <span><i className="fas fa-calendar me-1"></i>{request.startDate} - {request.endDate}</span>
                                             <span><i className="fas fa-clock me-1"></i>{t('common.day', { count: request.days })}</span>
-                                            <span className={`${leaveTypeClasses[request.leaveType]} px-2 py-1 rounded-full text-xs`}>{t(`enum.leaveType.${request.leaveType}`)}</span>
+                                            <span className={`${LEAVE_TYPE_CLASSES[request.leaveType]} px-2 py-1 rounded-full text-xs`}>{t(`enum.leaveType.${request.leaveType}`)}</span>
                                         </div>
                                         <p className="text-sm text-gray-600 mt-2">{request.reason}</p>
                                     </div>

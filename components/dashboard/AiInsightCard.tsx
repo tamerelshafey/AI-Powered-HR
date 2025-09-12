@@ -14,7 +14,7 @@ const colorClasses = {
     orange: { bg: 'bg-orange-50', iconBg: 'bg-orange-100', iconText: 'text-orange-600' },
 };
 
-const AiInsightCard: React.FC<AiInsightCardProps> = ({ icon, title, description, color }) => {
+const AiInsightCard: React.FC<AiInsightCardProps> = React.memo(({ icon, title, description, color }) => {
     const classes = colorClasses[color];
 
     return (
@@ -28,6 +28,6 @@ const AiInsightCard: React.FC<AiInsightCardProps> = ({ icon, title, description,
             </div>
         </div>
     );
-};
+});
 
 export default AiInsightCard;

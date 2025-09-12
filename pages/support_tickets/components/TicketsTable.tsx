@@ -1,5 +1,6 @@
+
 import React, { useRef } from 'react';
-// FIX: The namespace import for react-window was causing errors. Switched to named imports.
+// FIX: Use named imports for react-window to resolve module resolution errors.
 import { FixedSizeList, ListChildComponentProps } from 'react-window';
 import InfiniteLoader from 'react-window-infinite-loader';
 import { SupportTicket, TicketStatus, TicketPriority, TicketDepartment } from '../../../types';
@@ -20,7 +21,7 @@ interface TicketsTableProps {
 const TicketsTable: React.FC<TicketsTableProps> = ({ 
     tickets, onApplySuggestion, filters, onFilterChange, hasMore, loadMoreItems, loading, error 
 }) => {
-    // FIX: Use named import for the ref type annotation.
+    // FIX: Updated ref type annotation to use namespace import.
     const listRef = useRef<FixedSizeList>(null);
 
     const itemCount = hasMore ? tickets.length + 1 : tickets.length;
@@ -60,7 +61,7 @@ const TicketsTable: React.FC<TicketsTableProps> = ({
                         loadMoreItems={loadMoreItems}
                     >
                         {({ onItemsRendered, ref }) => (
-                            // FIX: Use named import for FixedSizeList.
+                            
                             <FixedSizeList
                                 ref={(el) => {
                                     ref(el);
@@ -73,7 +74,7 @@ const TicketsTable: React.FC<TicketsTableProps> = ({
                                 itemCount={itemCount}
                                 itemSize={95} // Approximate height for each item (including mobile and desktop)
                             >
-                                {/* FIX: Use named import for ListChildComponentProps. */}
+                                
                                 {({ index, style }: ListChildComponentProps) => {
                                     if (!isItemLoaded(index)) {
                                         return (

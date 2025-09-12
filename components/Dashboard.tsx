@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import StatsCard from './dashboard/StatsCard';
 import ModuleCard from './dashboard/ModuleCard';
 import AiInsightCard from './dashboard/AiInsightCard';
@@ -24,9 +24,9 @@ const Dashboard: React.FC = () => {
     const { t } = useI18n();
     const [optionalModules, setOptionalModules] = useState(initialModules);
 
-    const handleToggleModule = (moduleKey: keyof typeof initialModules) => {
+    const handleToggleModule = useCallback((moduleKey: keyof typeof initialModules) => {
         setOptionalModules(prev => ({ ...prev, [moduleKey]: !prev[moduleKey] }));
-    };
+    }, []);
 
     const coreModules = [
         { nameKey: 'dashboard.module.employees', descriptionKey: 'dashboard.module.employeesDesc', icon: 'fas fa-users' },

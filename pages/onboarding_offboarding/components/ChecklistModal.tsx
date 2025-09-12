@@ -1,6 +1,10 @@
+
+
 import React, { useState } from 'react';
 import { OnboardingProcess, OnboardingTaskStatus, ProcessStatus, ProcessTask } from '../../../types';
 import AssetChecklistModal from './AssetChecklistModal';
+import { useI18n } from '../../../context/I18nContext';
+import { formatDate } from '../../../utils/formatters';
 
 interface ChecklistModalProps {
   process: OnboardingProcess;
@@ -12,6 +16,7 @@ interface ChecklistModalProps {
 
 const AddNoteForm: React.FC<{ taskId: string; processId: string; onAddTaskNote: (processId: string, taskId: string, noteText: string) => void }> = ({ taskId, processId, onAddTaskNote }) => {
     const [note, setNote] = useState('');
+    const { language } = useI18n();
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         onAddTaskNote(processId, taskId, note);
@@ -41,6 +46,7 @@ const ChecklistModal: React.FC<ChecklistModalProps> = ({ process, onClose, onTas
   const [visibleNotes, setVisibleNotes] = useState<Record<string, boolean>>({});
   const [isAssetModalOpen, setAssetModalOpen] = useState(false);
   const [assetModalConfig, setAssetModalConfig] = useState<{ mode: 'assign' | 'retrieve', task: ProcessTask } | null>(null);
+  const { language } = useI18n();
 
   const handleTaskToggle = (taskId: string, currentStatus: OnboardingTaskStatus) => {
     const newStatus = currentStatus === OnboardingTaskStatus.COMPLETED 
@@ -156,7 +162,7 @@ const ChecklistModal: React.FC<ChecklistModalProps> = ({ process, onClose, onTas
                                           task.notes.map((note, index) => (
                                               <div key={index} className="text-xs bg-white p-2 rounded-md border">
                                                   <p className="text-gray-800">{note.text}</p>
-                                                  <p className="text-gray-500 text-end mt-1">- {note.author}, {note.date}</p>
+                                                  <p className="text-gray-500 text-end mt-1">- {note.author}, {formatDate(note.date, language)}</p>
                                               </div>
                                           ))
                                       ) : (

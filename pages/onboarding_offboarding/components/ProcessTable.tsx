@@ -1,16 +1,12 @@
+
 import React from 'react';
 import { OnboardingProcess, ProcessStatus } from '../../../types';
+import { PROCESS_STATUS_CLASSES } from '../../../utils/styleUtils';
 
 interface ProcessTableProps {
   processes: OnboardingProcess[];
   onViewChecklist: (process: OnboardingProcess) => void;
 }
-
-const statusClasses: Record<ProcessStatus, string> = {
-    [ProcessStatus.IN_PROGRESS]: 'bg-blue-100 text-blue-800',
-    [ProcessStatus.COMPLETED]: 'bg-green-100 text-green-800',
-    [ProcessStatus.OVERDUE]: 'bg-red-100 text-red-800',
-};
 
 const ProcessTable: React.FC<ProcessTableProps> = ({ processes, onViewChecklist }) => (
     <div>
@@ -29,7 +25,7 @@ const ProcessTable: React.FC<ProcessTableProps> = ({ processes, onViewChecklist 
                                     <div className="text-sm text-gray-500">{process.date}</div>
                                 </div>
                             </div>
-                            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${statusClasses[process.status]}`}>
+                            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${PROCESS_STATUS_CLASSES[process.status]}`}>
                                 {process.status}
                             </span>
                         </div>
@@ -85,7 +81,7 @@ const ProcessTable: React.FC<ProcessTableProps> = ({ processes, onViewChecklist 
                                 </div>
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap">
-                                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${statusClasses[process.status]}`}>
+                                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${PROCESS_STATUS_CLASSES[process.status]}`}>
                                     {process.status}
                                 </span>
                             </td>

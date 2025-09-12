@@ -1,13 +1,9 @@
+
 import React from 'react';
 import { useUser } from '../../../context/UserContext';
 import { User, UserStatus } from '../../../types';
 import { useI18n } from '../../../context/I18nContext';
-
-const statusClasses: Record<UserStatus, string> = {
-    [UserStatus.ACTIVE]: 'bg-green-100 text-green-800',
-    [UserStatus.INVITED]: 'bg-blue-100 text-blue-800',
-    [UserStatus.INACTIVE]: 'bg-gray-100 text-gray-800',
-};
+import { USER_STATUS_CLASSES } from '../../../utils/styleUtils';
 
 const UserManagement: React.FC = () => {
     const { availableUsers } = useUser();
@@ -51,7 +47,7 @@ const UserManagement: React.FC = () => {
                                 <div>
                                     <p className="text-xs text-gray-500">الحالة</p>
                                     <p className="font-medium">
-                                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${statusClasses[user.status]}`}>
+                                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${USER_STATUS_CLASSES[user.status]}`}>
                                             {t(`enum.userStatus.${user.status}`)}
                                         </span>
                                     </p>
@@ -90,7 +86,7 @@ const UserManagement: React.FC = () => {
                                 </td>
                                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{user.role}</td>
                                 <td className="px-6 py-4 whitespace-nowrap">
-                                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${statusClasses[user.status]}`}>
+                                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${USER_STATUS_CLASSES[user.status]}`}>
                                         {t(`enum.userStatus.${user.status}`)}
                                     </span>
                                 </td>

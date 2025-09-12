@@ -1,9 +1,13 @@
+
+
 import React, { useState, useEffect, useMemo } from 'react';
 import { Employee, PerformanceReview, CompanyGoal, PerformanceStatus } from '../../../../types';
 import { getPerformanceReviewsByEmployeeId, getGoalsByEmployeeId } from '../../../../services/api';
 import LoadingSpinner from '../../../../components/LoadingSpinner';
 import PerformanceScorecard from './PerformanceScorecard';
 import EmployeePerformanceTrendChart from './EmployeePerformanceTrendChart';
+import { useI18n } from '../../../../context/I18nContext';
+import { formatDate } from '../../../../utils/formatters';
 
 interface PerformanceTabProps {
     employee: Employee;
@@ -19,6 +23,7 @@ const PerformanceTab: React.FC<PerformanceTabProps> = ({ employee }) => {
     const [reviews, setReviews] = useState<PerformanceReview[]>([]);
     const [goals, setGoals] = useState<CompanyGoal[]>([]);
     const [loading, setLoading] = useState(true);
+    const { language } = useI18n();
 
     useEffect(() => {
         const fetchData = async () => {
@@ -55,9 +60,9 @@ const PerformanceTab: React.FC<PerformanceTabProps> = ({ employee }) => {
             averageScore: avgScore,
             goalCompletion: goalCompletion,
             completedReviews: completed.length,
-            nextReviewDate: nextReview ? new Date(nextReview.reviewDate).toLocaleDateString('ar-EG') : 'لا يوجد',
+            nextReviewDate: nextReview ? formatDate(nextReview.reviewDate, language) : 'لا يوجد',
         };
-    }, [reviews, goals]);
+    }, [reviews, goals, language]);
 
     if (loading) {
         return <div className="h-64"><LoadingSpinner /></div>;
@@ -109,7 +114,7 @@ const PerformanceTab: React.FC<PerformanceTabProps> = ({ employee }) => {
                                         <span className={`px-2 py-1 text-xs rounded-full ${statusClasses[review.status]}`}>{review.status}</span>
                                     </div>
                                     <div className="flex justify-between items-center text-sm border-t pt-2">
-                                        <p className="text-gray-600">التاريخ: <span className="font-medium text-gray-800">{new Date(review.reviewDate).toLocaleDateString('ar-EG')}</span></p>
+                                        <p className="text-gray-600">التاريخ: <span className="font-medium text-gray-800">{formatDate(review.reviewDate, language)}</span></p>
                                         <p className="text-gray-600">النتيجة: <span className="font-medium text-gray-800">{review.status === PerformanceStatus.COMPLETED ? `${review.overallScore}/5` : 'N/A'}</span></p>
                                     </div>
                                 </div>
@@ -130,7 +135,7 @@ const PerformanceTab: React.FC<PerformanceTabProps> = ({ employee }) => {
                                     {reviews.map(review => (
                                         <tr key={review.id}>
                                             <td className="px-4 py-3 font-medium">{review.reviewType}</td>
-                                            <td className="px-4 py-3">{new Date(review.reviewDate).toLocaleDateString('ar-EG')}</td>
+                                            <td className="px-4 py-3">{formatDate(review.reviewDate, language)}</td>
                                             <td className="px-4 py-3">{review.status === PerformanceStatus.COMPLETED ? `${review.overallScore}/5` : 'N/A'}</td>
                                             <td className="px-4 py-3">
                                                 <span className={`px-2 py-1 text-xs rounded-full ${statusClasses[review.status]}`}>{review.status}</span>

@@ -1,5 +1,7 @@
+
 import React from 'react';
 import { CompanyAsset, AssetStatus, AssetCategory } from '../../../types';
+import { ASSET_STATUS_CLASSES } from '../../../utils/styleUtils';
 
 interface AssetsTableProps {
     assets: CompanyAsset[];
@@ -7,13 +9,6 @@ interface AssetsTableProps {
     onFilterChange: (filters: { searchTerm: string; filterCategory: string; filterStatus: string }) => void;
     onAssign: (asset: CompanyAsset) => void;
 }
-
-const statusClasses: Record<AssetStatus, string> = {
-    [AssetStatus.IN_USE]: 'bg-green-100 text-green-800',
-    [AssetStatus.AVAILABLE]: 'bg-blue-100 text-blue-800',
-    [AssetStatus.IN_REPAIR]: 'bg-orange-100 text-orange-800',
-    [AssetStatus.RETIRED]: 'bg-gray-100 text-gray-800',
-};
 
 const AssetsTable: React.FC<AssetsTableProps> = ({ assets, filters, onFilterChange, onAssign }) => {
 
@@ -60,7 +55,7 @@ const AssetsTable: React.FC<AssetsTableProps> = ({ assets, filters, onFilterChan
                                 <p className="text-gray-600">
                                     مُسند إلى: <span className="font-medium text-gray-800">{asset.assignedTo ? `${asset.assignedTo.firstName} ${asset.assignedTo.lastName}` : 'غير مُسند'}</span>
                                 </p>
-                                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${statusClasses[asset.status]}`}>
+                                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${ASSET_STATUS_CLASSES[asset.status]}`}>
                                     {asset.status}
                                 </span>
                             </div>
@@ -101,7 +96,7 @@ const AssetsTable: React.FC<AssetsTableProps> = ({ assets, filters, onFilterChan
                                     {asset.assignedTo ? `${asset.assignedTo.firstName} ${asset.assignedTo.lastName}` : 'غير مُسند'}
                                 </td>
                                 <td className="px-6 py-4 whitespace-nowrap">
-                                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${statusClasses[asset.status]}`}>
+                                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${ASSET_STATUS_CLASSES[asset.status]}`}>
                                         {asset.status}
                                     </span>
                                 </td>

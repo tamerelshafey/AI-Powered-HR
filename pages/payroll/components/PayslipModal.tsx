@@ -1,7 +1,11 @@
 
+
 import React, { useRef, useEffect } from 'react';
 import { Payslip } from '../../../types';
 import { useFocusTrap } from '../../../hooks/useFocusTrap';
+import { useModalAccessibility } from '../../../hooks/useModalAccessibility';
+import { useI18n } from '../../../context/I18nContext';
+import { formatCurrency } from '../../../utils/formatters';
 
 interface PayslipModalProps {
   isOpen: boolean;
@@ -9,33 +13,11 @@ interface PayslipModalProps {
   payslip: Payslip | null;
 }
 
-const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('ar-EG', {
-        style: 'currency',
-        currency: 'EGP',
-        minimumFractionDigits: 2,
-    }).format(amount);
-};
-
 const PayslipModal: React.FC<PayslipModalProps> = ({ isOpen, onClose, payslip }) => {
   const modalRef = useRef<HTMLDivElement>(null);
+  const { language } = useI18n();
   useFocusTrap(modalRef, isOpen);
-
-  useEffect(() => {
-    const appRoot = document.getElementById('root');
-    if (isOpen) {
-        appRoot?.setAttribute('aria-hidden', 'true');
-        const handleKeyDown = (e: KeyboardEvent) => {
-            if (e.key === 'Escape') {
-                onClose();
-            }
-        };
-        document.addEventListener('keydown', handleKeyDown);
-        return () => document.removeEventListener('keydown', handleKeyDown);
-    } else {
-        appRoot?.removeAttribute('aria-hidden');
-    }
-  }, [isOpen, onClose]);
+  useModalAccessibility(isOpen, onClose);
 
   if (!isOpen || !payslip) return null;
 
@@ -83,7 +65,7 @@ const PayslipModal: React.FC<PayslipModalProps> = ({ isOpen, onClose, payslip })
                         {payslip.earnings.map(item => (
                              <div key={item.name} className="flex justify-between">
                                 <span className="text-gray-700">{item.name}</span>
-                                <span className="font-mono text-gray-800">{formatCurrency(item.amount)}</span>
+                                <span className="font-mono text-gray-800">{formatCurrency(item.amount, language)}</span>
                             </div>
                         ))}
                     </div>
@@ -94,7 +76,7 @@ const PayslipModal: React.FC<PayslipModalProps> = ({ isOpen, onClose, payslip })
                         {payslip.deductions.map(item => (
                              <div key={item.name} className="flex justify-between">
                                 <span className="text-gray-700">{item.name}</span>
-                                <span className="font-mono text-gray-800">{formatCurrency(item.amount)}</span>
+                                <span className="font-mono text-gray-800">{formatCurrency(item.amount, language)}</span>
                             </div>
                         ))}
                     </div>
@@ -106,15 +88,15 @@ const PayslipModal: React.FC<PayslipModalProps> = ({ isOpen, onClose, payslip })
                  <div className="space-y-2 max-w-sm ms-auto text-sm">
                      <div className="flex justify-between font-medium">
                         <span className="text-gray-800">إجمالي الإيرادات:</span>
-                        <span className="font-mono text-gray-900">{formatCurrency(payslip.grossPay)}</span>
+                        <span className="font-mono text-gray-900">{formatCurrency(payslip.grossPay, language)}</span>
                     </div>
                     <div className="flex justify-between font-medium">
                         <span className="text-gray-800">إجمالي الخصومات:</span>
-                        <span className="font-mono text-gray-900">{formatCurrency(payslip.totalDeductions)}</span>
+                        <span className="font-mono text-gray-900">{formatCurrency(payslip.totalDeductions, language)}</span>
                     </div>
                     <div className="flex justify-between font-bold text-lg bg-gray-100 p-2 rounded-md">
                         <span className="text-gray-900">صافي الراتب:</span>
-                        <span className="font-mono text-blue-600">{formatCurrency(payslip.netPay)}</span>
+                        <span className="font-mono text-blue-600">{formatCurrency(payslip.netPay, language)}</span>
                     </div>
                  </div>
             </div>

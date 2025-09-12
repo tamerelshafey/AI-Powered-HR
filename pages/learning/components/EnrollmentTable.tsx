@@ -1,15 +1,11 @@
+
 import React from 'react';
 import { EmployeeEnrollment, EnrollmentStatus } from '../../../types';
+import { ENROLLMENT_STATUS_CLASSES } from '../../../utils/styleUtils';
 
 interface EnrollmentTableProps {
     enrollments: EmployeeEnrollment[];
 }
-
-const statusClasses: Record<EnrollmentStatus, string> = {
-    [EnrollmentStatus.ENROLLED]: 'bg-gray-100 text-gray-800',
-    [EnrollmentStatus.IN_PROGRESS]: 'bg-blue-100 text-blue-800',
-    [EnrollmentStatus.COMPLETED]: 'bg-green-100 text-green-800',
-};
 
 const EnrollmentTable: React.FC<EnrollmentTableProps> = ({ enrollments }) => {
     return (
@@ -33,7 +29,7 @@ const EnrollmentTable: React.FC<EnrollmentTableProps> = ({ enrollments }) => {
                                         <div className="text-sm text-gray-500">{enr.course.title}</div>
                                     </div>
                                 </div>
-                                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${statusClasses[enr.status]}`}>
+                                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${ENROLLMENT_STATUS_CLASSES[enr.status]}`}>
                                     {enr.status}
                                 </span>
                             </div>
@@ -84,7 +80,7 @@ const EnrollmentTable: React.FC<EnrollmentTableProps> = ({ enrollments }) => {
                                     </div>
                                 </td>
                                 <td className="px-6 py-4 whitespace-nowrap">
-                                     <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${statusClasses[enr.status]}`}>
+                                     <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${ENROLLMENT_STATUS_CLASSES[enr.status]}`}>
                                         {enr.status}
                                     </span>
                                 </td>

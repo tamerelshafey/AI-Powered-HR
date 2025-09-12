@@ -1,18 +1,13 @@
+
 import React from 'react';
 import { EmployeeDocument, DocumentStatus, DocumentType } from '../../../types';
+import { DOCUMENT_STATUS_CLASSES } from '../../../utils/styleUtils';
 
 interface DocumentsTableProps {
     documents: EmployeeDocument[];
     filters: { searchTerm: string; filterType: string; filterStatus: string };
     onFilterChange: (filters: { searchTerm: string; filterType: string; filterStatus: string }) => void;
 }
-
-const statusClasses: Record<DocumentStatus, string> = {
-    [DocumentStatus.VALID]: 'bg-green-100 text-green-800',
-    [DocumentStatus.EXPIRING_SOON]: 'bg-yellow-100 text-yellow-800',
-    [DocumentStatus.EXPIRED]: 'bg-red-100 text-red-800',
-    [DocumentStatus.MISSING]: 'bg-orange-100 text-orange-800',
-};
 
 const DocumentsTable: React.FC<DocumentsTableProps> = ({ documents, filters, onFilterChange }) => {
     
@@ -60,7 +55,7 @@ const DocumentsTable: React.FC<DocumentsTableProps> = ({ documents, filters, onF
                         </div>
                         <div className="flex justify-between items-center text-sm">
                             <p className="text-gray-600">تاريخ الانتهاء: <span className="font-medium text-gray-800">{doc.expiryDate ?? 'لا يوجد'}</span></p>
-                            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${statusClasses[doc.status]}`}>
+                            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${DOCUMENT_STATUS_CLASSES[doc.status]}`}>
                                 {doc.status}
                             </span>
                         </div>
@@ -95,7 +90,7 @@ const DocumentsTable: React.FC<DocumentsTableProps> = ({ documents, filters, onF
                                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{doc.documentType}</td>
                                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{doc.expiryDate ?? 'لا يوجد'}</td>
                                 <td className="px-6 py-4 whitespace-nowrap">
-                                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${statusClasses[doc.status]}`}>
+                                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${DOCUMENT_STATUS_CLASSES[doc.status]}`}>
                                         {doc.status}
                                     </span>
                                 </td>

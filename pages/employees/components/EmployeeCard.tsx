@@ -1,41 +1,35 @@
 
-import React, { useRef } from 'react';
+import React, { useRef, useCallback } from 'react';
 import { Employee, OnlineStatus, EmployeeStatus } from '../../../types';
 import useOnScreen from '../../../hooks/useOnScreen';
 import { useI18n } from '../../../context/I18nContext';
+import { ONLINE_STATUS_CLASSES, EMPLOYEE_STATUS_CLASSES } from '../../../utils/styleUtils';
 
 interface EmployeeCardProps {
   employee: Employee;
-  onClick?: () => void;
+  onClick: (id: string) => void;
 }
 
-const onlineStatusClasses: Record<OnlineStatus, string> = {
-    [OnlineStatus.ONLINE]: 'status-online',
-    [OnlineStatus.OFFLINE]: 'status-offline',
-    [OnlineStatus.AWAY]: 'status-away',
-};
-
-const statusClasses: Record<EmployeeStatus, { bg: string, text: string }> = {
-    [EmployeeStatus.ACTIVE]: { bg: 'bg-green-100', text: 'text-green-800' },
-    [EmployeeStatus.ON_LEAVE]: { bg: 'bg-yellow-100', text: 'text-yellow-800' },
-};
-
-const EmployeeCard: React.FC<EmployeeCardProps> = ({ employee, onClick }) => {
+const EmployeeCard: React.FC<EmployeeCardProps> = React.memo(({ employee, onClick }) => {
     const cardRef = useRef<HTMLDivElement>(null);
     const isVisible = useOnScreen(cardRef, '100px');
     const { t } = useI18n();
 
-    const handleKeyDown = (event: React.KeyboardEvent) => {
+    const handleClick = useCallback(() => {
+        onClick(employee.id);
+    }, [employee.id, onClick]);
+
+    const handleKeyDown = useCallback((event: React.KeyboardEvent) => {
         if (event.key === 'Enter' || event.key === ' ') {
-            onClick?.();
+            onClick(employee.id);
         }
-    };
+    }, [employee.id, onClick]);
     
     return (
         <div 
             ref={cardRef} 
             className="bg-white p-6 rounded-xl shadow-sm hover:shadow-lg transition-shadow duration-300 border border-gray-100 cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500" 
-            onClick={onClick}
+            onClick={handleClick}
             onKeyDown={handleKeyDown}
             role="button"
             tabIndex={0}
@@ -51,7 +45,7 @@ const EmployeeCard: React.FC<EmployeeCardProps> = ({ employee, onClick }) => {
                             <span className="text-white font-medium">{employee.avatarInitials}</span>
                         )}
                     </div>
-                    <div className={`absolute -bottom-1 -right-1 w-4 h-4 ${onlineStatusClasses[employee.onlineStatus]} rounded-full border-2 border-white`}></div>
+                    <div className={`absolute -bottom-1 -right-1 w-4 h-4 ${ONLINE_STATUS_CLASSES[employee.onlineStatus]} rounded-full border-2 border-white`}></div>
                 </div>
                 <div className="flex items-center space-x-1">
                     <button className="p-1 text-gray-400 hover:text-gray-600" aria-label={`More options for ${employee.firstName} ${employee.lastName}`}>
@@ -65,7 +59,7 @@ const EmployeeCard: React.FC<EmployeeCardProps> = ({ employee, onClick }) => {
                 <p className="text-xs font-medium text-blue-600 mb-2">{t(`enum.userRole.${employee.role}`)}</p>
                 <p className="text-xs text-gray-500 mb-3">{employee.department}</p>
                 <div className="flex items-center justify-between text-xs">
-                    <span className={`${statusClasses[employee.status].bg} ${statusClasses[employee.status].text} px-2 py-1 rounded-full`}>
+                    <span className={`${EMPLOYEE_STATUS_CLASSES[employee.status].bg} ${EMPLOYEE_STATUS_CLASSES[employee.status].text} px-2 py-1 rounded-full`}>
                         {t(`enum.employeeStatus.${employee.status}`)}
                     </span>
                     <span className="text-gray-500">{t('common.id')}: {employee.id}</span>
@@ -73,6 +67,6 @@ const EmployeeCard: React.FC<EmployeeCardProps> = ({ employee, onClick }) => {
             </div>
         </div>
     );
-};
+});
 
 export default EmployeeCard;

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { EmployeeDocument, DocumentStatus } from '../../../types';
 import { useUser } from '../../../context/UserContext';
-import { getEmployeeDocuments } from '../../../services/api';
+import { getEmployeeDocuments, getEmployeeIdForUser } from '../../../services/api';
 import LoadingSpinner from '../../../components/LoadingSpinner';
 
 const statusClasses: Record<DocumentStatus, string> = {
@@ -11,21 +11,11 @@ const statusClasses: Record<DocumentStatus, string> = {
     [DocumentStatus.MISSING]: 'bg-orange-100 text-orange-800',
 };
 
-const userIdToEmployeeIdMap: Record<string, string> = {
-    'usr_admin': 'EMP001',
-    'usr_hr_manager': 'EMP004',
-    'usr_employee': 'EMP005',
-    'usr_trainee': 'EMP005',
-    'usr_dept_manager': 'EMP002',
-    'usr_board_member': 'EMP001',
-};
-
-
 const DocumentsSection: React.FC = () => {
     const { currentUser } = useUser();
     const [documents, setDocuments] = useState<EmployeeDocument[]>([]);
     const [loading, setLoading] = useState(true);
-    const employeeId = userIdToEmployeeIdMap[currentUser.id] || 'EMP001';
+    const employeeId = getEmployeeIdForUser(currentUser);
 
     useEffect(() => {
         const fetchData = async () => {

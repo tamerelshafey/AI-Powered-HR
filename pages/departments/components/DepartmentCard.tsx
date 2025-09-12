@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import { Department } from '../../../types';
+import useOnScreen from '../../../hooks/useOnScreen';
 
 interface DepartmentCardProps {
     department: Department;
@@ -16,10 +17,12 @@ const colorClasses: Record<string, { bg: string, text: string }> = {
 };
 
 const DepartmentCard: React.FC<DepartmentCardProps> = ({ department, onEdit }) => {
+    const cardRef = useRef<HTMLDivElement>(null);
+    const isVisible = useOnScreen(cardRef, '100px');
     const colors = colorClasses[department.color] || colorClasses.blue;
 
     return (
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 flex flex-col hover:shadow-lg transition-shadow duration-300">
+        <div ref={cardRef} className="bg-white rounded-xl shadow-sm border border-gray-100 flex flex-col hover:shadow-lg transition-shadow duration-300">
             <div className="p-6">
                 <div className="flex items-start justify-between">
                     <div>
@@ -35,8 +38,13 @@ const DepartmentCard: React.FC<DepartmentCardProps> = ({ department, onEdit }) =
                 <div className="mt-4">
                     <p className="text-sm text-gray-500 mb-1">المدير</p>
                     <div className="flex items-center space-x-2 space-x-reverse">
-                         <div className={`w-8 h-8 ${department.manager.avatarColor} rounded-full flex items-center justify-center flex-shrink-0`}>
-                            <span className="text-white text-xs font-medium">{department.manager.avatarInitials}</span>
+                         <div
+                            className={`w-8 h-8 ${department.manager.avatarColor} rounded-full flex items-center justify-center flex-shrink-0 bg-cover bg-center`}
+                            style={{ backgroundImage: isVisible && department.manager.avatar ? `url(${department.manager.avatar})` : 'none' }}
+                        >
+                            {(!isVisible || !department.manager.avatar) && (
+                                <span className="text-white text-xs font-medium">{department.manager.avatarInitials}</span>
+                            )}
                         </div>
                         <div>
                             <p className="font-medium text-gray-800">{`${department.manager.firstName} ${department.manager.lastName}`}</p>

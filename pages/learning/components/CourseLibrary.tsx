@@ -1,5 +1,7 @@
+
 import React, { useState, useMemo } from 'react';
 import { Course, CourseCategory } from '../../../types';
+import { useSearch } from '../../../hooks/useSearch';
 
 interface CourseLibraryProps {
     courses: Course[];
@@ -29,16 +31,19 @@ const CourseCard: React.FC<{ course: Course }> = ({ course }) => {
 }
 
 const CourseLibrary: React.FC<CourseLibraryProps> = ({ courses }) => {
-    const [searchTerm, setSearchTerm] = useState('');
     const [filterCategory, setFilterCategory] = useState('All');
 
+    const { searchTerm, setSearchTerm, filteredItems: searchedCourses } = useSearch(
+        courses,
+        ['title']
+    );
+
     const filteredCourses = useMemo(() => {
-        return courses.filter(course => {
-            const matchesSearch = course.title.toLowerCase().includes(searchTerm.toLowerCase());
-            const matchesCategory = filterCategory === 'All' || course.category === filterCategory;
-            return matchesSearch && matchesCategory;
-        });
-    }, [courses, searchTerm, filterCategory]);
+        if (filterCategory === 'All') {
+            return searchedCourses;
+        }
+        return searchedCourses.filter(course => course.category === filterCategory);
+    }, [searchedCourses, filterCategory]);
 
     return (
         <div className="bg-white rounded-xl shadow-sm border border-gray-100">
@@ -50,10 +55,12 @@ const CourseLibrary: React.FC<CourseLibraryProps> = ({ courses }) => {
                     type="text"
                     placeholder="بحث عن دورة..."
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg"
+                    value={searchTerm}
                     onChange={e => setSearchTerm(e.target.value)}
                 />
                 <select 
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg bg-white"
+                    value={filterCategory}
                     onChange={e => setFilterCategory(e.target.value)}
                 >
                     <option value="All">كل الفئات</option>

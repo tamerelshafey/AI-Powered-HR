@@ -1,18 +1,13 @@
 
 import React from 'react';
 import { JobPosting, JobStatus } from '../../../types';
+import { JOB_STATUS_CLASSES } from '../../../utils/styleUtils';
 
 interface JobPostingsTableProps {
   postings: JobPosting[];
   selectedJobId: string | null;
   onSelectJob: (jobId: string | null) => void;
 }
-
-const statusClasses: Record<JobStatus, string> = {
-    [JobStatus.ACTIVE]: 'bg-green-100 text-green-800',
-    [JobStatus.CLOSED]: 'bg-red-100 text-red-800',
-    [JobStatus.ON_HOLD]: 'bg-yellow-100 text-yellow-800',
-};
 
 const JobPostingsTable: React.FC<JobPostingsTableProps> = ({ postings, selectedJobId, onSelectJob }) => (
     <div className="bg-white rounded-xl shadow-sm border border-gray-100">
@@ -43,7 +38,7 @@ const JobPostingsTable: React.FC<JobPostingsTableProps> = ({ postings, selectedJ
                                 <p className="font-semibold text-gray-800">{job.title}</p>
                                 <p className="text-sm text-gray-500">{job.department}</p>
                             </div>
-                             <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${statusClasses[job.status]}`}>
+                             <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${JOB_STATUS_CLASSES[job.status]}`}>
                                 {job.status}
                             </span>
                         </div>
@@ -82,7 +77,7 @@ const JobPostingsTable: React.FC<JobPostingsTableProps> = ({ postings, selectedJ
                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{job.department}</td>
                             <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-blue-600">{job.applicantsCount} متقدم</td>
                             <td className="px-6 py-4 whitespace-nowrap">
-                                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${statusClasses[job.status]}`}>
+                                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${JOB_STATUS_CLASSES[job.status]}`}>
                                     {job.status}
                                 </span>
                             </td>

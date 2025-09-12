@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { HelpCenterCategory, HelpCenterArticle } from '../../types';
 import { getHelpCenterCategories, getHelpCenterArticles } from '../../services/api';
@@ -6,14 +7,19 @@ import CategoryGrid from './components/CategoryGrid';
 import ArticleList from './components/ArticleList';
 import ArticleModal from './components/ArticleModal';
 import { ErrorDisplay } from '../../components/ModulePlaceholder';
+import { useSearch } from '../../hooks/useSearch';
 
 const HelpCenterPage: React.FC = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [categories, setCategories] = useState<HelpCenterCategory[]>([]);
     const [articles, setArticles] = useState<HelpCenterArticle[]>([]);
-    const [searchTerm, setSearchTerm] = useState('');
     const [selectedArticle, setSelectedArticle] = useState<HelpCenterArticle | null>(null);
+
+    const { searchTerm, setSearchTerm, filteredItems: searchResults } = useSearch(
+        articles,
+        ['title', 'content']
+    );
 
     const fetchData = useCallback(async () => {
         setLoading(true);
@@ -44,15 +50,6 @@ const HelpCenterPage: React.FC = () => {
     const recentArticles = useMemo(() => {
         return [...articles].sort((a, b) => new Date(b.lastUpdated).getTime() - new Date(a.lastUpdated).getTime()).slice(0, 5);
     }, [articles]);
-
-    const searchResults = useMemo(() => {
-        if (!searchTerm) return [];
-        const lowercasedTerm = searchTerm.toLowerCase();
-        return articles.filter(a =>
-            a.title.toLowerCase().includes(lowercasedTerm) ||
-            a.content.toLowerCase().includes(lowercasedTerm)
-        );
-    }, [articles, searchTerm]);
 
     const handleCategoryClick = (categoryId: string) => {
         const category = categories.find(c => c.id === categoryId);

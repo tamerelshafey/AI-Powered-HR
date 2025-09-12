@@ -1,9 +1,11 @@
+
 import React, { useState, useRef, useEffect } from 'react';
 import { GoogleGenAI } from '@google/genai';
 import { useFocusTrap } from '../hooks/useFocusTrap';
 import { employees } from '../pages/employees/data';
 import { candidates } from '../pages/recruitment/data';
 import { HiringStage } from '../types';
+import { useModalAccessibility } from '../hooks/useModalAccessibility';
 
 // Simplified types for results
 interface EmployeeResult {
@@ -73,14 +75,7 @@ const SmartSearchModal: React.FC<SmartSearchModalProps> = ({ isOpen, onClose }) 
 
     const modalRef = useRef<HTMLDivElement>(null);
     useFocusTrap(modalRef, isOpen);
-
-    useEffect(() => {
-        const handleKeyDown = (e: KeyboardEvent) => {
-            if (e.key === 'Escape') onClose();
-        };
-        document.addEventListener('keydown', handleKeyDown);
-        return () => document.removeEventListener('keydown', handleKeyDown);
-    }, [onClose]);
+    useModalAccessibility(isOpen, onClose);
 
     // Reset state when modal closes
     useEffect(() => {

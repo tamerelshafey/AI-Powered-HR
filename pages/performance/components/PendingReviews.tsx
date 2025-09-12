@@ -1,5 +1,6 @@
+
 import React, { useMemo, useRef } from 'react';
-// FIX: The namespace import for react-window was causing errors. Switched to named imports.
+// FIX: Use named imports for react-window to resolve module resolution errors.
 import { FixedSizeList, ListChildComponentProps } from 'react-window';
 import InfiniteLoader from 'react-window-infinite-loader';
 import { PerformanceReview, PerformanceStatus } from '../../../types';
@@ -15,7 +16,7 @@ interface AllReviewsProps {
 }
 
 const AllReviews: React.FC<AllReviewsProps> = ({ reviews, onViewReview, filters, onFilterChange, hasMore, loadMoreItems }) => {
-    // FIX: Use named import for the ref type annotation.
+    // FIX: Updated ref type annotation to use named import.
     const listRef = useRef<FixedSizeList>(null);
     const reviewTypes = useMemo(() => Array.from(new Set(reviews.map(r => r.reviewType))), [reviews]);
 
@@ -53,7 +54,7 @@ const AllReviews: React.FC<AllReviewsProps> = ({ reviews, onViewReview, filters,
                     loadMoreItems={loadMoreItems}
                 >
                     {({ onItemsRendered, ref }) => (
-                        // FIX: Use named import for FixedSizeList.
+                        
                         <FixedSizeList
                             ref={(el) => {
                                 ref(el);
@@ -66,7 +67,7 @@ const AllReviews: React.FC<AllReviewsProps> = ({ reviews, onViewReview, filters,
                             itemCount={itemCount}
                             itemSize={95}
                         >
-                            {/* FIX: Use named import for ListChildComponentProps. */}
+                            
                             {({ index, style }: ListChildComponentProps) => {
                                 if (!isItemLoaded(index)) {
                                     return (

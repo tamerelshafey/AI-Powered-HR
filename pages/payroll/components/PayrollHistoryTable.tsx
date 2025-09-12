@@ -1,27 +1,20 @@
+
+
 import React from 'react';
 import { PayrollRun, PayrollStatus } from '../../../types';
+import { PAYROLL_STATUS_CLASSES } from '../../../utils/styleUtils';
+import { useI18n } from '../../../context/I18nContext';
+import { formatCurrency } from '../../../utils/formatters';
 
 interface PayrollHistoryTableProps {
   payrollRuns: PayrollRun[];
   onViewPayslips: (run: PayrollRun) => void;
 }
 
-const statusClasses: Record<PayrollStatus, string> = {
-    [PayrollStatus.DRAFT]: 'bg-yellow-100 text-yellow-800',
-    [PayrollStatus.PROCESSED]: 'bg-blue-100 text-blue-800',
-    [PayrollStatus.PAID]: 'bg-green-100 text-green-800',
-};
-
-const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('ar-EG', {
-        style: 'currency',
-        currency: 'EGP',
-        minimumFractionDigits: 0,
-        maximumFractionDigits: 0,
-    }).format(amount);
-};
-
-const PayrollHistoryTable: React.FC<PayrollHistoryTableProps> = ({ payrollRuns, onViewPayslips }) => (
+const PayrollHistoryTable: React.FC<PayrollHistoryTableProps> = ({ payrollRuns, onViewPayslips }) => {
+    const { language } = useI18n();
+    const currencyOptions = { minimumFractionDigits: 0, maximumFractionDigits: 0 };
+    return (
     <div className="bg-white rounded-xl shadow-sm border border-gray-100">
         <div className="p-6 border-b border-gray-100">
             <h3 className="text-lg font-semibold text-gray-900">سجل مسيرات الرواتب</h3>
@@ -37,13 +30,13 @@ const PayrollHistoryTable: React.FC<PayrollHistoryTableProps> = ({ payrollRuns, 
                                 <p className="font-semibold text-gray-800">{run.period}</p>
                                 <p className="text-sm text-gray-500">تاريخ الدفع: {run.payDate}</p>
                             </div>
-                             <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${statusClasses[run.status]}`}>
+                             <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${PAYROLL_STATUS_CLASSES[run.status]}`}>
                                 {run.status}
                             </span>
                         </div>
                         <div className="flex justify-between items-center text-sm border-t pt-2">
                              <p className="text-gray-600">التكلفة الإجمالية:</p>
-                             <p className="font-bold text-gray-900">{formatCurrency(run.totalCost)}</p>
+                             <p className="font-bold text-gray-900">{formatCurrency(run.totalCost, language, currencyOptions)}</p>
                         </div>
                         <div className="flex justify-end pt-2 text-sm font-medium">
                            <button onClick={() => onViewPayslips(run)} className="text-blue-600 hover:text-blue-900">
@@ -73,9 +66,9 @@ const PayrollHistoryTable: React.FC<PayrollHistoryTableProps> = ({ payrollRuns, 
                                 <div className="text-sm font-medium text-gray-900">{run.period}</div>
                                 <div className="text-sm text-gray-500">تاريخ الدفع: {run.payDate}</div>
                             </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900">{formatCurrency(run.totalCost)}</td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900">{formatCurrency(run.totalCost, language, currencyOptions)}</td>
                             <td className="px-6 py-4 whitespace-nowrap">
-                                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${statusClasses[run.status]}`}>
+                                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${PAYROLL_STATUS_CLASSES[run.status]}`}>
                                     {run.status}
                                 </span>
                             </td>
@@ -90,6 +83,6 @@ const PayrollHistoryTable: React.FC<PayrollHistoryTableProps> = ({ payrollRuns, 
             </table>
         </div>
     </div>
-);
-
+    );
+};
 export default PayrollHistoryTable;

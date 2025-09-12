@@ -1,7 +1,12 @@
+
+
 import React, { useState, useRef, useEffect } from 'react';
 import { JobPosting, JobStatus } from '../../../types';
 import { GoogleGenAI } from '@google/genai';
 import { useFocusTrap } from '../../../hooks/useFocusTrap';
+import { useModalAccessibility } from '../../../hooks/useModalAccessibility';
+import { useI18n } from '../../../context/I18nContext';
+import { formatDate } from '../../../utils/formatters';
 
 interface NewPostingModalProps {
   isOpen: boolean;
@@ -27,23 +32,9 @@ const NewPostingModal: React.FC<NewPostingModalProps> = ({ isOpen, onClose, onAd
   const [generationError, setGenerationError] = useState<string | null>(null);
   
   const modalRef = useRef<HTMLDivElement>(null);
+  const { language } = useI18n();
   useFocusTrap(modalRef, isOpen);
-
-  useEffect(() => {
-    const appRoot = document.getElementById('root');
-    if (isOpen) {
-        appRoot?.setAttribute('aria-hidden', 'true');
-        const handleKeyDown = (e: KeyboardEvent) => {
-            if (e.key === 'Escape') {
-                onClose();
-            }
-        };
-        document.addEventListener('keydown', handleKeyDown);
-        return () => document.removeEventListener('keydown', handleKeyDown);
-    } else {
-        appRoot?.removeAttribute('aria-hidden');
-    }
-  }, [isOpen, onClose]);
+  useModalAccessibility(isOpen, onClose);
 
 
   if (!isOpen) return null;
@@ -101,7 +92,7 @@ const NewPostingModal: React.FC<NewPostingModalProps> = ({ isOpen, onClose, onAd
       department,
       status: JobStatus.ACTIVE,
       applicantsCount: 0,
-      postedDate: new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }),
+      postedDate: formatDate(new Date(), language),
     };
 
     onAddPosting(newPosting);

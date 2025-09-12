@@ -1,7 +1,8 @@
+
 import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 // FIX: Switched to namespace import for react-router-dom to resolve module resolution errors.
 import * as ReactRouterDOM from 'react-router-dom';
-// FIX: The namespace import for react-window was causing errors. Switched to named imports.
+// FIX: Use named imports for react-window to resolve module resolution errors.
 import { FixedSizeList, ListChildComponentProps } from 'react-window';
 import InfiniteLoader from 'react-window-infinite-loader';
 import { Employee, UserRole } from '../../types';
@@ -124,14 +125,14 @@ const EmployeesPage: React.FC = () => {
         return [];
     }, [currentUser, employees]);
 
-    const handleEmployeeClick = (employeeId: string) => {
+    const handleEmployeeClick = useCallback((employeeId: string) => {
         navigate(`/employees/${employeeId}`);
-    };
+    }, [navigate]);
 
-    const handleAddEmployee = (newEmployee: Employee) => {
+    const handleAddEmployee = useCallback((newEmployee: Employee) => {
         setEmployees(prev => [newEmployee, ...prev]);
         setToast({ message: `تمت إضافة الموظف ${newEmployee.firstName} بنجاح!`, type: 'success' });
-    };
+    }, []);
 
     // Infinite loader props for react-window
     const isItemLoaded = (index: number) => !hasMore || index < filteredEmployees.length;
@@ -167,11 +168,11 @@ const EmployeesPage: React.FC = () => {
                             if (filteredEmployees.length === index + 1) {
                                 return (
                                     <div ref={gridLoaderRef} key={employee.id}>
-                                        <EmployeeCard employee={employee} onClick={() => handleEmployeeClick(employee.id)} />
+                                        <EmployeeCard employee={employee} onClick={handleEmployeeClick} />
                                     </div>
                                 );
                             }
-                            return <EmployeeCard key={employee.id} employee={employee} onClick={() => handleEmployeeClick(employee.id)} />;
+                            return <EmployeeCard key={employee.id} employee={employee} onClick={handleEmployeeClick} />;
                         })}
                     </div>
                     {moreLoading && (
@@ -196,7 +197,7 @@ const EmployeesPage: React.FC = () => {
                             loadMoreItems={loadMoreItems}
                         >
                             {({ onItemsRendered, ref }) => (
-                                // FIX: Use named import for FixedSizeList
+                                
                                 <FixedSizeList
                                     ref={ref}
                                     onItemsRendered={onItemsRendered}
@@ -206,7 +207,7 @@ const EmployeesPage: React.FC = () => {
                                     itemSize={92}
                                 >
                                     
-                                    {/* FIX: Use named import for ListChildComponentProps. */}
+                                    
                                     {({ index, style }: ListChildComponentProps): React.ReactElement => {
                                         if (!isItemLoaded(index)) {
                                             return (
@@ -224,7 +225,7 @@ const EmployeesPage: React.FC = () => {
                                                 <div style={{ paddingBottom: '12px' }}>
                                                     <EmployeeListItem
                                                         employee={employee}
-                                                        onClick={() => handleEmployeeClick(employee.id)}
+                                                        onClick={handleEmployeeClick}
                                                     />
                                                 </div>
                                             </div>

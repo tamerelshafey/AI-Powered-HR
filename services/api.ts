@@ -16,6 +16,30 @@ import { departments as mockDepartments } from '../pages/departments/data';
 import { branches as mockBranches } from '../pages/branches/data';
 import { users } from '../users';
 
+// Helper mapping for demo purposes until user and employee IDs are unified.
+const userIdToEmployeeIdMap: Record<string, string> = {
+    'usr_admin': 'EMP001',
+    'usr_board_member': 'EMP001',
+    'usr_hr_manager': 'EMP004',
+    'usr_dept_manager': 'EMP002',
+    'usr_branch_manager': 'EMP004',
+    'usr_hr_employee': 'EMP012',
+    'usr_recruitment_officer': 'EMP018',
+    'usr_employee': 'EMP005',
+    'usr_trainee': 'EMP005',
+    'usr_joker': 'EMP006',
+};
+
+/**
+ * Maps a user context object to a corresponding employee ID for data fetching.
+ * This is a workaround for the mock data structure.
+ * @param user The current user object from UserContext.
+ * @returns The corresponding employee ID string.
+ */
+export const getEmployeeIdForUser = (user: User): string => {
+    return userIdToEmployeeIdMap[user.id] || user.id; // Fallback to user.id if not in map
+};
+
 
 export interface PaginatedResponse<T> {
     data: T[];

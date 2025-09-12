@@ -11,7 +11,7 @@ interface ModuleCardProps {
     onToggle?: () => void;
 }
 
-const ModuleCard: React.FC<ModuleCardProps> = ({ icon, name, description, isCore = false, isActive, onToggle }) => {
+const ModuleCard: React.FC<ModuleCardProps> = React.memo(({ icon, name, description, isCore = false, isActive, onToggle }) => {
     const { t } = useI18n();
     if (isCore) {
         return (
@@ -39,6 +39,6 @@ const ModuleCard: React.FC<ModuleCardProps> = ({ icon, name, description, isCore
             <p className="text-xs text-gray-600">{description}</p>
         </div>
     );
-};
+});
 
 export default ModuleCard;

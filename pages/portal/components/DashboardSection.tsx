@@ -1,7 +1,10 @@
 
+
 import React, { useEffect, useState } from 'react';
 import { upcomingEvents, portalActivities, announcements } from '../data';
 import { useUser } from '../../../context/UserContext';
+import { useI18n } from '../../../context/I18nContext';
+import { formatDate } from '../../../utils/formatters';
 
 interface DashboardSectionProps {
     onShowSection: (sectionId: any) => void;
@@ -20,13 +23,14 @@ const QuickActionButton: React.FC<{ icon: string; title: string; color: string; 
 
 const DashboardSection: React.FC<DashboardSectionProps> = ({ onShowSection, onOpenTimeOffModal, onOpenFeedbackModal }) => {
     const { currentUser } = useUser();
+    const { language } = useI18n();
     const [currentDate, setCurrentDate] = useState('');
 
     useEffect(() => {
         const now = new Date();
         const options: Intl.DateTimeFormatOptions = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
-        setCurrentDate(now.toLocaleDateString('ar-EG', options));
-    }, []);
+        setCurrentDate(formatDate(now, language, options));
+    }, [language]);
 
     return (
         <div>

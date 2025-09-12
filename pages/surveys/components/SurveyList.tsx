@@ -1,16 +1,12 @@
+
 import React from 'react';
 import { Survey, SurveyStatus } from '../../../types';
 import { useI18n } from '../../../context/I18nContext';
+import { SURVEY_STATUS_CLASSES } from '../../../utils/styleUtils';
 
 interface SurveyListProps {
   surveys: Survey[];
 }
-
-const statusClasses: Record<SurveyStatus, string> = {
-    [SurveyStatus.ACTIVE]: 'bg-green-100 text-green-800',
-    [SurveyStatus.CLOSED]: 'bg-gray-100 text-gray-800',
-    [SurveyStatus.DRAFT]: 'bg-yellow-100 text-yellow-800',
-};
 
 const SurveyList: React.FC<SurveyListProps> = ({ surveys }) => {
     const { t } = useI18n();
@@ -39,7 +35,7 @@ const SurveyList: React.FC<SurveyListProps> = ({ surveys }) => {
                                     <p className="text-sm text-gray-500">{survey.participantCount} مشارك</p>
                                 </td>
                                 <td className="px-6 py-4 whitespace-nowrap">
-                                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${statusClasses[survey.status]}`}>
+                                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${SURVEY_STATUS_CLASSES[survey.status]}`}>
                                         {survey.status}
                                     </span>
                                 </td>
