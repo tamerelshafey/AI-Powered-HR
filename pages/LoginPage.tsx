@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { useUser } from '../context/UserContext';
-import * as ReactRouterDOM from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { useI18n } from '../context/I18nContext';
 
 const LoginPage: React.FC = () => {
@@ -10,7 +10,7 @@ const LoginPage: React.FC = () => {
     const [error, setError] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const { switchUser, availableUsers } = useUser();
-    const navigate = ReactRouterDOM.useNavigate();
+    const navigate = useNavigate();
     const { t } = useI18n();
 
     const handleSubmit = (e: React.FormEvent) => {

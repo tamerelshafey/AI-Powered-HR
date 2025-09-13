@@ -6,6 +6,7 @@ import ToastNotification from '../../../components/ToastNotification';
 import CompensationSuggestion from './CompensationSuggestion';
 import { generateDevelopmentPlan } from '../../../services/api';
 import DevelopmentPlanSuggestion from './DevelopmentPlanSuggestion';
+import Modal, { ModalBody, ModalFooter } from '../../../components/Modal';
 
 interface PerformanceReviewModalProps {
   isOpen: boolean;
@@ -103,25 +104,28 @@ const PerformanceReviewModal: React.FC<PerformanceReviewModalProps> = ({ isOpen,
 
   const isReviewComplete = editedReview.status === PerformanceStatus.COMPLETED;
 
-  return (
-    <>
-      {toast && <ToastNotification message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
-      <div className="fixed inset-0 bg-black bg-opacity-50 modal-backdrop z-50 flex items-center justify-center p-4" onClick={onClose}>
-        <div className="bg-white rounded-xl shadow-xl max-w-3xl w-full max-h-[90vh] flex flex-col" onClick={e => e.stopPropagation()}>
-          <div className="p-6 border-b border-gray-200">
-            <div className="flex items-start justify-between">
-              <div>
+  const CustomHeader = () => (
+    <div className="p-6 border-b border-gray-200">
+        <div className="flex items-start justify-between">
+            <div>
                 <h3 className="text-xl font-bold text-gray-900">{editedReview.reviewType}</h3>
                 <p className="text-gray-600 mt-1">لـ: {editedReview.employee.firstName} {editedReview.employee.lastName}</p>
                 <p className="text-sm text-gray-500">تاريخ المراجعة: {editedReview.reviewDate}</p>
-              </div>
-              <button onClick={onClose} className="text-gray-400 hover:text-gray-600">
-                <i className="fas fa-times text-xl"></i>
-              </button>
             </div>
-          </div>
+            <button onClick={onClose} className="text-gray-400 hover:text-gray-600">
+                <i className="fas fa-times text-xl"></i>
+            </button>
+        </div>
+    </div>
+  );
+
+  return (
+    <>
+      {toast && <ToastNotification message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
+      <Modal isOpen={isOpen} onClose={onClose} size="3xl">
+        <CustomHeader />
           
-          <div className="p-6 overflow-y-auto space-y-6">
+        <ModalBody className="space-y-6">
             {/* Metrics Section */}
             <div>
               <h4 className="font-semibold text-gray-800 mb-3">تقييم الكفاءات</h4>
@@ -199,9 +203,9 @@ const PerformanceReviewModal: React.FC<PerformanceReviewModalProps> = ({ isOpen,
                      )}
                 </div>
             )}
-          </div>
+        </ModalBody>
           
-          <div className="p-6 border-t mt-auto bg-gray-50">
+        <ModalFooter>
             <div className="flex justify-between items-center">
                 <div className="text-sm">
                     { !isReviewComplete &&
@@ -224,9 +228,8 @@ const PerformanceReviewModal: React.FC<PerformanceReviewModalProps> = ({ isOpen,
                 )}
                 </div>
             </div>
-          </div>
-        </div>
-      </div>
+        </ModalFooter>
+      </Modal>
     </>
   );
 };

@@ -1,8 +1,7 @@
 
 
 import React, { useState } from 'react';
-// FIX: Switched to namespace import for react-router-dom to resolve module resolution errors.
-import * as ReactRouterDOM from 'react-router-dom';
+import { NavLink } from 'react-router-dom';
 import { NAV_ITEMS } from '../constants';
 import { NavItem } from '../types';
 import { useUser } from '../context/UserContext';
@@ -42,7 +41,7 @@ const Sidebar: React.FC = () => {
       <nav className="flex-1 py-6 space-y-2 overflow-y-auto" aria-label="Main Navigation">
         <div className={`${isCollapsed ? 'px-2' : 'px-4'}`}>
           {visibleNavItems.map((item: NavItem) => (
-            <ReactRouterDOM.NavLink
+            <NavLink
               key={item.path}
               to={item.path}
               title={isCollapsed ? t(item.nameKey) : undefined}
@@ -64,7 +63,7 @@ const Sidebar: React.FC = () => {
               >
                 {t(item.nameKey)}
               </span>
-            </ReactRouterDOM.NavLink>
+            </NavLink>
           ))}
         </div>
       </nav>

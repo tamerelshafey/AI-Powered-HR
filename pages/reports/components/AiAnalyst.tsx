@@ -72,7 +72,7 @@ const AiAnalyst: React.FC = () => {
             });
 
             // FIX: Access the generated text directly from the `text` property of the response object.
-            const jsonText = response.text.trim();
+            const jsonText = response.text;
             const parsedResult = JSON.parse(jsonText);
             const data = JSON.parse(parsedResult.data);
             setResult({ ...parsedResult, data });

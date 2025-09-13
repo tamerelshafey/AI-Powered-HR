@@ -1,7 +1,9 @@
+
 import React from 'react';
 import { SalaryComponent, SalaryComponentType } from '../../../types';
 import { useI18n } from '../../../context/I18nContext';
-import Modal from '../../../components/Modal';
+// FIX: Import Modal sub-components to structure the modal correctly.
+import Modal, { ModalHeader, ModalBody, ModalFooter } from '../../../components/Modal';
 
 interface SalaryComponentModalProps {
   isOpen: boolean;
@@ -30,35 +32,40 @@ const SalaryComponentModal: React.FC<SalaryComponentModalProps> = ({ isOpen, onC
   );
 
   return (
+    // FIX: Removed invalid 'title' and 'footer' props and used ModalHeader, ModalBody, and ModalFooter components.
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      title={title}
-      footer={modalFooter}
       size="lg"
     >
-      <form id="salary-component-form" className="space-y-6" onSubmit={handleSubmit}>
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">اسم المكون</label>
-          <input type="text" defaultValue={component?.name} className="w-full px-3 py-2 border border-gray-300 rounded-lg" required />
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">نوع المكون</label>
-          <select defaultValue={component?.type || SalaryComponentType.EARNING} className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-white">
-              <option value={SalaryComponentType.EARNING}>{t(`enum.salaryComponentType.${SalaryComponentType.EARNING}`)}</option>
-              <option value={SalaryComponentType.DEDUCTION}>{t(`enum.salaryComponentType.${SalaryComponentType.DEDUCTION}`)}</option>
-          </select>
-        </div>
-        <div className="flex items-center">
-          <input 
-              id="isTaxable"
-              type="checkbox" 
-              defaultChecked={component?.isTaxable}
-              className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 me-2" 
-          />
-          <label htmlFor="isTaxable" className="text-sm font-medium text-gray-700">هذا المكون خاضع للضريبة</label>
-        </div>
-      </form>
+      <ModalHeader title={title} onClose={onClose} />
+      <ModalBody>
+        <form id="salary-component-form" className="space-y-6" onSubmit={handleSubmit}>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">اسم المكون</label>
+            <input type="text" defaultValue={component?.name} className="w-full px-3 py-2 border border-gray-300 rounded-lg" required />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">نوع المكون</label>
+            <select defaultValue={component?.type || SalaryComponentType.EARNING} className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-white">
+                <option value={SalaryComponentType.EARNING}>{t(`enum.salaryComponentType.${SalaryComponentType.EARNING}`)}</option>
+                <option value={SalaryComponentType.DEDUCTION}>{t(`enum.salaryComponentType.${SalaryComponentType.DEDUCTION}`)}</option>
+            </select>
+          </div>
+          <div className="flex items-center">
+            <input 
+                id="isTaxable"
+                type="checkbox" 
+                defaultChecked={component?.isTaxable}
+                className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 me-2" 
+            />
+            <label htmlFor="isTaxable" className="text-sm font-medium text-gray-700">هذا المكون خاضع للضريبة</label>
+          </div>
+        </form>
+      </ModalBody>
+      <ModalFooter>
+        {modalFooter}
+      </ModalFooter>
     </Modal>
   );
 };

@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { useI18n } from '../../../context/I18nContext';
-import Modal from '../../../components/Modal';
+import Modal, { ModalHeader, ModalBody } from '../../../components/Modal';
 
 interface LeaveCalendarModalProps {
   isOpen: boolean;
@@ -28,18 +28,16 @@ const CalendarDay: React.FC<{ day: number; status?: 'approved' | 'pending' | 'ho
 const LeaveCalendarModal: React.FC<LeaveCalendarModalProps> = ({ isOpen, onClose }) => {
   const { t } = useI18n();
   
-  if (!isOpen) return null;
-
   const weekdays = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 
   return (
     <Modal
         isOpen={isOpen}
         onClose={onClose}
-        title={t('page.leaves.calendarModal.title')}
         size="4xl"
     >
-        <>
+        <ModalHeader title={t('page.leaves.calendarModal.title')} onClose={onClose} />
+        <ModalBody>
             <div className="bg-gray-50 rounded-lg p-4">
                 <div className="flex items-center justify-between mb-4">
                     <button className="p-2 text-gray-600 hover:text-gray-900" aria-label={t('page.leaves.calendarModal.previousMonth')}>
@@ -74,7 +72,7 @@ const LeaveCalendarModal: React.FC<LeaveCalendarModalProps> = ({ isOpen, onClose
                 <div className="flex items-center space-x-2 space-x-reverse"><div className="w-4 h-4 leave-rejected rounded"></div><span className="text-sm text-gray-600">{t('page.leaves.calendarModal.legend.rejected')}</span></div>
                 <div className="flex items-center space-x-2 space-x-reverse"><div className="w-4 h-4 leave-holiday rounded"></div><span className="text-sm text-gray-600">{t('page.leaves.calendarModal.legend.holiday')}</span></div>
             </div>
-        </>
+        </ModalBody>
     </Modal>
   );
 };

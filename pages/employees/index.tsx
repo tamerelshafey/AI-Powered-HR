@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
-// FIX: Switched to namespace import for react-router-dom to resolve module resolution errors.
-import * as ReactRouterDOM from 'react-router-dom';
-// FIX: Switched to named imports for 'react-window' to resolve module resolution errors.
+import { useNavigate } from 'react-router-dom';
+// FIX: Use named imports for react-window components and types.
 import { FixedSizeList, ListChildComponentProps } from 'react-window';
 import InfiniteLoader from 'react-window-infinite-loader';
 import { Employee, UserRole } from '../../types';
@@ -29,7 +28,7 @@ const EmployeesPage: React.FC = () => {
     const [isAddModalOpen, setAddModalOpen] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [toast, setToast] = useState<{ message: string; type: 'success' | 'info' | 'error' } | null>(null);
-    const navigate = ReactRouterDOM.useNavigate();
+    const navigate = useNavigate();
 
     const { currentUser } = useUser();
     const { t } = useI18n();

@@ -1,7 +1,9 @@
+
 import React, { useState, useEffect } from 'react';
 import { Employee, CompanyAsset, AssetStatus } from '../../../types';
 import { getAvailableAssets, getCompanyAssets } from '../../../services/api';
 import LoadingSpinner from '../../../components/LoadingSpinner';
+import Modal, { ModalHeader, ModalBody, ModalFooter } from '../../../components/Modal';
 
 interface AssetChecklistModalProps {
   isOpen: boolean;
@@ -34,8 +36,6 @@ const AssetChecklistModal: React.FC<AssetChecklistModalProps> = ({ isOpen, onClo
         fetchAssets();
     }
   }, [isOpen, mode, employee.id]);
-
-  if (!isOpen) return null;
   
   const handleToggleAsset = (assetId: string) => {
     setSelectedAssetIds(prev => {
@@ -54,18 +54,9 @@ const AssetChecklistModal: React.FC<AssetChecklistModalProps> = ({ isOpen, onClo
   const confirmButtonText = isAssignMode ? `تأكيد التسليم (${selectedAssetIds.size})` : `تأكيد الاستلام (${selectedAssetIds.size})`;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 modal-backdrop z-50 flex items-center justify-center p-4" onClick={onClose}>
-      <div className="bg-white rounded-xl shadow-xl max-w-2xl w-full max-h-[90vh] flex flex-col" onClick={e => e.stopPropagation()}>
-        <div className="p-6 border-b border-gray-200">
-          <div className="flex items-center justify-between">
-            <h3 className="text-lg font-semibold text-gray-900">{title}</h3>
-            <button onClick={onClose} className="text-gray-400 hover:text-gray-600">
-              <i className="fas fa-times text-xl"></i>
-            </button>
-          </div>
-        </div>
-        
-        <div className="p-6 overflow-y-auto">
+    <Modal isOpen={isOpen} onClose={onClose} size="2xl">
+        <ModalHeader title={title} onClose={onClose} />
+        <ModalBody>
             {loading ? (
                 <div className="h-48"><LoadingSpinner/></div>
             ) : assets.length === 0 ? (
@@ -91,9 +82,8 @@ const AssetChecklistModal: React.FC<AssetChecklistModalProps> = ({ isOpen, onClo
                     ))}
                 </div>
             )}
-        </div>
-
-        <div className="p-6 border-t mt-auto bg-gray-50">
+        </ModalBody>
+        <ModalFooter>
             <div className="flex justify-end space-x-3 space-x-reverse">
                 <button type="button" onClick={onClose} className="px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-100">
                   إلغاء
@@ -107,9 +97,8 @@ const AssetChecklistModal: React.FC<AssetChecklistModalProps> = ({ isOpen, onClo
                     {confirmButtonText}
                 </button>
             </div>
-        </div>
-      </div>
-    </div>
+        </ModalFooter>
+    </Modal>
   );
 };
 

@@ -1,7 +1,7 @@
 
+
 import React, { useState, useEffect, lazy, Suspense } from 'react';
-// FIX: Switched to namespace import for react-router-dom to resolve module resolution errors.
-import * as ReactRouterDOM from 'react-router-dom';
+import { useParams, Link } from 'react-router-dom';
 import { Employee } from '../../../types';
 import { getEmployeeById } from '../../../services/api';
 import LoadingSpinner from '../../../components/LoadingSpinner';
@@ -19,7 +19,7 @@ const LeaveHistoryTab = lazy(() => import('./components/LeaveHistoryTab'));
 type ActiveTab = 'overview' | 'documents' | 'assets' | 'performance' | 'learning' | 'leave';
 
 const EmployeeProfilePage: React.FC = () => {
-    const { employeeId } = ReactRouterDOM.useParams<{ employeeId: string }>();
+    const { employeeId } = useParams<{ employeeId: string }>();
     const [employee, setEmployee] = useState<Employee | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -79,9 +79,9 @@ const EmployeeProfilePage: React.FC = () => {
             <div className="text-center py-12">
                 <i className="fas fa-exclamation-triangle text-5xl text-red-500 mb-4"></i>
                 <h3 className="text-xl font-semibold text-gray-700">{error}</h3>
-                <ReactRouterDOM.Link to="/employees" className="mt-4 inline-block text-blue-600 hover:underline">
+                <Link to="/employees" className="mt-4 inline-block text-blue-600 hover:underline">
                     العودة إلى قائمة الموظفين
-                </ReactRouterDOM.Link>
+                </Link>
             </div>
         );
     }

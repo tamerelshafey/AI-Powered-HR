@@ -1,7 +1,6 @@
 
 import React, { Suspense, lazy } from 'react';
-// FIX: Switched to namespace import for react-router-dom to resolve module resolution errors.
-import * as ReactRouterDOM from 'react-router-dom';
+import { Routes, Route, Navigate, HashRouter } from 'react-router-dom';
 import Layout from './components/Layout';
 import { UserProvider, useUser } from './context/UserContext';
 import ProtectedRoute from './components/ProtectedRoute';
@@ -42,38 +41,38 @@ const AppRoutes: React.FC = () => {
   }
   
   return (
-    <ReactRouterDOM.Routes>
-      <ReactRouterDOM.Route path="/login" element={<LoginPage />} />
-      <ReactRouterDOM.Route
+    <Routes>
+      <Route path="/login" element={<LoginPage />} />
+      <Route
         path="/portal"
         element={<EmployeePortalPage />}
       />
-      <ReactRouterDOM.Route path="/" element={<ProtectedRoute><Layout /></ProtectedRoute>}>
-        <ReactRouterDOM.Route index element={<ReactRouterDOM.Navigate to="/dashboard" replace />} />
-        <ReactRouterDOM.Route path="dashboard" element={<Dashboard />} />
-        <ReactRouterDOM.Route path="reports" element={<ReportsPage />} />
-        <ReactRouterDOM.Route path="employees" element={<EmployeesPage />} />
-        <ReactRouterDOM.Route path="employees/:employeeId" element={<EmployeeProfilePage />} /> 
-        <ReactRouterDOM.Route path="org-chart" element={<OrgChartPage />} />
-        <ReactRouterDOM.Route path="departments" element={<DepartmentsPage />} />
-        <ReactRouterDOM.Route path="branches" element={<BranchesPage />} />
-        <ReactRouterDOM.Route path="attendance" element={<AttendancePage />} />
-        <ReactRouterDOM.Route path="leaves" element={<LeavesPage />} />
-        <ReactRouterDOM.Route path="job-titles" element={<JobTitlesPage />} />
-        <ReactRouterDOM.Route path="payroll" element={<PayrollPage />} />
-        <ReactRouterDOM.Route path="documents" element={<DocumentsPage />} />
-        <ReactRouterDOM.Route path="recruitment" element={<RecruitmentPage />} />
-        <ReactRouterDOM.Route path="performance" element={<PerformancePage />} />
-        <ReactRouterDOM.Route path="learning" element={<LearningPage />} />
-        <ReactRouterDOM.Route path="onboarding-offboarding" element={<OnboardingOffboardingPage />} />
-        <ReactRouterDOM.Route path="assets" element={<AssetsPage />} />
-        <ReactRouterDOM.Route path="recognition" element={<RecognitionPage />} />
-        <ReactRouterDOM.Route path="surveys" element={<SurveysPage />} />
-        <ReactRouterDOM.Route path="support-tickets" element={<SupportTicketsPage />} />
-        <ReactRouterDOM.Route path="help-center" element={<HelpCenterPage />} />
-        <ReactRouterDOM.Route path="settings" element={<SettingsPage />} />
-      </ReactRouterDOM.Route>
-    </ReactRouterDOM.Routes>
+      <Route path="/" element={<ProtectedRoute><Layout /></ProtectedRoute>}>
+        <Route index element={<Navigate to="/dashboard" replace />} />
+        <Route path="dashboard" element={<Dashboard />} />
+        <Route path="reports" element={<ReportsPage />} />
+        <Route path="employees" element={<EmployeesPage />} />
+        <Route path="employees/:employeeId" element={<EmployeeProfilePage />} /> 
+        <Route path="org-chart" element={<OrgChartPage />} />
+        <Route path="departments" element={<DepartmentsPage />} />
+        <Route path="branches" element={<BranchesPage />} />
+        <Route path="attendance" element={<AttendancePage />} />
+        <Route path="leaves" element={<LeavesPage />} />
+        <Route path="job-titles" element={<JobTitlesPage />} />
+        <Route path="payroll" element={<PayrollPage />} />
+        <Route path="documents" element={<DocumentsPage />} />
+        <Route path="recruitment" element={<RecruitmentPage />} />
+        <Route path="performance" element={<PerformancePage />} />
+        <Route path="learning" element={<LearningPage />} />
+        <Route path="onboarding-offboarding" element={<OnboardingOffboardingPage />} />
+        <Route path="assets" element={<AssetsPage />} />
+        <Route path="recognition" element={<RecognitionPage />} />
+        <Route path="surveys" element={<SurveysPage />} />
+        <Route path="support-tickets" element={<SupportTicketsPage />} />
+        <Route path="help-center" element={<HelpCenterPage />} />
+        <Route path="settings" element={<SettingsPage />} />
+      </Route>
+    </Routes>
   );
 };
 
@@ -81,13 +80,13 @@ const AppRoutes: React.FC = () => {
 const App: React.FC = () => {
   return (
     <I18nProvider>
-      <ReactRouterDOM.HashRouter>
+      <HashRouter>
         <UserProvider>
           <Suspense fallback={<LoadingSpinner fullScreen />}>
             <AppRoutes />
           </Suspense>
         </UserProvider>
-      </ReactRouterDOM.HashRouter>
+      </HashRouter>
     </I18nProvider>
   );
 };

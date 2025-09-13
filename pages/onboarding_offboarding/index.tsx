@@ -1,7 +1,6 @@
 
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
-// FIX: Switched to namespace import for react-router-dom to resolve module resolution errors.
-import * as ReactRouterDOM from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
 import PageHeader from '../../components/PageHeader';
 import ProcessStats from './components/ProcessStats';
 import ProcessTable from './components/ProcessTable';
@@ -30,7 +29,7 @@ const OnboardingOffboardingPage: React.FC = () => {
     const [processTypeToCreate, setProcessTypeToCreate] = useState<ProcessType | null>(null);
     const [newHire, setNewHire] = useState<Candidate | Employee | null>(null);
     
-    const location = ReactRouterDOM.useLocation();
+    const location = useLocation();
     const { currentUser } = useUser();
     const { t } = useI18n();
 

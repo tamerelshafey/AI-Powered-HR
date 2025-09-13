@@ -1,5 +1,7 @@
+
 import React, { useState } from 'react';
 import { HelpCenterArticle } from '../../../types';
+import Modal, { ModalBody, ModalFooter } from '../../../components/Modal';
 
 interface ArticleModalProps {
   isOpen: boolean;
@@ -17,25 +19,27 @@ const ArticleModal: React.FC<ArticleModalProps> = ({ isOpen, onClose, article })
     onClose();
   }
 
-  return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 modal-backdrop z-50 flex items-center justify-center p-4" onClick={handleClose}>
-      <div className="bg-white rounded-xl shadow-xl max-w-3xl w-full max-h-[90vh] flex flex-col" onClick={e => e.stopPropagation()}>
-        <div className="p-6 border-b border-gray-200">
+  const CustomHeader = () => (
+      <div className="p-6 border-b border-gray-200">
           <div className="flex items-center justify-between">
-            <h3 className="text-xl font-semibold text-gray-900">{article.title}</h3>
-            <button onClick={handleClose} className="text-gray-400 hover:text-gray-600">
-              <i className="fas fa-times text-xl"></i>
-            </button>
+              <h3 id="article-modal-title" className="text-xl font-semibold text-gray-900">{article.title}</h3>
+              <button onClick={handleClose} className="text-gray-400 hover:text-gray-600">
+                  <i className="fas fa-times text-xl"></i>
+              </button>
           </div>
           <p className="text-sm text-gray-500 mt-2">
-            بواسطة: {article.author} • آخر تحديث: {article.lastUpdated} • <i className="fas fa-eye me-1"></i>{article.views} مشاهدة
+              بواسطة: {article.author} • آخر تحديث: {article.lastUpdated} • <i className="fas fa-eye me-1"></i>{article.views} مشاهدة
           </p>
-        </div>
+      </div>
+  );
 
-        <div className="p-6 overflow-y-auto" dangerouslySetInnerHTML={{ __html: article.content }}>
-        </div>
-        
-        <div className="p-6 border-t border-gray-200 mt-auto bg-gray-50">
+  return (
+    <Modal isOpen={isOpen} onClose={handleClose} size="3xl">
+        <CustomHeader />
+        <ModalBody>
+            <div dangerouslySetInnerHTML={{ __html: article.content }}></div>
+        </ModalBody>
+        <ModalFooter>
             {feedback === 'none' && (
                 <div className="flex items-center justify-center space-x-4 space-x-reverse">
                     <p className="text-sm font-medium text-gray-700">هل كان هذا المقال مفيداً؟</p>
@@ -46,9 +50,8 @@ const ArticleModal: React.FC<ArticleModalProps> = ({ isOpen, onClose, article })
             {feedback !== 'none' && (
                 <p className="text-center text-sm font-medium text-green-700">شكراً لملاحظاتك!</p>
             )}
-        </div>
-      </div>
-    </div>
+        </ModalFooter>
+    </Modal>
   );
 };
 

@@ -1,8 +1,7 @@
 
-
 import React, { useState, useEffect } from 'react';
 import { Candidate, CandidateActivity } from '../../../types';
-import Modal from '../../../components/Modal';
+import Modal, { ModalBody, ModalFooter } from '../../../components/Modal';
 
 interface CandidateDetailsModalProps {
   isOpen: boolean;
@@ -131,21 +130,23 @@ const CandidateDetailsModal: React.FC<CandidateDetailsModalProps> = ({ isOpen, o
         )
     };
     
-    const customHeader = (
-        <div className="flex items-start justify-between">
-            <div className="flex items-center space-x-4 space-x-reverse">
-                <div className={`w-16 h-16 ${candidate.avatarColor} rounded-full flex items-center justify-center flex-shrink-0`}>
-                    <span className="text-white text-2xl font-medium">{candidate.avatarInitials}</span>
+    const CustomHeader = () => (
+        <div className="p-6">
+            <div className="flex items-start justify-between">
+                <div className="flex items-center space-x-4 space-x-reverse">
+                    <div className={`w-16 h-16 ${candidate.avatarColor} rounded-full flex items-center justify-center flex-shrink-0`}>
+                        <span className="text-white text-2xl font-medium">{candidate.avatarInitials}</span>
+                    </div>
+                    <div>
+                        <h3 id="candidate-details-title" className="text-xl font-bold text-gray-900">{candidate.name}</h3>
+                        <p className="text-gray-600">مرشح لوظيفة: {candidate.positionApplied}</p>
+                        <p className="text-sm text-gray-500 mt-1">تاريخ التقديم: {candidate.appliedDate}</p>
+                    </div>
                 </div>
-                <div>
-                    <h3 id="candidate-details-title" className="text-xl font-bold text-gray-900">{candidate.name}</h3>
-                    <p className="text-gray-600">مرشح لوظيفة: {candidate.positionApplied}</p>
-                    <p className="text-sm text-gray-500 mt-1">تاريخ التقديم: {candidate.appliedDate}</p>
-                </div>
+                <button onClick={onClose} className="text-gray-400 hover:text-gray-600" aria-label="Close">
+                    <i className="fas fa-times text-xl"></i>
+                </button>
             </div>
-            <button onClick={onClose} className="text-gray-400 hover:text-gray-600" aria-label="Close">
-                <i className="fas fa-times text-xl"></i>
-            </button>
         </div>
     );
 
@@ -157,23 +158,21 @@ const CandidateDetailsModal: React.FC<CandidateDetailsModalProps> = ({ isOpen, o
     );
 
     return (
-        <Modal
-            isOpen={isOpen}
-            onClose={onClose}
-            size="3xl"
-            footer={footerContent}
-        >
-            {customHeader}
-            <div className="mt-6 border-b border-gray-200">
+        <Modal isOpen={isOpen} onClose={onClose} size="3xl">
+            <CustomHeader />
+            <div className="px-6 border-b border-gray-200">
                 <nav className="flex space-x-4 space-x-reverse -mb-px" role="tablist" aria-label="Candidate Details">
                     <TabButton text="الملف الشخصي" icon="fas fa-user" isActive={activeTab === 'profile'} onClick={() => setActiveTab('profile')} controls="profile-panel" />
                     <TabButton text="ملخص الذكاء الاصطناعي" icon="fas fa-brain" isActive={activeTab === 'ai-summary'} onClick={() => setActiveTab('ai-summary')} controls="ai-summary-panel" />
                     <TabButton text="سجل النشاط" icon="fas fa-history" isActive={activeTab === 'activity'} onClick={() => setActiveTab('activity')} controls="activity-panel" />
                 </nav>
             </div>
-            <div className="py-6 min-h-[250px]">
+            <ModalBody className="min-h-[250px]">
                 {renderContent()}
-            </div>
+            </ModalBody>
+            <ModalFooter>
+                {footerContent}
+            </ModalFooter>
         </Modal>
     );
 };

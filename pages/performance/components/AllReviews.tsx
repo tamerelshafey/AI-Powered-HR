@@ -1,5 +1,5 @@
 import React, { useMemo, useRef } from 'react';
-// FIX: Switched to named imports for 'react-window' to resolve module resolution errors.
+// FIX: Use named imports for react-window components and types.
 import { FixedSizeList, ListChildComponentProps } from 'react-window';
 import InfiniteLoader from 'react-window-infinite-loader';
 import { PerformanceReview, PerformanceStatus } from '../../../types';

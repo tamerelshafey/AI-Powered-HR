@@ -1,7 +1,8 @@
 
 import React from 'react';
 import { useI18n } from '../context/I18nContext';
-import Modal from './Modal';
+// FIX: Import ModalBody and ModalFooter to correctly structure the modal.
+import Modal, { ModalBody, ModalFooter } from './Modal';
 
 interface ConfirmationModalProps {
   isOpen: boolean;
@@ -47,14 +48,20 @@ const ConfirmationModal: React.FC<ConfirmationModalProps> = ({ isOpen, onClose, 
   );
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} footer={modalFooter} size="md">
-      <div className="text-center">
-        <div className="w-12 h-12 bg-yellow-100 text-yellow-500 rounded-full mx-auto flex items-center justify-center mb-4">
-          <i className="fas fa-exclamation-triangle text-2xl"></i>
+    // FIX: Removed invalid 'footer' prop and used ModalBody and ModalFooter components.
+    <Modal isOpen={isOpen} onClose={onClose} size="md">
+      <ModalBody>
+        <div className="text-center">
+          <div className="w-12 h-12 bg-yellow-100 text-yellow-500 rounded-full mx-auto flex items-center justify-center mb-4">
+            <i className="fas fa-exclamation-triangle text-2xl"></i>
+          </div>
+          <h3 id="confirmation-modal-title" className="text-lg font-semibold text-gray-900">{title}</h3>
+          <p className="text-gray-600 mt-2 text-sm">{message}</p>
         </div>
-        <h3 id="confirmation-modal-title" className="text-lg font-semibold text-gray-900">{title}</h3>
-        <p className="text-gray-600 mt-2 text-sm">{message}</p>
-      </div>
+      </ModalBody>
+      <ModalFooter>
+        {modalFooter}
+      </ModalFooter>
     </Modal>
   );
 };

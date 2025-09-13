@@ -1,7 +1,6 @@
 
 import React from 'react';
-// FIX: Switched to namespace import for react-router-dom to resolve module resolution errors.
-import * as ReactRouterDOM from 'react-router-dom';
+import { Navigate } from 'react-router-dom';
 import { useUser } from '../context/UserContext';
 import { ADMIN_ROLES } from '../permissions';
 import LoadingSpinner from './LoadingSpinner';
@@ -19,11 +18,11 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
 
   if (!currentUser) {
     // User is not logged in, redirect to login page.
-    return <ReactRouterDOM.Navigate to="/login" replace />;
+    return <Navigate to="/login" replace />;
   }
 
   if (!ADMIN_ROLES.includes(currentUser.role)) {
-    return <ReactRouterDOM.Navigate to="/portal" replace />;
+    return <Navigate to="/portal" replace />;
   }
 
   return <>{children}</>;

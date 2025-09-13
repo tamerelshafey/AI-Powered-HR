@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { useI18n } from '../../../context/I18nContext';
-import Modal from '../../../components/Modal';
+import Modal, { ModalHeader, ModalBody } from '../../../components/Modal';
 
 interface OrgChartModalProps {
   isOpen: boolean;
@@ -10,16 +10,15 @@ interface OrgChartModalProps {
 
 const OrgChartModal: React.FC<OrgChartModalProps> = ({ isOpen, onClose }) => {
   const { t } = useI18n();
-  if (!isOpen) return null;
 
   return (
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      title={t('page.employees.orgChart.title')}
       size="4xl"
     >
-      <>
+      <ModalHeader title={t('page.employees.orgChart.title')} onClose={onClose} />
+      <ModalBody>
         <div className="flex justify-center mb-8">
           <div className="bg-gradient-to-r from-purple-500 to-purple-600 text-white p-4 rounded-lg shadow-lg text-center transition-transform hover:scale-105">
             <div className="w-12 h-12 bg-white bg-opacity-20 rounded-full mx-auto mb-2 flex items-center justify-center">
@@ -74,7 +73,7 @@ const OrgChartModal: React.FC<OrgChartModalProps> = ({ isOpen, onClose }) => {
             </div>
           </div>
         </div>
-      </>
+      </ModalBody>
     </Modal>
   );
 };

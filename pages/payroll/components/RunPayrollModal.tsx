@@ -1,4 +1,6 @@
+
 import React, { useState, useEffect } from 'react';
+import Modal, { ModalHeader, ModalBody, ModalFooter } from '../../../components/Modal';
 
 interface RunPayrollModalProps {
   isOpen: boolean;
@@ -139,41 +141,26 @@ const RunPayrollModal: React.FC<RunPayrollModalProps> = ({ isOpen, onClose, onCr
       }
   }
 
-
-  if (!isOpen) return null;
-
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 modal-backdrop z-50 flex items-center justify-center p-4" onClick={onClose}>
-      <div className="bg-white rounded-xl shadow-xl max-w-lg w-full" onClick={e => e.stopPropagation()}>
-        <div className="p-6 border-b border-gray-200">
-          <div className="flex items-center justify-between">
-            <div>
-              <h3 className="text-lg font-semibold text-gray-900">تشغيل مسير رواتب جديد</h3>
-              <p className="text-sm text-gray-500">الخطوة {step} من 3</p>
-            </div>
-            <button onClick={onClose} className="text-gray-400 hover:text-gray-600">
-              <i className="fas fa-times text-xl"></i>
-            </button>
-          </div>
-        </div>
-        
-        <div className="p-8 min-h-[20rem] flex items-center justify-center">
-            {renderStepContent()}
-        </div>
-
-        <div className="flex justify-between items-center p-6 bg-gray-50 rounded-b-xl border-t">
-          <button 
-            type="button" 
-            onClick={() => setStep(s => s - 1)} 
-            className="px-4 py-2 text-gray-700 bg-gray-200 rounded-lg hover:bg-gray-300 disabled:opacity-50 disabled:cursor-not-allowed"
-            disabled={step === 1}
-          >
-            السابق
-          </button>
-          {renderButtons()}
-        </div>
-      </div>
-    </div>
+      <Modal isOpen={isOpen} onClose={onClose} size="lg">
+          <ModalHeader title="تشغيل مسير رواتب جديد" onClose={onClose} subtitle={`الخطوة ${step} من 3`} />
+          <ModalBody className="min-h-[20rem] flex items-center justify-center">
+              {renderStepContent()}
+          </ModalBody>
+          <ModalFooter>
+              <div className="flex justify-between items-center">
+                  <button
+                      type="button"
+                      onClick={() => setStep(s => s - 1)}
+                      className="px-4 py-2 text-gray-700 bg-gray-200 rounded-lg hover:bg-gray-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                      disabled={step === 1}
+                  >
+                      السابق
+                  </button>
+                  {renderButtons()}
+              </div>
+          </ModalFooter>
+      </Modal>
   );
 };
 

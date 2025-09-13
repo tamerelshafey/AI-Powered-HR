@@ -1,7 +1,6 @@
 
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
-// FIX: Switched to namespace import for react-router-dom to resolve module resolution errors.
-import * as ReactRouterDOM from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import PageHeader from '../../components/PageHeader';
 import RecruitmentStats from './components/RecruitmentStats';
 import JobPostingsTable from './components/JobPostingsTable';
@@ -36,7 +35,7 @@ const RecruitmentPage: React.FC = () => {
   const [candidateToHire, setCandidateToHire] = useState<Candidate | null>(null);
   const [isGeneratingSummary, setIsGeneratingSummary] = useState<Record<string, boolean>>({});
   const [generationError, setGenerationError] = useState<Record<string, string | null>>({});
-  const navigate = ReactRouterDOM.useNavigate();
+  const navigate = useNavigate();
   const { t } = useI18n();
 
   const fetchData = useCallback(async () => {

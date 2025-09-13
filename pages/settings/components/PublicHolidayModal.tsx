@@ -1,6 +1,8 @@
+
 import React from 'react';
 import { PublicHoliday } from '../../../types';
-import Modal from '../../../components/Modal';
+// FIX: Import Modal sub-components to structure the modal correctly.
+import Modal, { ModalHeader, ModalBody, ModalFooter } from '../../../components/Modal';
 
 interface PublicHolidayModalProps {
   isOpen: boolean;
@@ -28,23 +30,28 @@ const PublicHolidayModal: React.FC<PublicHolidayModalProps> = ({ isOpen, onClose
   );
 
   return (
+    // FIX: Removed invalid 'title' and 'footer' props and used ModalHeader, ModalBody, and ModalFooter components.
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      title={title}
-      footer={modalFooter}
       size="lg"
     >
-      <form id="holiday-form" className="p-6 space-y-6" onSubmit={handleSubmit}>
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">اسم العطلة</label>
-          <input type="text" defaultValue={holiday?.name} className="w-full px-3 py-2 border border-gray-300 rounded-lg" required />
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">التاريخ</label>
-          <input type="date" defaultValue={holiday?.date} className="w-full px-3 py-2 border border-gray-300 rounded-lg" required />
-        </div>
-      </form>
+      <ModalHeader title={title} onClose={onClose} />
+      <ModalBody>
+        <form id="holiday-form" className="space-y-6" onSubmit={handleSubmit}>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">اسم العطلة</label>
+            <input type="text" defaultValue={holiday?.name} className="w-full px-3 py-2 border border-gray-300 rounded-lg" required />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">التاريخ</label>
+            <input type="date" defaultValue={holiday?.date} className="w-full px-3 py-2 border border-gray-300 rounded-lg" required />
+          </div>
+        </form>
+      </ModalBody>
+      <ModalFooter>
+        {modalFooter}
+      </ModalFooter>
     </Modal>
   );
 };

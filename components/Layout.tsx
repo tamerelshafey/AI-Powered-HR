@@ -1,8 +1,7 @@
 
 
 import React, { useState } from 'react';
-// FIX: Switched to namespace import for react-router-dom to resolve module resolution errors.
-import * as ReactRouterDOM from 'react-router-dom';
+import { Outlet, useNavigate } from 'react-router-dom';
 import Sidebar from './Sidebar';
 import Header from './Header';
 import { useUser } from '../context/UserContext';
@@ -10,7 +9,7 @@ import SmartSearchModal from './SmartSearchModal';
 
 const Layout: React.FC = () => {
   const { currentUser } = useUser();
-  const navigate = ReactRouterDOM.useNavigate();
+  const navigate = useNavigate();
   const [isSmartSearchOpen, setSmartSearchOpen] = useState(false);
   
   if (!currentUser) {
@@ -29,7 +28,7 @@ const Layout: React.FC = () => {
         />
         <main className="flex-1 overflow-x-hidden overflow-y-auto">
           <div className="container mx-auto px-6 py-8 animate-content-fade-in">
-            <ReactRouterDOM.Outlet />
+            <Outlet />
           </div>
         </main>
       </div>
