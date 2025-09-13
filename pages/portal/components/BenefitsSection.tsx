@@ -1,6 +1,7 @@
-import React from 'react';
-import { benefitsData } from '../data';
+import React, { useState, useEffect } from 'react';
 import { Benefit } from '../../../types';
+import { getBenefits } from '../../../services/api';
+import LoadingSpinner from '../../../components/LoadingSpinner';
 
 const categoryStyles: Record<Benefit['category'], { iconBg: string, iconColor: string }> = {
     Health: { iconBg: 'bg-blue-100', iconColor: 'text-blue-600' },
@@ -39,6 +40,28 @@ const BenefitCard: React.FC<{ benefit: Benefit }> = ({ benefit }) => {
 
 
 const BenefitsSection: React.FC = () => {
+    const [benefits, setBenefits] = useState<Benefit[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchData = async () => {
+            setLoading(true);
+            try {
+                const data = await getBenefits();
+                setBenefits(data);
+            } catch (error) {
+                console.error("Failed to fetch benefits data", error);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchData();
+    }, []);
+
+    if (loading) {
+        return <div className="min-h-[60vh] flex items-center justify-center"><LoadingSpinner /></div>;
+    }
+
     return (
         <div>
             <div className="mb-8">
@@ -47,7 +70,7 @@ const BenefitsSection: React.FC = () => {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {benefitsData.map(benefit => (
+                {benefits.map(benefit => (
                     <BenefitCard key={benefit.id} benefit={benefit} />
                 ))}
             </div>

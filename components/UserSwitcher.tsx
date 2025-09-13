@@ -54,7 +54,12 @@ const UserSwitcher: React.FC = () => {
                                 }`}
                                 role="menuitem"
                             >
-                                <div className="w-8 h-8 rounded-full flex items-center justify-center bg-cover bg-center" style={{backgroundImage: `url(${user.avatar})`}}></div>
+                                <img
+                                    src={user.avatar}
+                                    alt={user.name}
+                                    className="w-8 h-8 rounded-full object-cover"
+                                    loading="lazy"
+                                />
                                 <div>
                                     <p className="font-medium">{user.name}</p>
                                     <p className="text-xs">{t(`enum.userRole.${user.role}`)}</p>

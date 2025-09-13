@@ -1,5 +1,6 @@
+
 import React, { useState, useEffect, useCallback } from 'react';
-import PageHeader from './components/PageHeader';
+import PageHeader from '../../components/PageHeader';
 import LearningStats from './components/LearningStats';
 import CourseLibrary from './components/CourseLibrary';
 import EnrollmentTable from './components/EnrollmentTable';
@@ -8,6 +9,7 @@ import EnrollEmployeeModal from './components/EnrollEmployeeModal';
 import { Course, EmployeeEnrollment, Employee } from '../../types';
 import { getCourses, getEmployeeEnrollments, getAllEmployees } from '../../services/api';
 import { ErrorDisplay } from '../../components/ModulePlaceholder';
+import { useI18n } from '../../context/I18nContext';
 
 const LearningPage: React.FC = () => {
     const [courses, setCourses] = useState<Course[]>([]);
@@ -17,6 +19,7 @@ const LearningPage: React.FC = () => {
     const [error, setError] = useState<string | null>(null);
     const [isAddCourseModalOpen, setAddCourseModalOpen] = useState(false);
     const [isEnrollModalOpen, setEnrollModalOpen] = useState(false);
+    const { t } = useI18n();
 
     const fetchData = useCallback(async () => {
         setLoading(true);
@@ -57,16 +60,26 @@ const LearningPage: React.FC = () => {
     return (
         <div>
             <PageHeader 
-                onAddCourse={() => setAddCourseModalOpen(true)}
-                onEnrollEmployee={() => setEnrollModalOpen(true)}
+                title={t('page.learning.header.title')}
+                subtitle={t('page.learning.header.subtitle')}
+                actions={<>
+                    <button onClick={() => setEnrollModalOpen(true)} className="flex items-center space-x-2 space-x-reverse px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors">
+                        <i className="fas fa-user-plus"></i>
+                        <span>{t('page.learning.header.enrollEmployee')}</span>
+                    </button>
+                    <button onClick={() => setAddCourseModalOpen(true)} className="flex items-center space-x-2 space-x-reverse px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+                        <i className="fas fa-plus"></i>
+                        <span>{t('page.learning.header.addCourse')}</span>
+                    </button>
+                </>}
             />
             <LearningStats courses={courses} enrollments={enrollments} />
             
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
-                <div className="lg:col-span-2">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6 h-[75vh]">
+                <div className="lg:col-span-2 h-full">
                     <EnrollmentTable enrollments={enrollments} />
                 </div>
-                <div>
+                <div className="h-full">
                      <CourseLibrary courses={courses} />
                 </div>
             </div>

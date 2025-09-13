@@ -1,5 +1,4 @@
 
-
 import React, { useState, useEffect, useRef } from 'react';
 // FIX: Switched to namespace import for react-router-dom to resolve module resolution errors.
 import * as ReactRouterDOM from 'react-router-dom';
@@ -18,7 +17,8 @@ interface HeaderProps {
 
 const Header: React.FC<HeaderProps> = ({ onOpenSmartSearch }) => {
   const location = ReactRouterDOM.useLocation();
-  const { currentUser } = useUser();
+  const navigate = ReactRouterDOM.useNavigate();
+  const { currentUser, setCurrentUser } = useUser();
   const { t, language } = useI18n();
   const [currentTime, setCurrentTime] = useState(new Date());
   const [lastUpdate, setLastUpdate] = useState(2);
@@ -67,6 +67,11 @@ const Header: React.FC<HeaderProps> = ({ onOpenSmartSearch }) => {
         }
         return !prev;
     });
+  };
+
+  const handleLogout = () => {
+    setCurrentUser(null);
+    navigate('/login');
   };
 
   if (!currentUser) return null; // Should not happen within Layout, but good practice
@@ -152,6 +157,10 @@ const Header: React.FC<HeaderProps> = ({ onOpenSmartSearch }) => {
                 notifications={notifications}
               />
             </div>
+
+            <button onClick={handleLogout} className="p-2 text-gray-600 hover:text-gray-900" aria-label={t('header.logoutAria')}>
+              <i className="fas fa-sign-out-alt text-lg"></i>
+            </button>
             
             <div className="flex items-center space-x-3 space-x-reverse">
               <div className="text-start">

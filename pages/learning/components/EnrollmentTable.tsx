@@ -1,93 +1,69 @@
-
-import React from 'react';
-import { EmployeeEnrollment, EnrollmentStatus } from '../../../types';
-import { ENROLLMENT_STATUS_CLASSES } from '../../../utils/styleUtils';
+import React, { useState, useEffect, useRef } from 'react';
+// FIX: Switched to named imports for 'react-window' to resolve module resolution errors.
+import { FixedSizeList, ListChildComponentProps } from 'react-window';
+import { EmployeeEnrollment } from '../../../types';
+import EnrollmentListItem from './EnrollmentListItem';
 
 interface EnrollmentTableProps {
     enrollments: EmployeeEnrollment[];
 }
 
 const EnrollmentTable: React.FC<EnrollmentTableProps> = ({ enrollments }) => {
+    const listContainerRef = useRef<HTMLDivElement>(null);
+    const [listDimensions, setListDimensions] = useState({ height: 0, width: 0 });
+
+    useEffect(() => {
+        if (listContainerRef.current) {
+            const resizeObserver = new ResizeObserver(entries => {
+                if (entries[0]) {
+                    const { height, width } = entries[0].contentRect;
+                    setListDimensions({ height, width });
+                }
+            });
+            resizeObserver.observe(listContainerRef.current);
+            return () => resizeObserver.disconnect();
+        }
+    }, []);
+
     return (
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100">
+        <div className="bg-white rounded-xl shadow-sm border border-gray-100 h-full flex flex-col">
             <div className="p-6 border-b border-gray-100">
                 <h3 className="text-lg font-semibold text-gray-900">تقدم الموظفين</h3>
             </div>
             
-            {/* Mobile View */}
-            <div className="md:hidden">
-                <div className="p-4 space-y-4">
-                    {enrollments.map(enr => (
-                        <div key={enr.id} className="bg-gray-50 border border-gray-200 rounded-lg p-4 space-y-3">
-                             <div className="flex items-start justify-between">
-                                <div className="flex items-center">
-                                    <div className={`w-8 h-8 ${enr.employee.avatarColor} rounded-full flex items-center justify-center me-3 flex-shrink-0`}>
-                                        <span className="text-white text-xs font-medium">{enr.employee.avatarInitials}</span>
-                                    </div>
-                                    <div>
-                                        <div className="text-sm font-medium text-gray-900">{`${enr.employee.firstName} ${enr.employee.lastName}`}</div>
-                                        <div className="text-sm text-gray-500">{enr.course.title}</div>
-                                    </div>
-                                </div>
-                                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${ENROLLMENT_STATUS_CLASSES[enr.status]}`}>
-                                    {enr.status}
-                                </span>
-                            </div>
-                             <div>
-                                <div className="flex items-center">
-                                    <span className="text-sm text-gray-600 me-3 w-10">{enr.progress}%</span>
-                                    <div className="w-full bg-gray-200 rounded-full h-2">
-                                        <div className="bg-blue-600 h-2 rounded-full" style={{ width: `${enr.progress}%` }}></div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    ))}
+            <div ref={listContainerRef} className="flex-grow w-full">
+                {/* Desktop Header */}
+                <div className="hidden md:flex bg-gray-50 border-b">
+                    <div className="px-6 py-3 w-1/3 text-start text-xs font-medium text-gray-500 uppercase">الموظف</div>
+                    <div className="px-6 py-3 w-1/3 text-start text-xs font-medium text-gray-500 uppercase">الدورة</div>
+                    <div className="px-6 py-3 w-1/4 text-start text-xs font-medium text-gray-500 uppercase">التقدم</div>
+                    <div className="px-6 py-3 w-1/6 text-start text-xs font-medium text-gray-500 uppercase">الحالة</div>
                 </div>
-            </div>
-
-            {/* Desktop View */}
-            <div className="overflow-x-auto hidden md:block">
-                <table className="w-full">
-                    <thead className="bg-gray-50">
-                        <tr>
-                            <th className="px-6 py-3 text-start text-xs font-medium text-gray-500 uppercase">الموظف</th>
-                            <th className="px-6 py-3 text-start text-xs font-medium text-gray-500 uppercase">الدورة</th>
-                            <th className="px-6 py-3 text-start text-xs font-medium text-gray-500 uppercase">التقدم</th>
-                            <th className="px-6 py-3 text-start text-xs font-medium text-gray-500 uppercase">الحالة</th>
-                        </tr>
-                    </thead>
-                    <tbody className="bg-white divide-y divide-gray-200">
-                        {enrollments.map(enr => (
-                            <tr key={enr.id} className="hover:bg-gray-50">
-                                <td className="px-6 py-4 whitespace-nowrap">
-                                    <div className="flex items-center">
-                                        <div className={`w-8 h-8 ${enr.employee.avatarColor} rounded-full flex items-center justify-center me-3 flex-shrink-0`}>
-                                            <span className="text-white text-xs font-medium">{enr.employee.avatarInitials}</span>
-                                        </div>
-                                        <div>
-                                            <div className="text-sm font-medium text-gray-900">{`${enr.employee.firstName} ${enr.employee.lastName}`}</div>
-                                        </div>
+                {listDimensions.height > 0 && enrollments.length > 0 ? (
+                    // FIX: Use named import for react-window component.
+                    <FixedSizeList
+                        height={listDimensions.height - 45} // Adjust for header height on desktop
+                        width={listDimensions.width}
+                        itemCount={enrollments.length}
+                        itemSize={95} // Approximate height for each item
+                    >
+                        {/* FIX: Use named import for react-window type. */}
+                        {({ index, style }: ListChildComponentProps) => {
+                            const enrollment = enrollments[index];
+                            return (
+                                <div style={style}>
+                                    <div style={{ padding: '8px' }}>
+                                        <EnrollmentListItem enrollment={enrollment} />
                                     </div>
-                                </td>
-                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{enr.course.title}</td>
-                                <td className="px-6 py-4 whitespace-nowrap">
-                                    <div className="flex items-center">
-                                        <div className="w-full bg-gray-200 rounded-full h-2 me-3">
-                                            <div className="bg-blue-600 h-2 rounded-full" style={{ width: `${enr.progress}%` }}></div>
-                                        </div>
-                                        <span className="text-sm text-gray-600">{enr.progress}%</span>
-                                    </div>
-                                </td>
-                                <td className="px-6 py-4 whitespace-nowrap">
-                                     <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${ENROLLMENT_STATUS_CLASSES[enr.status]}`}>
-                                        {enr.status}
-                                    </span>
-                                </td>
-                            </tr>
-                        ))}
-                    </tbody>
-                </table>
+                                </div>
+                            );
+                        }}
+                    </FixedSizeList>
+                ) : enrollments.length === 0 ? (
+                    <div className="flex items-center justify-center h-full text-gray-500">
+                        <p>لا توجد تسجيلات لعرضها.</p>
+                    </div>
+                ) : null}
             </div>
         </div>
     );

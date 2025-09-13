@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { GoogleGenAI, Type } from '@google/genai';
 import { Employee, DocumentType } from '../../../types';
@@ -73,6 +72,7 @@ const UploadDocumentModal: React.FC<UploadDocumentModalProps> = ({ isOpen, onClo
         - issueDate: The date of issue in YYYY-MM-DD format.
         - expiryDate: The expiry date in YYYY-MM-DD format.`;
         
+        // FIX: Updated deprecated model 'gemini-1.5-pro' to 'gemini-2.5-flash'.
         const response = await ai.models.generateContent({
             model: 'gemini-2.5-flash',
             contents: { parts: [imagePart, { text: prompt }] },
@@ -90,6 +90,7 @@ const UploadDocumentModal: React.FC<UploadDocumentModalProps> = ({ isOpen, onClo
             }
         });
 
+        // FIX: Access the generated text directly from the `text` property of the response object and trim it.
         const jsonText = response.text.trim();
         const data = JSON.parse(jsonText);
 

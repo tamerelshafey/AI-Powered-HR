@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
-import PageHeader from './components/PageHeader';
+import PageHeader from '../../components/PageHeader';
 import PayrollStats from './components/PayrollStats';
 import PayrollHistoryTable from './components/PayrollHistoryTable';
 import CostBreakdownChart from './components/CostBreakdownChart';
@@ -9,16 +9,22 @@ import RunPayrollModal from './components/RunPayrollModal';
 import PayrollRunDetails from './components/PayrollRunDetails';
 import PayslipModal from './components/PayslipModal';
 import { PayrollRun, Payslip, PayrollStatus } from '../../types';
-import { getPayrollRuns, updatePayrollRunStatus } from '../../services/api';
-import { costBreakdownData } from './data';
+import { getPayrollRunsPaginated, getLatestPayrollRun, updatePayrollRunStatus, getCostBreakdownData } from '../../services/api';
 import PendingChanges from './components/PendingChanges';
 import { ErrorDisplay } from '../../components/ModulePlaceholder';
 import ToastNotification from '../../components/ToastNotification';
 import { useI18n } from '../../context/I18nContext';
+import Pagination from '../../components/Pagination';
+import LoadingSpinner from '../../components/LoadingSpinner';
 
 const PayrollPage: React.FC = () => {
     const [payrollRuns, setPayrollRuns] = useState<PayrollRun[]>([]);
-    const [loading, setLoading] = useState(true);
+    const [latestRunForStats, setLatestRunForStats] = useState<PayrollRun | null>(null);
+    const [costBreakdown, setCostBreakdown] = useState<any | null>(null);
+    const [currentPage, setCurrentPage] = useState(1);
+    const [totalPages, setTotalPages] = useState(0);
+    const [loadingStats, setLoadingStats] = useState(true);
+    const [loadingTable, setLoadingTable] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [isRunModalOpen, setRunModalOpen] = useState(false);
     const [selectedRun, setSelectedRun] = useState<PayrollRun | null>(null);
@@ -26,23 +32,53 @@ const PayrollPage: React.FC = () => {
     const [toast, setToast] = useState<{ message: string; type: 'success' | 'info' | 'error' } | null>(null);
     const { t } = useI18n();
     
-    const fetchData = useCallback(async () => {
-        setLoading(true);
+    const fetchPaginatedRuns = useCallback(async (page: number) => {
+        setLoadingTable(true);
+        // Don't clear main error on pagination
+        try {
+            const { data, totalPages: newTotalPages } = await getPayrollRunsPaginated(page, 5);
+            setPayrollRuns(data);
+            setTotalPages(newTotalPages);
+            setCurrentPage(page);
+        } catch (error) {
+            console.error("Failed to fetch paginated payroll runs", error);
+            setError("فشل في تحميل سجلات الرواتب."); // This might override a more important initial error
+        } finally {
+            setLoadingTable(false);
+        }
+    }, []);
+    
+    const fetchInitialData = useCallback(async () => {
+        setLoadingStats(true);
+        setLoadingTable(true);
         setError(null);
         try {
-            const data = await getPayrollRuns();
-            setPayrollRuns(data);
-        } catch (error) {
-            console.error("Failed to fetch payroll runs", error);
-            setError("فشل في تحميل سجلات الرواتب.");
+            const [latestRunData, paginatedData, breakdownData] = await Promise.all([
+                getLatestPayrollRun(),
+                getPayrollRunsPaginated(1, 5),
+                getCostBreakdownData()
+            ]);
+            setLatestRunForStats(latestRunData);
+            setPayrollRuns(paginatedData.data);
+            setTotalPages(paginatedData.totalPages);
+            setCostBreakdown(breakdownData);
+            setCurrentPage(1);
+        } catch (err) {
+            console.error("Failed to fetch initial payroll data", err);
+            setError("فشل في تحميل بيانات الرواتب.");
         } finally {
-            setLoading(false);
+            setLoadingStats(false);
+            setLoadingTable(false);
         }
     }, []);
 
     useEffect(() => {
-        fetchData();
-    }, [fetchData]);
+        fetchInitialData();
+    }, [fetchInitialData]);
+
+    const handlePageChange = (page: number) => {
+        fetchPaginatedRuns(page);
+    };
 
     const handleViewPayslip = (payslip: Payslip) => {
         setSelectedPayslip(payslip);
@@ -61,17 +97,22 @@ const PayrollPage: React.FC = () => {
             deductions: 1200000,
             employeesCount: 248,
         };
-        setPayrollRuns(prev => [newRun, ...prev]);
+        fetchInitialData(); // Refetch all data to show the new run
         setSelectedRun(newRun);
     };
 
     const handleUpdateRunStatus = async (runId: string, status: PayrollStatus) => {
         try {
             await updatePayrollRunStatus(runId, status);
-            setPayrollRuns(prevRuns => prevRuns.map(r => r.id === runId ? { ...r, status } : r));
+            fetchPaginatedRuns(currentPage); // Refetch current page
             
             if (selectedRun && selectedRun.id === runId) {
                 setSelectedRun(prev => prev ? { ...prev, status } : null);
+            }
+            
+            // Also refetch stats if the latest run was updated
+            if (latestRunForStats && latestRunForStats.id === runId) {
+                getLatestPayrollRun().then(setLatestRunForStats);
             }
             
             const message = status === PayrollStatus.PROCESSED ? t('payroll.toast.processed') : t('payroll.toast.paid');
@@ -83,29 +124,47 @@ const PayrollPage: React.FC = () => {
     };
 
 
-    if (loading) {
-        return (
-            <div className="flex justify-center items-center h-96">
-                <i className="fas fa-spinner fa-spin text-4xl text-blue-600"></i>
-            </div>
-        );
+    if (loadingStats) {
+        return <LoadingSpinner fullScreen />;
     }
     
-    if (error) {
-        return <ErrorDisplay message={error} onRetry={fetchData} />;
+    if (error && !latestRunForStats) {
+        return <ErrorDisplay message={error} onRetry={fetchInitialData} />;
     }
-
-    const latestRun = payrollRuns.find(run => run.status !== PayrollStatus.DRAFT) || payrollRuns[0];
 
     return (
         <div>
             {toast && <ToastNotification message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
-            <PageHeader onRunPayrollClick={() => setRunModalOpen(true)} />
-            <PayrollStats latestRun={latestRun} />
+            <PageHeader
+                title={t('page.payroll.header.title')}
+                subtitle={t('page.payroll.header.subtitle')}
+                actions={<>
+                    <button className="flex items-center space-x-2 space-x-reverse px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors">
+                        <i className="fas fa-cogs"></i>
+                        <span>{t('page.payroll.header.settings')}</span>
+                    </button>
+                    <button onClick={() => setRunModalOpen(true)} className="flex items-center space-x-2 space-x-reverse px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+                        <i className="fas fa-play"></i>
+                        <span>{t('page.payroll.header.runPayroll')}</span>
+                    </button>
+                </>}
+            />
+            <PayrollStats latestRun={latestRunForStats!} />
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
                 <div className="lg:col-span-2">
                     <PayrollHistoryTable payrollRuns={payrollRuns} onViewPayslips={setSelectedRun} />
+                    <div className="mt-6">
+                        {loadingTable ? (
+                            <div className="flex justify-center items-center h-24">
+                                <i className="fas fa-spinner fa-spin text-2xl text-blue-600"></i>
+                            </div>
+                        ) : error && payrollRuns.length === 0 ? (
+                            <ErrorDisplay message={error} onRetry={() => fetchPaginatedRuns(currentPage)} />
+                        ) : totalPages > 1 ? (
+                            <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={handlePageChange} />
+                        ) : null}
+                    </div>
                 </div>
                 <div>
                     {selectedRun ? (
@@ -118,7 +177,7 @@ const PayrollPage: React.FC = () => {
                     ) : (
                         <div className="space-y-6">
                             <PendingChanges />
-                            <CostBreakdownChart data={costBreakdownData} />
+                            {costBreakdown && <CostBreakdownChart data={costBreakdown} />}
                             <PayrollAiInsights />
                         </div>
                     )}

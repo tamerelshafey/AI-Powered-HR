@@ -1,7 +1,8 @@
-import React, { useState, useEffect, useMemo } from 'react';
-import { defaultAttendanceSettings, branchAttendanceSettings as branchSettingsData } from '../data';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import { getAttendanceSettings } from '../../../services/api';
 import { AttendanceSettings as AttendanceSettingsType, LateDeductionRule, Branch } from '../../../types';
 import { getBranches } from '../../../services/api';
+import LoadingSpinner from '../../../components/LoadingSpinner';
 
 const WEEKDAYS: Required<AttendanceSettingsType>['weekendDays'] = ['Saturday', 'Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
 const WEEKDAY_NAMES_AR: Record<typeof WEEKDAYS[number], string> = {
@@ -16,44 +17,63 @@ const WEEKDAY_NAMES_AR: Record<typeof WEEKDAYS[number], string> = {
 
 
 const AttendanceSettings: React.FC = () => {
-    const [settings, setSettings] = useState<Required<AttendanceSettingsType>>(defaultAttendanceSettings);
+    const [settings, setSettings] = useState<Required<AttendanceSettingsType> | null>(null);
+    const [defaultSettings, setDefaultSettings] = useState<Required<AttendanceSettingsType> | null>(null);
+    const [allBranchSettings, setAllBranchSettings] = useState<Record<string, AttendanceSettingsType>>({});
+    const [loading, setLoading] = useState(true);
+
     const [newIp, setNewIp] = useState('');
 
     const [branches, setBranches] = useState<Branch[]>([]);
-    const [loadingBranches, setLoadingBranches] = useState(true);
     const [selectedBranchId, setSelectedBranchId] = useState<string>('default');
-    const [allBranchSettings, setAllBranchSettings] = useState(branchSettingsData);
     const [isCustomized, setIsCustomized] = useState(false);
 
 
     useEffect(() => {
-        getBranches().then(data => {
-            setBranches(data);
-            setLoadingBranches(false);
-        });
+        const fetchData = async () => {
+            setLoading(true);
+            try {
+                const [branchesData, settingsData] = await Promise.all([
+                    getBranches(),
+                    getAttendanceSettings()
+                ]);
+                setBranches(branchesData);
+                setDefaultSettings(settingsData.defaultSettings);
+                setAllBranchSettings(settingsData.branchSettings);
+                setSettings(settingsData.defaultSettings); // Start with default view
+                setIsCustomized(true); // Default view is always "customized"
+            } catch (error) {
+                console.error("Failed to fetch initial settings data", error);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchData();
     }, []);
 
     useEffect(() => {
+        if (!defaultSettings) return;
+
         if (selectedBranchId === 'default') {
-            setSettings(defaultAttendanceSettings);
+            setSettings(defaultSettings);
             setIsCustomized(true);
         } else {
             const branchOverride = allBranchSettings[selectedBranchId];
             if (branchOverride) {
-                setSettings({ ...defaultAttendanceSettings, ...branchOverride });
+                setSettings({ ...defaultSettings, ...branchOverride });
                 setIsCustomized(true);
             } else {
-                setSettings(defaultAttendanceSettings);
+                setSettings(defaultSettings);
                 setIsCustomized(false);
             }
         }
-    }, [selectedBranchId, allBranchSettings]);
+    }, [selectedBranchId, allBranchSettings, defaultSettings]);
 
     const handleCustomizationToggle = (e: React.ChangeEvent<HTMLInputElement>) => {
         const checked = e.target.checked;
         setIsCustomized(checked);
-        if (!checked) {
-            setSettings(defaultAttendanceSettings);
+        if (!checked && defaultSettings) {
+            setSettings(defaultSettings);
         }
     };
     
@@ -62,34 +82,44 @@ const AttendanceSettings: React.FC = () => {
         const isCheckbox = type === 'checkbox';
         const checked = isCheckbox ? (e.target as HTMLInputElement).checked : undefined;
     
-        setSettings(prev => ({ ...prev, [name]: isCheckbox ? checked : value }));
+        setSettings(prev => prev ? ({ ...prev, [name]: isCheckbox ? checked : value }) : null);
     };
     
     const handleRuleChange = (id: number, field: keyof Omit<LateDeductionRule, 'id'>, value: number) => {
-        setSettings(prev => ({
-            ...prev,
-            lateDeductionRules: prev.lateDeductionRules.map(rule =>
-                rule.id === id ? { ...rule, [field]: value } : rule
-            ),
-        }));
+        setSettings(prev => {
+            if (!prev) return null;
+            return {
+                ...prev,
+                lateDeductionRules: prev.lateDeductionRules.map(rule =>
+                    rule.id === id ? { ...rule, [field]: value } : rule
+                ),
+            }
+        });
     };
 
     const addRule = () => {
-        setSettings(prev => ({
-            ...prev,
-            lateDeductionRules: [...prev.lateDeductionRules, { id: Date.now(), fromMinutes: 0, toMinutes: 0, deductMinutes: 0 }]
-        }));
+        setSettings(prev => {
+            if (!prev) return null;
+            return {
+                ...prev,
+                lateDeductionRules: [...prev.lateDeductionRules, { id: Date.now(), fromMinutes: 0, toMinutes: 0, deductMinutes: 0 }]
+            }
+        });
     };
 
     const removeRule = (id: number) => {
-        setSettings(prev => ({
-            ...prev,
-            lateDeductionRules: prev.lateDeductionRules.filter(rule => rule.id !== id)
-        }));
+        setSettings(prev => {
+            if (!prev) return null;
+            return {
+                ...prev,
+                lateDeductionRules: prev.lateDeductionRules.filter(rule => rule.id !== id)
+            }
+        });
     };
 
     const handleWeekendChange = (day: typeof WEEKDAYS[number]) => {
         setSettings(prev => {
+            if (!prev) return null;
             const weekendDays = prev.weekendDays.includes(day)
                 ? prev.weekendDays.filter(d => d !== day)
                 : [...prev.weekendDays, day];
@@ -98,17 +128,20 @@ const AttendanceSettings: React.FC = () => {
     };
 
     const handleAddIp = () => {
-        if (newIp && !settings.allowedIpAddresses.includes(newIp)) {
-            setSettings(prev => ({ ...prev, allowedIpAddresses: [...prev.allowedIpAddresses, newIp] }));
+        if (newIp && settings && !settings.allowedIpAddresses.includes(newIp)) {
+            setSettings(prev => prev ? ({ ...prev, allowedIpAddresses: [...prev.allowedIpAddresses, newIp] }) : null);
             setNewIp('');
         }
     };
 
     const handleRemoveIp = (ipToRemove: string) => {
-        setSettings(prev => ({
-            ...prev,
-            allowedIpAddresses: prev.allowedIpAddresses.filter(ip => ip !== ipToRemove),
-        }));
+        setSettings(prev => {
+            if (!prev) return null;
+            return {
+                ...prev,
+                allowedIpAddresses: prev.allowedIpAddresses.filter(ip => ip !== ipToRemove),
+            }
+        });
     };
     
     const isBranchSelected = selectedBranchId !== 'default';
@@ -116,9 +149,12 @@ const AttendanceSettings: React.FC = () => {
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
+        if (!settings) return;
+
         if (selectedBranchId === 'default') {
             // In a real app, this would be an API call to update default settings.
             console.log('Saving default settings:', settings);
+            setDefaultSettings(settings); // Update local state for consistency
         } else {
             if (isCustomized) {
                 // Save or update the override for the selected branch
@@ -135,6 +171,14 @@ const AttendanceSettings: React.FC = () => {
         alert('تم حفظ إعدادات الحضور بنجاح!');
     };
 
+    if (loading || !settings) {
+        return (
+            <div className="bg-white rounded-xl shadow-sm border border-gray-100 min-h-[60vh] flex items-center justify-center">
+                <LoadingSpinner />
+            </div>
+        );
+    }
+
     return (
         <form onSubmit={handleSubmit}>
             <div className="space-y-8">
@@ -148,7 +192,7 @@ const AttendanceSettings: React.FC = () => {
                         value={selectedBranchId}
                         onChange={e => setSelectedBranchId(e.target.value)}
                         className="w-full max-w-sm px-4 py-2 border border-gray-300 rounded-lg bg-white focus:ring-2 focus:ring-blue-500"
-                        disabled={loadingBranches}
+                        disabled={loading}
                     >
                         <option value="default">الإعدادات الافتراضية للشركة</option>
                         {branches.map(branch => (

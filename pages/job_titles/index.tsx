@@ -1,10 +1,12 @@
+
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
-import PageHeader from './components/PageHeader';
+import PageHeader from '../../components/PageHeader';
 import JobTitleHierarchy from './components/JobTitleHierarchy';
 import JobTitleModal from './components/JobTitleModal';
 import { JobTitle } from '../../types';
 import { getJobTitles } from '../../services/api';
 import { ErrorDisplay } from '../../components/ModulePlaceholder';
+import { useI18n } from '../../context/I18nContext';
 
 const JobTitlesPage: React.FC = () => {
   const [jobTitles, setJobTitles] = useState<JobTitle[]>([]);
@@ -14,6 +16,7 @@ const JobTitlesPage: React.FC = () => {
   const [editingJobTitle, setEditingJobTitle] = useState<JobTitle | null>(null);
   const [parentId, setParentId] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
+  const { t } = useI18n();
 
   const fetchData = useCallback(async () => {
     setLoading(true);
@@ -91,7 +94,16 @@ const JobTitlesPage: React.FC = () => {
 
   return (
     <div>
-      <PageHeader onAddJobTitle={handleOpenModal} />
+      <PageHeader
+        title={t('page.job_titles.header.title')}
+        subtitle={t('page.job_titles.header.subtitle')}
+        actions={
+          <button onClick={handleOpenModal} className="flex items-center space-x-2 space-x-reverse px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+            <i className="fas fa-plus"></i>
+            <span>{t('page.job_titles.header.add')}</span>
+          </button>
+        }
+      />
       
       <div className="bg-white rounded-xl shadow-sm border border-gray-100 mb-6 p-4">
           <div className="relative">

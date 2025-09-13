@@ -1,5 +1,6 @@
+
 import React, { useState, useEffect, useCallback } from 'react';
-import PageHeader from './components/PageHeader';
+import PageHeader from '../../components/PageHeader';
 import DocumentStats from './components/DocumentStats';
 import DocumentsTable from './components/DocumentsTable';
 import UploadDocumentModal from './components/UploadDocumentModal';
@@ -7,6 +8,7 @@ import { EmployeeDocument, Employee } from '../../types';
 import { getEmployeeDocumentsPaginated, getDocumentsStats, getAllEmployees } from '../../services/api';
 import { ErrorDisplay } from '../../components/ModulePlaceholder';
 import Pagination from '../../components/Pagination';
+import { useI18n } from '../../context/I18nContext';
 
 const DocumentsPage: React.FC = () => {
     const [documents, setDocuments] = useState<EmployeeDocument[]>([]);
@@ -18,6 +20,7 @@ const DocumentsPage: React.FC = () => {
     const [currentPage, setCurrentPage] = useState(1);
     const [totalPages, setTotalPages] = useState(0);
     const [filters, setFilters] = useState({ searchTerm: '', filterType: 'All', filterStatus: 'All' });
+    const { t } = useI18n();
 
     useEffect(() => {
         const fetchInitialData = async () => {
@@ -84,7 +87,16 @@ const DocumentsPage: React.FC = () => {
 
     return (
         <div>
-            <PageHeader onUploadClick={() => setUploadModalOpen(true)} />
+            <PageHeader
+                title={t('page.documents.header.title')}
+                subtitle={t('page.documents.header.subtitle')}
+                actions={
+                    <button onClick={() => setUploadModalOpen(true)} className="flex items-center space-x-2 space-x-reverse px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+                        <i className="fas fa-upload"></i>
+                        <span>{t('page.documents.header.upload')}</span>
+                    </button>
+                }
+            />
             <DocumentStats stats={stats} />
             <DocumentsTable documents={documents} filters={filters} onFilterChange={handleFilterChange} />
             

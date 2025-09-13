@@ -1,5 +1,6 @@
+
 import React, { useState, useEffect, useCallback } from 'react';
-import PageHeader from './components/PageHeader';
+import PageHeader from '../../components/PageHeader';
 import AssetStats from './components/AssetStats';
 import AssetsTable from './components/AssetsTable';
 import AssignAssetModal from './components/AssignAssetModal';
@@ -8,6 +9,7 @@ import { CompanyAsset, Employee } from '../../types';
 import { getCompanyAssetsPaginated, getAssetsStats, getAllEmployees } from '../../services/api';
 import { ErrorDisplay } from '../../components/ModulePlaceholder';
 import Pagination from '../../components/Pagination';
+import { useI18n } from '../../context/I18nContext';
 
 const AssetsPage: React.FC = () => {
     const [assets, setAssets] = useState<CompanyAsset[]>([]);
@@ -21,6 +23,7 @@ const AssetsPage: React.FC = () => {
     const [currentPage, setCurrentPage] = useState(1);
     const [totalPages, setTotalPages] = useState(0);
     const [filters, setFilters] = useState({ searchTerm: '', filterCategory: 'All', filterStatus: 'All' });
+    const { t } = useI18n();
 
     useEffect(() => {
         const fetchInitialData = async () => {
@@ -97,7 +100,16 @@ const AssetsPage: React.FC = () => {
 
     return (
         <div>
-            <PageHeader onAddAssetClick={() => setAddModalOpen(true)} />
+            <PageHeader
+                title={t('page.assets.header.title')}
+                subtitle={t('page.assets.header.subtitle')}
+                actions={
+                    <button onClick={() => setAddModalOpen(true)} className="flex items-center space-x-2 space-x-reverse px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+                        <i className="fas fa-plus"></i>
+                        <span>{t('page.assets.header.add')}</span>
+                    </button>
+                }
+            />
             <AssetStats stats={stats} />
             <AssetsTable assets={assets} filters={filters} onFilterChange={handleFilterChange} onAssign={handleOpenAssignModal} />
             

@@ -1,6 +1,7 @@
-import React, { useState, useMemo } from 'react';
-import { feedbackData } from '../data';
+import React, { useState, useMemo, useEffect } from 'react';
 import { Feedback } from '../../../types';
+import { getFeedback } from '../../../services/api';
+import LoadingSpinner from '../../../components/LoadingSpinner';
 
 interface FeedbackSectionProps {
     onOpenFeedbackModal: () => void;
@@ -34,10 +35,27 @@ const FeedbackCard: React.FC<{ feedback: Feedback }> = ({ feedback }) => {
 
 const FeedbackSection: React.FC<FeedbackSectionProps> = ({ onOpenFeedbackModal }) => {
     const [activeTab, setActiveTab] = useState<'received' | 'given'>('received');
+    const [feedbackData, setFeedbackData] = useState<Feedback[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchData = async () => {
+            setLoading(true);
+            try {
+                const data = await getFeedback();
+                setFeedbackData(data);
+            } catch (error) {
+                console.error("Failed to fetch feedback data", error);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchData();
+    }, []);
 
     const filteredFeedback = useMemo(() => {
         return feedbackData.filter(f => f.type === activeTab);
-    }, [activeTab]);
+    }, [activeTab, feedbackData]);
 
     const TabButton: React.FC<{ tab: 'received' | 'given', label: string }> = ({ tab, label }) => (
         <button
@@ -55,6 +73,10 @@ const FeedbackSection: React.FC<FeedbackSectionProps> = ({ onOpenFeedbackModal }
             {label}
         </button>
     );
+    
+    if (loading) {
+        return <div className="min-h-[60vh] flex items-center justify-center"><LoadingSpinner /></div>
+    }
 
     return (
         <div>

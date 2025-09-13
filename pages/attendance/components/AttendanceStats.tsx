@@ -1,8 +1,10 @@
 
+
 import React from 'react';
 import StatsCard from '../../../components/dashboard/StatsCard';
 import { useI18n } from '../../../context/I18nContext';
-import { AttendanceStatsData } from '../../../services/api';
+// FIX: Corrected import path for AttendanceStatsData from services/api to types.
+import { AttendanceStatsData } from '../../../types';
 
 interface AttendanceStatsProps {
     stats: AttendanceStatsData | null;

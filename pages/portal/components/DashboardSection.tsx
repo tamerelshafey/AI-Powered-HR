@@ -1,10 +1,12 @@
 
 
 import React, { useEffect, useState } from 'react';
-import { upcomingEvents, portalActivities, announcements } from '../data';
 import { useUser } from '../../../context/UserContext';
 import { useI18n } from '../../../context/I18nContext';
 import { formatDate } from '../../../utils/formatters';
+import { UpcomingEvent, PortalActivity, Announcement } from '../../../types';
+import { getUpcomingEvents, getPortalActivities, getAnnouncements } from '../../../services/api';
+import LoadingSpinner from '../../../components/LoadingSpinner';
 
 interface DashboardSectionProps {
     onShowSection: (sectionId: any) => void;
@@ -25,12 +27,41 @@ const DashboardSection: React.FC<DashboardSectionProps> = ({ onShowSection, onOp
     const { currentUser } = useUser();
     const { language } = useI18n();
     const [currentDate, setCurrentDate] = useState('');
+    
+    const [events, setEvents] = useState<UpcomingEvent[]>([]);
+    const [activities, setActivities] = useState<PortalActivity[]>([]);
+    const [announcementsData, setAnnouncementsData] = useState<Announcement[]>([]);
+    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         const now = new Date();
         const options: Intl.DateTimeFormatOptions = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
         setCurrentDate(formatDate(now, language, options));
+        
+        const fetchData = async () => {
+            setLoading(true);
+            try {
+                const [eventsData, activitiesData, announcementsResult] = await Promise.all([
+                    getUpcomingEvents(),
+                    getPortalActivities(),
+                    getAnnouncements()
+                ]);
+                setEvents(eventsData);
+                setActivities(activitiesData);
+                setAnnouncementsData(announcementsResult);
+            } catch (error) {
+                console.error("Failed to fetch portal dashboard data", error);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchData();
     }, [language]);
+    
+    if(loading) {
+        return <div className="min-h-[60vh] flex items-center justify-center"><LoadingSpinner/></div>
+    }
 
     return (
         <div>
@@ -67,7 +98,7 @@ const DashboardSection: React.FC<DashboardSectionProps> = ({ onShowSection, onOp
                 <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
                     <h3 className="text-lg font-semibold text-gray-900 mb-4">الأحداث القادمة</h3>
                     <div className="space-y-3">
-                        {upcomingEvents.map(event => (
+                        {events.map(event => (
                             <div key={event.title} className={`flex items-center space-x-3 space-x-reverse p-3 bg-${event.color}-50 rounded-lg`}>
                                 <div className={`w-10 h-10 bg-${event.color}-100 rounded-lg flex items-center justify-center`}><i className={`${event.icon} text-${event.color}-600`}></i></div>
                                 <div className="flex-1"><p className="text-sm font-medium text-gray-900">{event.title}</p><p className="text-xs text-gray-500">{event.time}</p></div>
@@ -79,7 +110,7 @@ const DashboardSection: React.FC<DashboardSectionProps> = ({ onShowSection, onOp
                 <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
                     <h3 className="text-lg font-semibold text-gray-900 mb-4">النشاط الأخير</h3>
                     <div className="space-y-4">
-                        {portalActivities.map(activity => (
+                        {activities.map(activity => (
                             <div key={activity.text} className="timeline-item flex items-start space-x-3 space-x-reverse">
                                 <div className={`w-8 h-8 bg-${activity.color}-100 rounded-full flex items-center justify-center flex-shrink-0`}><i className={`${activity.icon} text-${activity.color}-600 text-xs`}></i></div>
                                 <div><p className="text-sm text-gray-900">{activity.text}</p><p className="text-xs text-gray-500">{activity.time}</p></div>
@@ -92,7 +123,7 @@ const DashboardSection: React.FC<DashboardSectionProps> = ({ onShowSection, onOp
             <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
                 <h3 className="text-lg font-semibold text-gray-900 mb-4">إعلانات الشركة</h3>
                 <div className="space-y-4">
-                    {announcements.map(announcement => (
+                    {announcementsData.map(announcement => (
                         <div key={announcement.title} className={`border-s-4 border-${announcement.color}-500 ps-4 py-2`}>
                             <h4 className="font-medium text-gray-900">{announcement.title}</h4>
                             <p className="text-sm text-gray-600 mt-1">{announcement.content}</p>

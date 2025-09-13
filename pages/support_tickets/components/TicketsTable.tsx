@@ -1,7 +1,6 @@
-
 import React, { useRef } from 'react';
-// FIX: Switched to namespace import for react-window to resolve module resolution errors.
-import * as ReactWindow from 'react-window';
+// FIX: Switched to named imports for 'react-window' to resolve module resolution errors.
+import { FixedSizeList, ListChildComponentProps } from 'react-window';
 import InfiniteLoader from 'react-window-infinite-loader';
 import { SupportTicket, TicketStatus, TicketPriority, TicketDepartment } from '../../../types';
 import TicketListItem from './TicketListItem';
@@ -21,8 +20,8 @@ interface TicketsTableProps {
 const TicketsTable: React.FC<TicketsTableProps> = ({ 
     tickets, onApplySuggestion, filters, onFilterChange, hasMore, loadMoreItems, loading, error 
 }) => {
-    // FIX: Updated ref type annotation to use namespace import.
-    const listRef = useRef<ReactWindow.FixedSizeList>(null);
+    // FIX: Use named import for react-window type.
+    const listRef = useRef<FixedSizeList>(null);
 
     const itemCount = hasMore ? tickets.length + 1 : tickets.length;
     const isItemLoaded = (index: number) => !hasMore || index < tickets.length;
@@ -61,9 +60,11 @@ const TicketsTable: React.FC<TicketsTableProps> = ({
                         loadMoreItems={loadMoreItems}
                     >
                         {({ onItemsRendered, ref }) => (
-                            
-                            <ReactWindow.FixedSizeList
-                                ref={(el) => {
+                            // FIX: Use named import for react-window component.
+                            <FixedSizeList
+                                // FIX: Use named import for react-window type.
+                                ref={(el: FixedSizeList | null) => {
+                                    // @ts-ignore
                                     ref(el);
                                     // @ts-ignore
                                     listRef.current = el;
@@ -74,8 +75,8 @@ const TicketsTable: React.FC<TicketsTableProps> = ({
                                 itemCount={itemCount}
                                 itemSize={95} // Approximate height for each item (including mobile and desktop)
                             >
-                                
-                                {({ index, style }: ReactWindow.ListChildComponentProps) => {
+                                {/* FIX: Use named import for react-window type. */}
+                                {({ index, style }: ListChildComponentProps) => {
                                     if (!isItemLoaded(index)) {
                                         return (
                                             <div style={style} className="flex items-center justify-center text-gray-500">
@@ -97,7 +98,7 @@ const TicketsTable: React.FC<TicketsTableProps> = ({
                                         </div>
                                     );
                                 }}
-                            </ReactWindow.FixedSizeList>
+                            </FixedSizeList>
                         )}
                     </InfiniteLoader>
                 </div>

@@ -1,7 +1,8 @@
+
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 // FIX: Switched to namespace import for react-router-dom to resolve module resolution errors.
 import * as ReactRouterDOM from 'react-router-dom';
-import PageHeader from './components/PageHeader';
+import PageHeader from '../../components/PageHeader';
 import RecruitmentStats from './components/RecruitmentStats';
 import JobPostingsTable from './components/JobPostingsTable';
 import HiringPipeline from './components/HiringPipeline';
@@ -12,6 +13,7 @@ import CandidateDetailsModal from './components/CandidateDetailsModal';
 import StartOnboardingModal from './components/StartOnboardingModal';
 import { GoogleGenAI } from '@google/genai';
 import { ErrorDisplay } from '../../components/ModulePlaceholder';
+import { useI18n } from '../../context/I18nContext';
 
 // Lazily initialize the GoogleGenAI client to avoid issues on app load
 let ai: GoogleGenAI | null = null;
@@ -35,6 +37,7 @@ const RecruitmentPage: React.FC = () => {
   const [isGeneratingSummary, setIsGeneratingSummary] = useState<Record<string, boolean>>({});
   const [generationError, setGenerationError] = useState<Record<string, string | null>>({});
   const navigate = ReactRouterDOM.useNavigate();
+  const { t } = useI18n();
 
   const fetchData = useCallback(async () => {
     setLoading(true);
@@ -95,6 +98,7 @@ const RecruitmentPage: React.FC = () => {
         const client = getAiClient();
         const prompt = `بصفتك خبير توظيف، قم بإنشاء ملخص احترافي وموجز للمرشح التالي لوظيفة "${candidate.positionApplied}". ركز على نقاط قوته الرئيسية بناءً على مهاراته المعلنة وكيف تتناسب مع الوظيفة. المهارات: ${candidate.skills.join(', ')}.`;
 
+        // FIX: Updated deprecated model 'gemini-1.5-flash' to 'gemini-2.5-flash'.
         const response = await client.models.generateContent({
             model: 'gemini-2.5-flash',
             contents: prompt,
@@ -165,7 +169,16 @@ const RecruitmentPage: React.FC = () => {
 
   return (
     <div>
-      <PageHeader onNewPostingClick={() => setNewPostingModalOpen(true)} />
+      <PageHeader
+        title={t('page.recruitment.header.title')}
+        subtitle={t('page.recruitment.header.subtitle')}
+        actions={
+          <button onClick={() => setNewPostingModalOpen(true)} className="flex items-center space-x-2 space-x-reverse px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+            <i className="fas fa-plus"></i>
+            <span>{t('page.recruitment.header.newPosting')}</span>
+          </button>
+        }
+      />
       <RecruitmentStats postings={jobPostings} candidates={candidates} />
       <div className="mb-8">
         <JobPostingsTable

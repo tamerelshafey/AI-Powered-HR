@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import { Candidate } from '../../../types';
+import useOnScreen from '../../../hooks/useOnScreen';
 
 interface CandidateCardProps {
   candidate: Candidate;
@@ -7,6 +8,8 @@ interface CandidateCardProps {
 }
 
 const CandidateCard: React.FC<CandidateCardProps> = ({ candidate, onViewCandidate }) => {
+  const cardRef = useRef<HTMLDivElement>(null);
+  const isVisible = useOnScreen(cardRef, '100px');
 
   const handleDragStart = (e: React.DragEvent<HTMLDivElement>) => {
     e.dataTransfer.setData('candidateId', candidate.id);
@@ -27,6 +30,7 @@ const CandidateCard: React.FC<CandidateCardProps> = ({ candidate, onViewCandidat
 
   return (
     <div 
+        ref={cardRef}
         className="bg-white p-3 rounded-lg shadow-sm border border-gray-200 hover:shadow-md transition-shadow cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500"
         draggable="true"
         onDragStart={handleDragStart}
@@ -39,8 +43,13 @@ const CandidateCard: React.FC<CandidateCardProps> = ({ candidate, onViewCandidat
     >
       <div className="flex items-center justify-between mb-2">
         <div className="flex items-center space-x-2 space-x-reverse">
-          <div className={`w-8 h-8 ${candidate.avatarColor} rounded-full flex items-center justify-center flex-shrink-0`}>
-            <span className="text-white text-xs font-medium">{candidate.avatarInitials}</span>
+          <div 
+            className={`w-8 h-8 ${candidate.avatarColor} rounded-full flex items-center justify-center flex-shrink-0 bg-cover bg-center`}
+            style={{ backgroundImage: isVisible && candidate.avatar ? `url(${candidate.avatar})` : 'none' }}
+          >
+            {(!isVisible || !candidate.avatar) && (
+              <span className="text-white text-xs font-medium">{candidate.avatarInitials}</span>
+            )}
           </div>
           <div>
             <h4 className="text-sm font-medium text-gray-900">{candidate.name}</h4>

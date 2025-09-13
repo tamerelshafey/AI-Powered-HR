@@ -1,12 +1,13 @@
 
 
-import React, { useState } from 'react';
-import { leaveTypeSettingsData, publicHolidaysData } from '../data';
+import React, { useState, useEffect } from 'react';
 import { LeaveTypeSetting, PublicHoliday } from '../../../types';
+import { getLeaveTypeSettings, getPublicHolidays } from '../../../services/api';
 import LeaveTypeModal from './LeaveTypeModal';
 import PublicHolidayModal from './PublicHolidayModal';
 import { useI18n } from '../../../context/I18nContext';
 import { formatDate } from '../../../utils/formatters';
+import LoadingSpinner from '../../../components/LoadingSpinner';
 
 const colorMap: Record<string, string> = {
     blue: 'bg-blue-500',
@@ -23,14 +24,34 @@ const colorMap: Record<string, string> = {
 
 const LeaveSettings: React.FC = () => {
     const { language } = useI18n();
-    const [leaveTypes, setLeaveTypes] = useState<LeaveTypeSetting[]>(leaveTypeSettingsData);
-    const [holidays, setHolidays] = useState<PublicHoliday[]>(publicHolidaysData);
+    const [leaveTypes, setLeaveTypes] = useState<LeaveTypeSetting[]>([]);
+    const [holidays, setHolidays] = useState<PublicHoliday[]>([]);
+    const [loading, setLoading] = useState(true);
     
     const [isLeaveTypeModalOpen, setLeaveTypeModalOpen] = useState(false);
     const [editingLeaveType, setEditingLeaveType] = useState<LeaveTypeSetting | null>(null);
 
     const [isHolidayModalOpen, setHolidayModalOpen] = useState(false);
     const [editingHoliday, setEditingHoliday] = useState<PublicHoliday | null>(null);
+
+    useEffect(() => {
+        const fetchData = async () => {
+            setLoading(true);
+            try {
+                const [leaveData, holidayData] = await Promise.all([
+                    getLeaveTypeSettings(),
+                    getPublicHolidays()
+                ]);
+                setLeaveTypes(leaveData);
+                setHolidays(holidayData);
+            } catch (error) {
+                console.error("Failed to fetch leave settings", error);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchData();
+    }, []);
 
     const handleOpenLeaveTypeModal = (leaveType: LeaveTypeSetting | null = null) => {
         setEditingLeaveType(leaveType);
@@ -42,6 +63,14 @@ const LeaveSettings: React.FC = () => {
         setHolidayModalOpen(true);
     };
     
+    if (loading) {
+        return (
+            <div className="bg-white rounded-xl shadow-sm border border-gray-100 min-h-[60vh] flex items-center justify-center">
+                <LoadingSpinner />
+            </div>
+        );
+    }
+
     return (
         <div className="space-y-8">
             {/* Leave Types Section */}

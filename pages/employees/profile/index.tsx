@@ -1,16 +1,20 @@
-import React, { useState, useEffect } from 'react';
+
+import React, { useState, useEffect, lazy, Suspense } from 'react';
 // FIX: Switched to namespace import for react-router-dom to resolve module resolution errors.
 import * as ReactRouterDOM from 'react-router-dom';
 import { Employee } from '../../../types';
 import { getEmployeeById } from '../../../services/api';
 import LoadingSpinner from '../../../components/LoadingSpinner';
 import ProfileHeader from './components/ProfileHeader';
-import OverviewTab from './components/OverviewTab';
-import DocumentsTab from './components/DocumentsTab';
-import AssetsTab from './components/AssetsTab';
-import PerformanceTab from './components/PerformanceTab';
-import LearningTab from './components/LearningTab';
-import LeaveHistoryTab from './components/LeaveHistoryTab';
+
+// Lazily load tab components to improve initial page load performance
+const OverviewTab = lazy(() => import('./components/OverviewTab'));
+const DocumentsTab = lazy(() => import('./components/DocumentsTab'));
+const AssetsTab = lazy(() => import('./components/AssetsTab'));
+const PerformanceTab = lazy(() => import('./components/PerformanceTab'));
+const LearningTab = lazy(() => import('./components/LearningTab'));
+const LeaveHistoryTab = lazy(() => import('./components/LeaveHistoryTab'));
+
 
 type ActiveTab = 'overview' | 'documents' | 'assets' | 'performance' | 'learning' | 'leave';
 
@@ -126,8 +130,10 @@ const EmployeeProfilePage: React.FC = () => {
                 </nav>
             </div>
             
-            <div id={`${activeTab}-panel`} role="tabpanel" aria-labelledby={`${activeTab}-tab`} className="bg-white p-6 rounded-b-lg shadow-sm">
-                {renderContent()}
+            <div id={`${activeTab}-panel`} role="tabpanel" aria-labelledby={`${activeTab}-tab`} className="bg-white p-6 rounded-b-lg shadow-sm min-h-[50vh]">
+                <Suspense fallback={<LoadingSpinner />}>
+                    {renderContent()}
+                </Suspense>
             </div>
         </div>
     );

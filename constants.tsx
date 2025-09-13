@@ -1,7 +1,7 @@
 
 
 import React from 'react';
-import { NavItem } from './types';
+import { NavItem, PortalNavItem } from './types';
 
 export const NAV_ITEMS: NavItem[] = [
     { path: '/dashboard', nameKey: 'nav.dashboard', icon: <i className="fas fa-tachometer-alt w-6 text-center"></i> },
@@ -25,4 +25,16 @@ export const NAV_ITEMS: NavItem[] = [
     { path: '/support-tickets', nameKey: 'nav.support_tickets', icon: <i className="fas fa-headset w-6 text-center"></i> },
     { path: '/help-center', nameKey: 'nav.help_center', icon: <i className="fas fa-question-circle w-6 text-center"></i> },
     { path: '/settings', nameKey: 'nav.settings', icon: <i className="fas fa-cogs w-6 text-center"></i> },
+];
+
+export const PORTAL_NAV_ITEMS: PortalNavItem[] = [
+    { id: 'dashboard', name: 'لوحة التحكم', icon: 'fas fa-home' },
+    { id: 'profile', name: 'ملفي الشخصي', icon: 'fas fa-user' },
+    { id: 'timeoff', name: 'الإجازات', icon: 'fas fa-calendar-alt', badge: '2', badgeColor: 'bg-orange-500' },
+    { id: 'payroll', name: 'الرواتب', icon: 'fas fa-dollar-sign' },
+    { id: 'benefits', name: 'المنافع', icon: 'fas fa-shield-alt' },
+    { id: 'documents', name: 'المستندات', icon: 'fas fa-file-alt' },
+    { id: 'learning', name: 'التعلم', icon: 'fas fa-graduation-cap' },
+    { id: 'development_plan', name: 'خطتي التطويرية', icon: 'fas fa-rocket', badge: 'جديد', badgeColor: 'bg-purple-500' },
+    { id: 'feedback', name: 'الملاحظات', icon: 'fas fa-comment' },
 ];

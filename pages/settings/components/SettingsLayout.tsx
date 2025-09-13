@@ -1,10 +1,15 @@
-import React, { useState } from 'react';
-import GeneralSettings from './GeneralSettings';
-import UserManagement from './UserManagement';
-import SettingsPlaceholder from './SettingsPlaceholder';
-import LeaveSettings from './LeaveSettings';
-import PayrollSettings from './PayrollSettings';
-import AttendanceSettings from './AttendanceSettings';
+
+import React, { useState, lazy, Suspense } from 'react';
+import LoadingSpinner from '../../../components/LoadingSpinner';
+
+// Lazily load components for each settings tab
+const GeneralSettings = lazy(() => import('./GeneralSettings'));
+const UserManagement = lazy(() => import('./UserManagement'));
+const SettingsPlaceholder = lazy(() => import('./SettingsPlaceholder'));
+const LeaveSettings = lazy(() => import('./LeaveSettings'));
+const PayrollSettings = lazy(() => import('./PayrollSettings'));
+const AttendanceSettings = lazy(() => import('./AttendanceSettings'));
+
 
 type ActiveTab = 'general' | 'users' | 'payroll' | 'leaves' | 'attendance' | 'integrations';
 
@@ -45,6 +50,12 @@ const SettingsLayout: React.FC = () => {
         }
     };
 
+    const SuspenseFallback = () => (
+        <div className="bg-white rounded-xl shadow-sm border border-gray-100 min-h-[60vh] flex items-center justify-center">
+            <LoadingSpinner />
+        </div>
+    );
+
     return (
         <div>
             <div className="mb-8">
@@ -77,7 +88,9 @@ const SettingsLayout: React.FC = () => {
                 </aside>
 
                 <main className="flex-1 w-full" id={`${activeTab}-panel`} role="tabpanel" aria-labelledby={`${activeTab}-tab`}>
-                    {renderContent()}
+                   <Suspense fallback={<SuspenseFallback />}>
+                        {renderContent()}
+                    </Suspense>
                 </main>
             </div>
         </div>

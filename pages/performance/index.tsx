@@ -1,35 +1,34 @@
 
-
 import React, { useMemo, useState, useEffect, useCallback } from 'react';
 import { useUser } from '../../context/UserContext';
 import { UserRole, PerformanceReview, CompanyGoal, Employee, PerformanceStatus, ReviewMetric } from '../../types';
-import { allGoals as staticGoals, allReviews as staticReviews } from './data';
-import { getAllEmployees, getPerformanceReviewsPaginated, addGoal, updateGoal, updatePerformanceReview, addPerformanceReview } from '../../services/api';
-import PageHeader from './components/PageHeader';
+import { getAllEmployees, getPerformanceReviewsPaginated, addGoal, updateGoal, updatePerformanceReview, addPerformanceReview, getAllGoals } from '../../services/api';
+import PageHeader from '../../components/PageHeader';
 import PerformanceStats from './components/PerformanceStats';
 import GoalProgress from './components/GoalProgress';
 import PerformanceReviewModal from './components/PerformanceReviewModal';
 import GoalDetailsModal from './components/GoalDetailsModal';
 import MonthlyCheckInStatus from './components/MonthlyCheckInStatus';
-import AllReviews from './components/PendingReviews';
+import AllReviews from './components/AllReviews';
 import PerformanceAiInsights from './components/PerformanceAiInsights';
 import CompensationApprovalQueue from './components/CompensationApprovalQueue';
 import { ErrorDisplay } from '../../components/ModulePlaceholder';
 import AddGoalModal from './components/AddGoalModal';
 import ToastNotification from '../../components/ToastNotification';
+import LoadingSpinner from '../../components/LoadingSpinner';
+import { useI18n } from '../../context/I18nContext';
 
 const PerformancePage: React.FC = () => {
     const { currentUser } = useUser();
     const [employees, setEmployees] = useState<Employee[]>([]);
-    const [reviews, setReviews] = useState<PerformanceReview[]>(staticReviews);
-    const [allGoals, setAllGoals] = useState<CompanyGoal[]>(staticGoals);
+    const [reviews, setReviews] = useState<PerformanceReview[]>([]);
+    const [allGoals, setAllGoals] = useState<CompanyGoal[]>([]);
     
-    // Note: Pagination state is currently unused as we load all reviews initially for filtering ease.
-    // Kept for future implementation of server-side pagination with filters.
     const [hasMoreReviews, setHasMoreReviews] = useState(true); 
-    const [reviewsPage, setReviewsPage] = useState(1);
+    const [page, setPage] = useState(1);
 
     const [loading, setLoading] = useState(true);
+    const [reviewsLoading, setReviewsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
     // Modal states
@@ -40,15 +39,18 @@ const PerformancePage: React.FC = () => {
     
     const [toast, setToast] = useState<{ message: string; type: 'success' | 'info' | 'error' } | null>(null);
     const [filters, setFilters] = useState({ status: 'All', type: 'All' });
+    const { t } = useI18n();
 
     const fetchInitialData = useCallback(async () => {
         setLoading(true);
         setError(null);
         try {
-            // In a real app with server-side filtering, getPerformanceReviewsPaginated would be called here.
-            // For this mock setup, we use the static data and rely on client-side filtering.
-            const allEmps = await getAllEmployees();
+            const [allEmps, goalsData] = await Promise.all([
+                getAllEmployees(),
+                getAllGoals(),
+            ]);
             setEmployees(allEmps);
+            setAllGoals(goalsData);
         } catch (e) {
             console.error("Failed to fetch initial data", e);
             setError("فشل في تحميل البيانات الضرورية لهذه الصفحة.");
@@ -60,14 +62,40 @@ const PerformancePage: React.FC = () => {
     useEffect(() => {
         fetchInitialData();
     }, [fetchInitialData]);
+    
+    useEffect(() => {
+        // When filters change, reset the list and page number to trigger a fresh load
+        setReviews([]);
+        setPage(1);
+        setHasMoreReviews(true);
+    }, [filters]);
 
-    const filteredReviews = useMemo(() => {
-        return reviews.filter(review => {
-            const statusMatch = filters.status === 'All' || review.status === filters.status;
-            const typeMatch = filters.type === 'All' || review.reviewType === filters.type;
-            return statusMatch && typeMatch;
+    const loadMoreReviews = useCallback((): Promise<void> => {
+        return new Promise(async (resolve) => {
+            if (reviewsLoading || !hasMoreReviews) {
+                resolve();
+                return;
+            }
+            setReviewsLoading(true);
+
+            try {
+                const currentPage = page;
+                const { data, hasMore } = await getPerformanceReviewsPaginated(currentPage, 15, filters);
+                
+                setReviews(prev => (currentPage === 1 ? data : [...prev, ...data]));
+                setHasMoreReviews(hasMore);
+                setPage(prev => prev + 1);
+
+            } catch (e) {
+                console.error("Failed to load reviews", e);
+                setError("Failed to load reviews.");
+            } finally {
+                setReviewsLoading(false);
+                resolve();
+            }
         });
-    }, [reviews, filters]);
+    }, [reviewsLoading, hasMoreReviews, page, filters]);
+
 
     const { filteredGoals, teamEmployees } = useMemo(() => {
         if (currentUser.role === UserRole.DEPARTMENT_MANAGER) {
@@ -148,18 +176,31 @@ const PerformancePage: React.FC = () => {
     }
 
 
-    if (loading && reviewsPage === 1) {
-        return <div className="flex justify-center items-center h-96"><i className="fas fa-spinner fa-spin text-4xl text-blue-600"></i></div>
+    if (loading) {
+        return <LoadingSpinner />;
     }
     
-    if (error && reviews.length === 0) {
+    if (error) {
         return <ErrorDisplay message={error} onRetry={fetchInitialData} />;
     }
 
     return (
         <div>
             {toast && <ToastNotification message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
-            <PageHeader onAddGoalClick={() => setAddGoalModalOpen(true)} onScheduleReviewClick={() => handleViewReview(null, employees[0])} />
+            <PageHeader
+                title={t('page.performance.header.title')}
+                subtitle={t('page.performance.header.subtitle')}
+                actions={<>
+                    <button onClick={() => setAddGoalModalOpen(true)} className="flex items-center space-x-2 space-x-reverse px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors">
+                        <i className="fas fa-bullseye"></i>
+                        <span>{t('page.performance.header.addGoal')}</span>
+                    </button>
+                    <button onClick={() => handleViewReview(null, employees[0])} className="flex items-center space-x-2 space-x-reverse px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+                        <i className="fas fa-calendar-plus"></i>
+                        <span>{t('page.performance.header.scheduleReview')}</span>
+                    </button>
+                </>}
+            />
             <PerformanceStats reviews={reviews} goals={filteredGoals} />
             <CompensationApprovalQueue />
 
@@ -170,12 +211,12 @@ const PerformancePage: React.FC = () => {
 
             <div className="mb-8">
                 <AllReviews 
-                    reviews={filteredReviews} 
+                    reviews={reviews} 
                     onViewReview={handleViewReview}
                     filters={filters}
                     onFilterChange={setFilters}
-                    hasMore={false} // Pagination disabled for now
-                    loadMoreItems={() => {}}
+                    hasMore={hasMoreReviews}
+                    loadMoreItems={loadMoreReviews}
                 />
             </div>
 

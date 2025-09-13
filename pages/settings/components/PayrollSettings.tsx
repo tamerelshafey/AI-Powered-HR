@@ -1,9 +1,11 @@
 
-import React, { useState } from 'react';
-import { salaryComponentsData } from '../data';
+
+import React, { useState, useEffect } from 'react';
 import { SalaryComponent, SalaryComponentType } from '../../../types';
+import { getSalaryComponents } from '../../../services/api';
 import SalaryComponentModal from './SalaryComponentModal';
 import { useI18n } from '../../../context/I18nContext';
+import LoadingSpinner from '../../../components/LoadingSpinner';
 
 const typeClasses: Record<SalaryComponentType, string> = {
     [SalaryComponentType.EARNING]: 'bg-green-100 text-green-800',
@@ -11,15 +13,39 @@ const typeClasses: Record<SalaryComponentType, string> = {
 };
 
 const PayrollSettings: React.FC = () => {
-    const [components, setComponents] = useState<SalaryComponent[]>(salaryComponentsData);
+    const [components, setComponents] = useState<SalaryComponent[]>([]);
+    const [loading, setLoading] = useState(true);
     const [isModalOpen, setModalOpen] = useState(false);
     const [editingComponent, setEditingComponent] = useState<SalaryComponent | null>(null);
     const { t } = useI18n();
+
+    useEffect(() => {
+        const fetchData = async () => {
+            setLoading(true);
+            try {
+                const data = await getSalaryComponents();
+                setComponents(data);
+            } catch (error) {
+                console.error("Failed to fetch salary components", error);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchData();
+    }, []);
 
     const handleOpenModal = (component: SalaryComponent | null = null) => {
         setEditingComponent(component);
         setModalOpen(true);
     };
+
+    if (loading) {
+        return (
+            <div className="bg-white rounded-xl shadow-sm border border-gray-100 min-h-[60vh] flex items-center justify-center">
+                <LoadingSpinner />
+            </div>
+        );
+    }
 
     return (
         <div className="space-y-8">

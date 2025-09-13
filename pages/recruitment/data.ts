@@ -62,6 +62,7 @@ export const candidates: Candidate[] = [
     {
         id: 'CAN001',
         name: 'أحمد محمود',
+        avatar: 'https://i.pravatar.cc/150?u=CAN001',
         avatarInitials: 'أم',
         avatarColor: 'bg-blue-500',
         positionApplied: 'Senior Frontend Engineer',
@@ -77,6 +78,7 @@ export const candidates: Candidate[] = [
     {
         id: 'CAN002',
         name: 'فاطمة الزهراء',
+        avatar: 'https://i.pravatar.cc/150?u=CAN002',
         avatarInitials: 'فز',
         avatarColor: 'bg-pink-500',
         positionApplied: 'Marketing Manager',
@@ -92,6 +94,7 @@ export const candidates: Candidate[] = [
     {
         id: 'CAN003',
         name: 'خالد عبد العزيز',
+        avatar: 'https://i.pravatar.cc/150?u=CAN003',
         avatarInitials: 'خع',
         avatarColor: 'bg-green-500',
         positionApplied: 'Senior Frontend Engineer',
@@ -107,6 +110,7 @@ export const candidates: Candidate[] = [
     {
         id: 'CAN004',
         name: 'سارة إبراهيم',
+        avatar: 'https://i.pravatar.cc/150?u=CAN004',
         avatarInitials: 'سإ',
         avatarColor: 'bg-purple-500',
         positionApplied: 'UX/UI Designer',
@@ -122,6 +126,7 @@ export const candidates: Candidate[] = [
     {
         id: 'CAN005',
         name: 'محمد علي',
+        avatar: 'https://i.pravatar.cc/150?u=CAN005',
         avatarInitials: 'مع',
         avatarColor: 'bg-indigo-500',
         positionApplied: 'Marketing Manager',
@@ -137,6 +142,7 @@ export const candidates: Candidate[] = [
     {
         id: 'CAN006',
         name: 'علي حسن',
+        avatar: 'https://i.pravatar.cc/150?u=CAN006',
         avatarInitials: 'عح',
         avatarColor: 'bg-red-500',
         positionApplied: 'Sales Representative',
@@ -152,6 +158,7 @@ export const candidates: Candidate[] = [
      {
         id: 'CAN007',
         name: 'نور القحطاني',
+        avatar: 'https://i.pravatar.cc/150?u=CAN007',
         avatarInitials: 'نق',
         avatarColor: 'bg-yellow-500',
         positionApplied: 'Senior Frontend Engineer',

@@ -1,10 +1,12 @@
+
 import React, { useState, useEffect, useCallback } from 'react';
 import { Department, Employee } from '../../types';
 import { getDepartments, getAllEmployees } from '../../services/api';
 import { ErrorDisplay } from '../../components/ModulePlaceholder';
-import PageHeader from './components/PageHeader';
+import PageHeader from '../../components/PageHeader';
 import DepartmentCard from './components/DepartmentCard';
 import DepartmentModal from './components/DepartmentModal';
+import { useI18n } from '../../context/I18nContext';
 
 const DepartmentsPage: React.FC = () => {
     const [departments, setDepartments] = useState<Department[]>([]);
@@ -13,6 +15,7 @@ const DepartmentsPage: React.FC = () => {
     const [error, setError] = useState<string | null>(null);
     const [isModalOpen, setModalOpen] = useState(false);
     const [editingDepartment, setEditingDepartment] = useState<Department | null>(null);
+    const { t } = useI18n();
 
     const fetchData = useCallback(async () => {
         setLoading(true);
@@ -60,7 +63,16 @@ const DepartmentsPage: React.FC = () => {
 
     return (
         <div>
-            <PageHeader onAddDepartment={() => handleOpenModal()} />
+            <PageHeader
+                title={t('page.departments.header.title')}
+                subtitle={t('page.departments.header.subtitle')}
+                actions={
+                    <button onClick={() => handleOpenModal()} className="flex items-center space-x-2 space-x-reverse px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+                        <i className="fas fa-plus"></i>
+                        <span>{t('page.departments.header.add')}</span>
+                    </button>
+                }
+            />
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {departments.map(dept => (

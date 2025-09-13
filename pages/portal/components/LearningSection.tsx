@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { learningCourses, skills, achievements } from '../data';
 import { LearningCourse, Skill, Achievement, ExternalCourseRecord } from '../../../types';
 import { useUser } from '../../../context/UserContext';
-import { getExternalCoursesByEmployeeId, getEmployeeIdForUser } from '../../../services/api';
+import { getExternalCoursesByEmployeeId, getEmployeeIdForUser, getPortalLearningCourses, getPortalSkills, getPortalAchievements } from '../../../services/api';
 import LoadingSpinner from '../../../components/LoadingSpinner';
 
 interface LearningSectionProps {
@@ -64,23 +63,38 @@ const AchievementBadge: React.FC<{ achievement: Achievement }> = ({ achievement 
 const LearningSection: React.FC<LearningSectionProps> = ({ onOpenExternalCourseModal }) => {
     const { currentUser } = useUser();
     const [externalCourses, setExternalCourses] = useState<ExternalCourseRecord[]>([]);
+    const [learningCourses, setLearningCourses] = useState<LearningCourse[]>([]);
+    const [skills, setSkills] = useState<Skill[]>([]);
+    const [achievements, setAchievements] = useState<Achievement[]>([]);
     const [loading, setLoading] = useState(true);
     const employeeId = getEmployeeIdForUser(currentUser);
 
     useEffect(() => {
-        const fetchExternalCourses = async () => {
+        const fetchLearningData = async () => {
             setLoading(true);
             try {
-                const data = await getExternalCoursesByEmployeeId(employeeId);
-                setExternalCourses(data);
+                const [extCoursesData, coursesData, skillsData, achievementsData] = await Promise.all([
+                    getExternalCoursesByEmployeeId(employeeId),
+                    getPortalLearningCourses(),
+                    getPortalSkills(),
+                    getPortalAchievements()
+                ]);
+                setExternalCourses(extCoursesData);
+                setLearningCourses(coursesData);
+                setSkills(skillsData);
+                setAchievements(achievementsData);
             } catch (error) {
-                console.error("Failed to fetch external courses", error);
+                console.error("Failed to fetch learning data", error);
             } finally {
                 setLoading(false);
             }
         };
-        fetchExternalCourses();
+        fetchLearningData();
     }, [employeeId]);
+
+    if(loading) {
+        return <div className="min-h-[60vh] flex items-center justify-center"><LoadingSpinner/></div>
+    }
 
     return (
         <div>
@@ -115,9 +129,7 @@ const LearningSection: React.FC<LearningSectionProps> = ({ onOpenExternalCourseM
                         <i className="fas fa-plus me-2"></i>إضافة دورة خارجية
                     </button>
                 </div>
-                {loading ? (
-                    <div className="h-40 flex items-center justify-center"><LoadingSpinner/></div>
-                ) : externalCourses.length === 0 ? (
+                {externalCourses.length === 0 ? (
                     <p className="text-center text-gray-500 py-6">لم تقم بإضافة أي دورات خارجية بعد.</p>
                 ) : (
                     <div className="overflow-x-auto">

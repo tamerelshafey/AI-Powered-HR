@@ -83,6 +83,16 @@ export interface Branch {
   employeeCount: number;
 }
 
+// FIX: Added missing AttendanceStatsData type definition.
+export interface AttendanceStatsData {
+    present: number;
+    late: number;
+    absent: number;
+    onLeave: number;
+    earlyDeparture: number;
+    attendanceRate: number;
+}
+
 export enum AttendanceStatus {
   PRESENT = 'PRESENT',
   ABSENT = 'ABSENT',
@@ -393,6 +403,7 @@ export interface CandidateActivity {
 export interface Candidate {
     id: string;
     name: string;
+    avatar?: string;
     avatarInitials: string;
     avatarColor: string;
     positionApplied: string;

@@ -11,7 +11,7 @@ import FeedbackSection from './components/FeedbackSection';
 import TimeOffModal from './components/TimeOffModal';
 import FeedbackModal from './components/FeedbackModal';
 import FloatingActionButton from './components/FloatingActionButton';
-import { portalNavItems } from './data';
+import { PORTAL_NAV_ITEMS } from '../../constants';
 import AddExternalCourseModal from './components/AddExternalCourseModal';
 import DevelopmentPlanSection from './components/DevelopmentPlanSection';
 import AiChatbotModal from './components/AiChatbotModal';
@@ -90,7 +90,7 @@ const EmployeePortalPage: React.FC = () => {
             <PortalSidebar
                 isOpen={isSidebarOpen}
                 setIsOpen={setSidebarOpen}
-                navItems={portalNavItems}
+                navItems={PORTAL_NAV_ITEMS}
                 activeSection={activeSection}
                 setActiveSection={setActiveSection}
             />

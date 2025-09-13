@@ -1,12 +1,13 @@
 
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Payslip } from '../../../types';
 import { useUser } from '../../../context/UserContext';
-import { getPayslipsByEmployeeId, getEmployeeIdForUser } from '../../../services/api';
+import { getPayslipsByEmployeeIdPaginated, getLatestPayslipByEmployeeId, getEmployeeIdForUser } from '../../../services/api';
 import LoadingSpinner from '../../../components/LoadingSpinner';
 import { useI18n } from '../../../context/I18nContext';
 import { formatCurrency } from '../../../utils/formatters';
+import Pagination from '../../../components/Pagination';
 
 interface PayrollSectionProps {
     onViewPayslip: (payslip: Payslip) => void;
@@ -16,32 +17,54 @@ const PayrollSection: React.FC<PayrollSectionProps> = ({ onViewPayslip }) => {
     const { currentUser } = useUser();
     const { language } = useI18n();
     const [payslips, setPayslips] = useState<Payslip[]>([]);
+    const [latestPayslip, setLatestPayslip] = useState<Payslip | null>(null);
     const [loading, setLoading] = useState(true);
+    const [currentPage, setCurrentPage] = useState(1);
+    const [totalPages, setTotalPages] = useState(0);
     const employeeId = getEmployeeIdForUser(currentUser);
 
+    const fetchPaginatedData = useCallback(async (page: number) => {
+        setLoading(true);
+        try {
+            const { data, totalPages: newTotalPages } = await getPayslipsByEmployeeIdPaginated(employeeId, page, 5);
+            setPayslips(data);
+            setTotalPages(newTotalPages);
+            setCurrentPage(page);
+        } catch (error) {
+            console.error("Failed to fetch paginated payslips", error);
+        } finally {
+            setLoading(false);
+        }
+    }, [employeeId]);
+
     useEffect(() => {
-        const fetchData = async () => {
+        const fetchInitialData = async () => {
             setLoading(true);
             try {
-                const data = await getPayslipsByEmployeeId(employeeId);
-                // Sort by run date descending
-                data.sort((a, b) => new Date(b.run.payDate).getTime() - new Date(a.run.payDate).getTime());
-                setPayslips(data);
+                const [latestData, page1Data] = await Promise.all([
+                    getLatestPayslipByEmployeeId(employeeId),
+                    getPayslipsByEmployeeIdPaginated(employeeId, 1, 5)
+                ]);
+                setLatestPayslip(latestData);
+                setPayslips(page1Data.data);
+                setTotalPages(page1Data.totalPages);
+                setCurrentPage(1);
             } catch (error) {
-                console.error("Failed to fetch payslips", error);
+                console.error("Failed to fetch initial payslip data", error);
             } finally {
                 setLoading(false);
             }
         };
-
-        fetchData();
+        fetchInitialData();
     }, [employeeId]);
     
-    if (loading) {
+    const handlePageChange = (page: number) => {
+        fetchPaginatedData(page);
+    };
+    
+    if (loading && !latestPayslip) {
         return <div className="min-h-[60vh] flex items-center justify-center"><LoadingSpinner /></div>
     }
-    
-    const latestPayslip = payslips[0];
 
     return (
         <div>
@@ -82,29 +105,48 @@ const PayrollSection: React.FC<PayrollSectionProps> = ({ onViewPayslip }) => {
                                 <th className="px-6 py-3 text-start text-xs font-medium text-gray-500 uppercase">الإجراء</th>
                             </tr>
                         </thead>
-                         <tbody className="bg-white divide-y">
-                            {payslips.length > 0 ? payslips.map(p => (
-                                <tr key={p.run.id} className="hover:bg-gray-50">
-                                    <td className="px-6 py-4 font-medium">{p.run.period}</td>
-                                    <td className="px-6 py-4 text-gray-600">{p.run.payDate}</td>
-                                    <td className="px-6 py-4 font-semibold text-green-600">{formatCurrency(p.netPay, language)}</td>
-                                    <td className="px-6 py-4">
-                                        <button onClick={() => onViewPayslip(p)} className="text-blue-600 hover:underline text-sm font-medium">
-                                            عرض التفاصيل
-                                        </button>
-                                    </td>
-                                </tr>
-                            )) : (
+                         {loading ? (
+                            <tbody>
                                 <tr>
-                                    <td colSpan={4} className="text-center py-10 text-gray-500">
-                                        <i className="fas fa-file-invoice-dollar text-3xl mb-2"></i>
-                                        <p>لا توجد كشوف رواتب متاحة حتى الآن.</p>
+                                    <td colSpan={4} className="text-center py-10">
+                                        <LoadingSpinner />
                                     </td>
                                 </tr>
-                            )}
-                        </tbody>
+                            </tbody>
+                         ) : (
+                             <tbody className="bg-white divide-y">
+                                {payslips.length > 0 ? payslips.map(p => (
+                                    <tr key={p.run.id} className="hover:bg-gray-50">
+                                        <td className="px-6 py-4 font-medium">{p.run.period}</td>
+                                        <td className="px-6 py-4 text-gray-600">{p.run.payDate}</td>
+                                        <td className="px-6 py-4 font-semibold text-green-600">{formatCurrency(p.netPay, language)}</td>
+                                        <td className="px-6 py-4">
+                                            <button onClick={() => onViewPayslip(p)} className="text-blue-600 hover:underline text-sm font-medium">
+                                                عرض التفاصيل
+                                            </button>
+                                        </td>
+                                    </tr>
+                                )) : (
+                                    <tr>
+                                        <td colSpan={4} className="text-center py-10 text-gray-500">
+                                            <i className="fas fa-file-invoice-dollar text-3xl mb-2"></i>
+                                            <p>لا توجد كشوف رواتب متاحة حتى الآن.</p>
+                                        </td>
+                                    </tr>
+                                )}
+                            </tbody>
+                         )}
                     </table>
                 </div>
+                {totalPages > 1 && (
+                    <div className="p-4 border-t">
+                        <Pagination 
+                            currentPage={currentPage} 
+                            totalPages={totalPages} 
+                            onPageChange={handlePageChange} 
+                        />
+                    </div>
+                )}
             </div>
         </div>
     );

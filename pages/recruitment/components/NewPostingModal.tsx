@@ -1,12 +1,9 @@
-
-
 import React, { useState, useRef, useEffect } from 'react';
 import { JobPosting, JobStatus } from '../../../types';
 import { GoogleGenAI } from '@google/genai';
-import { useFocusTrap } from '../../../hooks/useFocusTrap';
-import { useModalAccessibility } from '../../../hooks/useModalAccessibility';
 import { useI18n } from '../../../context/I18nContext';
 import { formatDate } from '../../../utils/formatters';
+import Modal from '../../../components/Modal';
 
 interface NewPostingModalProps {
   isOpen: boolean;
@@ -31,10 +28,17 @@ const NewPostingModal: React.FC<NewPostingModalProps> = ({ isOpen, onClose, onAd
   const [isGenerating, setIsGenerating] = useState(false);
   const [generationError, setGenerationError] = useState<string | null>(null);
   
-  const modalRef = useRef<HTMLDivElement>(null);
   const { language } = useI18n();
-  useFocusTrap(modalRef, isOpen);
-  useModalAccessibility(isOpen, onClose);
+
+  useEffect(() => {
+      if (!isOpen) {
+          // Reset form on close
+          setTitle('');
+          setDepartment('');
+          setDescription('');
+          setGenerationError(null);
+      }
+  }, [isOpen]);
 
 
   if (!isOpen) return null;
@@ -57,6 +61,7 @@ const NewPostingModal: React.FC<NewPostingModalProps> = ({ isOpen, onClose, onAd
         اجعل الوصف جذابًا وواضحًا وموجهًا لجذب أفضل الكفاءات. استخدم تنسيق Markdown.
       `;
 
+      // FIX: Updated deprecated model 'gemini-1.5-flash' to 'gemini-2.5-flash'.
       const response = await client.models.generateContent({
         model: 'gemini-2.5-flash',
         contents: prompt,
@@ -96,96 +101,88 @@ const NewPostingModal: React.FC<NewPostingModalProps> = ({ isOpen, onClose, onAd
     };
 
     onAddPosting(newPosting);
-    onClose(); // Close modal after submission
-    
-    // Reset form fields
-    setTitle('');
-    setDepartment('');
-    setDescription('');
+    onClose();
   };
 
-  return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 modal-backdrop z-50 flex items-center justify-center p-4" onClick={onClose} role="dialog" aria-modal="true" aria-labelledby="new-posting-modal-title">
-      <div ref={modalRef} className="bg-white rounded-xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto animate-modal-fade-in" onClick={e => e.stopPropagation()}>
-        <div className="p-6 border-b border-gray-200">
-          <div className="flex items-center justify-between">
-            <h3 id="new-posting-modal-title" className="text-lg font-semibold text-gray-900">إنشاء وظيفة شاغرة جديدة</h3>
-            <button onClick={onClose} className="text-gray-400 hover:text-gray-600" aria-label="Close">
-              <i className="fas fa-times text-xl"></i>
-            </button>
-          </div>
-        </div>
-        
-        <form className="p-6 space-y-6" onSubmit={handleSubmit}>
-          <div>
-            <label htmlFor="job-title" className="block text-sm font-medium text-gray-700 mb-2">المسمى الوظيفي</label>
-            <input 
-              id="job-title"
-              type="text" 
-              placeholder="مثال: مهندس برمجيات أول" 
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" 
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              required 
-            />
-          </div>
-          <div>
-            <label htmlFor="job-department" className="block text-sm font-medium text-gray-700 mb-2">القسم</label>
-            <select 
-              id="job-department"
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-white focus:ring-2 focus:ring-blue-500" 
-              value={department}
-              onChange={(e) => setDepartment(e.target.value)}
-              required
-            >
-                <option value="">اختر القسم</option>
-                <option value="قسم الهندسة">قسم الهندسة</option>
-                <option value="قسم التسويق">قسم التسويق</option>
-                <option value="قسم المبيعات">قسم المبيعات</option>
-                <option value="الموارد البشرية">الموارد البشرية</option>
-                <option value="قسم المالية">قسم المالية</option>
-                <option value="قسم التصميم">قسم التصميم</option>
-            </select>
-          </div>
-          <div>
-            <div className="flex items-center justify-between mb-2">
-                <label htmlFor="job-description" className="block text-sm font-medium text-gray-700">وصف الوظيفة</label>
-                <button 
-                    type="button" 
-                    onClick={handleGenerateDescription}
-                    disabled={!title || !department || isGenerating}
-                    className="flex items-center space-x-2 space-x-reverse px-3 py-1.5 bg-purple-100 text-purple-700 text-xs font-medium rounded-lg hover:bg-purple-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                    {isGenerating ? (
-                        <i className="fas fa-spinner fa-spin"></i>
-                    ) : (
-                        <i className="fas fa-wand-magic-sparkles"></i>
-                    )}
-                    <span>{isGenerating ? 'جاري الإنشاء...' : 'إنشاء بالذكاء الاصطناعي'}</span>
-                </button>
-            </div>
-            <textarea
-              id="job-description"
-              rows={8}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-              placeholder="اكتب تفاصيل عن المسؤوليات والمؤهلات المطلوبة، أو قم بإنشائها تلقائيًا باستخدام الذكاء الاصطناعي."
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-            ></textarea>
-            {generationError && <p className="mt-2 text-sm text-red-600">{generationError}</p>}
-          </div>
-
-          <div className="flex justify-end space-x-3 space-x-reverse pt-6 border-t border-gray-200">
-            <button type="button" onClick={onClose} className="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors">
-              إلغاء
-            </button>
-            <button type="submit" className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
-              حفظ الوظيفة
-            </button>
-          </div>
-        </form>
-      </div>
+  const modalFooter = (
+    <div className="flex justify-end space-x-3 space-x-reverse">
+        <button type="button" onClick={onClose} className="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors">
+            إلغاء
+        </button>
+        <button type="submit" form="new-posting-form" className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+            حفظ الوظيفة
+        </button>
     </div>
+  );
+
+  return (
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      title="إنشاء وظيفة شاغرة جديدة"
+      footer={modalFooter}
+      size="2xl"
+    >
+      <form id="new-posting-form" className="space-y-6" onSubmit={handleSubmit}>
+        <div>
+          <label htmlFor="job-title" className="block text-sm font-medium text-gray-700 mb-2">المسمى الوظيفي</label>
+          <input 
+            id="job-title"
+            type="text" 
+            placeholder="مثال: مهندس برمجيات أول" 
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" 
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            required 
+          />
+        </div>
+        <div>
+          <label htmlFor="job-department" className="block text-sm font-medium text-gray-700 mb-2">القسم</label>
+          <select 
+            id="job-department"
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-white focus:ring-2 focus:ring-blue-500" 
+            value={department}
+            onChange={(e) => setDepartment(e.target.value)}
+            required
+          >
+              <option value="">اختر القسم</option>
+              <option value="قسم الهندسة">قسم الهندسة</option>
+              <option value="قسم التسويق">قسم التسويق</option>
+              <option value="قسم المبيعات">قسم المبيعات</option>
+              <option value="الموارد البشرية">الموارد البشرية</option>
+              <option value="قسم المالية">قسم المالية</option>
+              <option value="قسم التصميم">قسم التصميم</option>
+          </select>
+        </div>
+        <div>
+          <div className="flex items-center justify-between mb-2">
+              <label htmlFor="job-description" className="block text-sm font-medium text-gray-700">وصف الوظيفة</label>
+              <button 
+                  type="button" 
+                  onClick={handleGenerateDescription}
+                  disabled={!title || !department || isGenerating}
+                  className="flex items-center space-x-2 space-x-reverse px-3 py-1.5 bg-purple-100 text-purple-700 text-xs font-medium rounded-lg hover:bg-purple-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                  {isGenerating ? (
+                      <i className="fas fa-spinner fa-spin"></i>
+                  ) : (
+                      <i className="fas fa-wand-magic-sparkles"></i>
+                  )}
+                  <span>{isGenerating ? 'جاري الإنشاء...' : 'إنشاء بالذكاء الاصطناعي'}</span>
+              </button>
+          </div>
+          <textarea
+            id="job-description"
+            rows={8}
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+            placeholder="اكتب تفاصيل عن المسؤوليات والمؤهلات المطلوبة، أو قم بإنشائها تلقائيًا باستخدام الذكاء الاصطناعي."
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+          ></textarea>
+          {generationError && <p className="mt-2 text-sm text-red-600">{generationError}</p>}
+        </div>
+      </form>
+    </Modal>
   );
 };
 

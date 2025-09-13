@@ -1,4 +1,3 @@
-
 import React, { useState, useRef, useEffect } from 'react';
 import { GoogleGenAI } from '@google/genai';
 import { useFocusTrap } from '../hooks/useFocusTrap';
@@ -119,6 +118,7 @@ const SmartSearchModal: React.FC<SmartSearchModalProps> = ({ isOpen, onClose }) 
         `;
 
         try {
+            // FIX: Updated deprecated model 'gemini-1.5-pro' to 'gemini-2.5-flash'.
             const response = await ai.models.generateContent({
                 model: 'gemini-2.5-flash',
                 contents: prompt,

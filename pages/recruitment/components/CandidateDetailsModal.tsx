@@ -1,8 +1,8 @@
 
-import React, { useState, useRef, useEffect } from 'react';
+
+import React, { useState, useEffect } from 'react';
 import { Candidate, CandidateActivity } from '../../../types';
-import { useFocusTrap } from '../../../hooks/useFocusTrap';
-import { useModalAccessibility } from '../../../hooks/useModalAccessibility';
+import Modal from '../../../components/Modal';
 
 interface CandidateDetailsModalProps {
   isOpen: boolean;
@@ -34,9 +34,6 @@ const TabButton: React.FC<{ text: string; icon: string; isActive: boolean; onCli
 
 const CandidateDetailsModal: React.FC<CandidateDetailsModalProps> = ({ isOpen, onClose, candidate, onGenerateSummary, isGenerating, generationError }) => {
     const [activeTab, setActiveTab] = useState<ActiveTab>('profile');
-    const modalRef = useRef<HTMLDivElement>(null);
-    useFocusTrap(modalRef, isOpen);
-    useModalAccessibility(isOpen, onClose);
 
     useEffect(() => {
         if (!isOpen) {
@@ -133,55 +130,51 @@ const CandidateDetailsModal: React.FC<CandidateDetailsModalProps> = ({ isOpen, o
             </>
         )
     };
-
-    return (
-        <div className="fixed inset-0 bg-black bg-opacity-50 modal-backdrop z-50 flex items-center justify-center p-4" onClick={onClose}>
-            <div 
-                ref={modalRef}
-                className="bg-white rounded-xl shadow-xl max-w-3xl w-full max-h-[90vh] flex flex-col" 
-                onClick={e => e.stopPropagation()}
-                role="dialog"
-                aria-modal="true"
-                aria-labelledby="candidate-details-title"
-            >
-                <div className="p-6 border-b border-gray-200">
-                    <div className="flex items-start justify-between">
-                        <div className="flex items-center space-x-4 space-x-reverse">
-                            <div className={`w-16 h-16 ${candidate.avatarColor} rounded-full flex items-center justify-center flex-shrink-0`}>
-                                <span className="text-white text-2xl font-medium">{candidate.avatarInitials}</span>
-                            </div>
-                            <div>
-                                <h3 id="candidate-details-title" className="text-xl font-bold text-gray-900">{candidate.name}</h3>
-                                <p className="text-gray-600">مرشح لوظيفة: {candidate.positionApplied}</p>
-                                <p className="text-sm text-gray-500 mt-1">تاريخ التقديم: {candidate.appliedDate}</p>
-                            </div>
-                        </div>
-                        <button onClick={onClose} className="text-gray-400 hover:text-gray-600" aria-label="Close">
-                            <i className="fas fa-times text-xl"></i>
-                        </button>
-                    </div>
+    
+    const customHeader = (
+        <div className="flex items-start justify-between">
+            <div className="flex items-center space-x-4 space-x-reverse">
+                <div className={`w-16 h-16 ${candidate.avatarColor} rounded-full flex items-center justify-center flex-shrink-0`}>
+                    <span className="text-white text-2xl font-medium">{candidate.avatarInitials}</span>
                 </div>
-                
-                <div className="px-6 border-b border-gray-200">
-                    <nav className="flex space-x-4 space-x-reverse -mb-px" role="tablist" aria-label="Candidate Details">
-                        <TabButton text="الملف الشخصي" icon="fas fa-user" isActive={activeTab === 'profile'} onClick={() => setActiveTab('profile')} controls="profile-panel" />
-                        <TabButton text="ملخص الذكاء الاصطناعي" icon="fas fa-brain" isActive={activeTab === 'ai-summary'} onClick={() => setActiveTab('ai-summary')} controls="ai-summary-panel" />
-                        <TabButton text="سجل النشاط" icon="fas fa-history" isActive={activeTab === 'activity'} onClick={() => setActiveTab('activity')} controls="activity-panel" />
-                    </nav>
-                </div>
-                
-                <div className="p-6 overflow-y-auto">
-                    {renderContent()}
-                </div>
-                
-                <div className="p-6 border-t border-gray-200 mt-auto bg-gray-50">
-                    <div className="flex justify-end space-x-3 space-x-reverse">
-                        <button type="button" className="px-4 py-2 text-white bg-red-600 rounded-lg hover:bg-red-700">رفض المرشح</button>
-                        <button type="button" className="px-4 py-2 text-white bg-green-600 rounded-lg hover:bg-green-700">جدولة مقابلة</button>
-                    </div>
+                <div>
+                    <h3 id="candidate-details-title" className="text-xl font-bold text-gray-900">{candidate.name}</h3>
+                    <p className="text-gray-600">مرشح لوظيفة: {candidate.positionApplied}</p>
+                    <p className="text-sm text-gray-500 mt-1">تاريخ التقديم: {candidate.appliedDate}</p>
                 </div>
             </div>
+            <button onClick={onClose} className="text-gray-400 hover:text-gray-600" aria-label="Close">
+                <i className="fas fa-times text-xl"></i>
+            </button>
         </div>
+    );
+
+    const footerContent = (
+         <div className="flex justify-end space-x-3 space-x-reverse">
+            <button type="button" className="px-4 py-2 text-white bg-red-600 rounded-lg hover:bg-red-700">رفض المرشح</button>
+            <button type="button" className="px-4 py-2 text-white bg-green-600 rounded-lg hover:bg-green-700">جدولة مقابلة</button>
+        </div>
+    );
+
+    return (
+        <Modal
+            isOpen={isOpen}
+            onClose={onClose}
+            size="3xl"
+            footer={footerContent}
+        >
+            {customHeader}
+            <div className="mt-6 border-b border-gray-200">
+                <nav className="flex space-x-4 space-x-reverse -mb-px" role="tablist" aria-label="Candidate Details">
+                    <TabButton text="الملف الشخصي" icon="fas fa-user" isActive={activeTab === 'profile'} onClick={() => setActiveTab('profile')} controls="profile-panel" />
+                    <TabButton text="ملخص الذكاء الاصطناعي" icon="fas fa-brain" isActive={activeTab === 'ai-summary'} onClick={() => setActiveTab('ai-summary')} controls="ai-summary-panel" />
+                    <TabButton text="سجل النشاط" icon="fas fa-history" isActive={activeTab === 'activity'} onClick={() => setActiveTab('activity')} controls="activity-panel" />
+                </nav>
+            </div>
+            <div className="py-6 min-h-[250px]">
+                {renderContent()}
+            </div>
+        </Modal>
     );
 };
 

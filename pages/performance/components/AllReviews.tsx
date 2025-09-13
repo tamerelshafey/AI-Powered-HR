@@ -1,24 +1,23 @@
-
 import React, { useMemo, useRef } from 'react';
-// FIX: Switched to namespace import for react-window to resolve module resolution errors.
-import * as ReactWindow from 'react-window';
+// FIX: Switched to named imports for 'react-window' to resolve module resolution errors.
+import { FixedSizeList, ListChildComponentProps } from 'react-window';
 import InfiniteLoader from 'react-window-infinite-loader';
 import { PerformanceReview, PerformanceStatus } from '../../../types';
 import ReviewListItem from './ReviewListItem';
 
-interface AllReviewsProps {
+interface ReviewsListProps {
     reviews: PerformanceReview[];
     onViewReview: (review: PerformanceReview) => void;
     filters: { status: string; type: string };
     onFilterChange: (filters: { status: string; type: string }) => void;
     hasMore: boolean;
-    loadMoreItems: () => void;
+    loadMoreItems: () => Promise<void>;
 }
 
-const AllReviews: React.FC<AllReviewsProps> = ({ reviews, onViewReview, filters, onFilterChange, hasMore, loadMoreItems }) => {
-    // FIX: Updated ref type annotation to use namespace import.
-    const listRef = useRef<ReactWindow.FixedSizeList>(null);
-    const reviewTypes = useMemo(() => Array.from(new Set(reviews.map(r => r.reviewType))), [reviews]);
+const ReviewsList: React.FC<ReviewsListProps> = ({ reviews, onViewReview, filters, onFilterChange, hasMore, loadMoreItems }) => {
+    // FIX: Use named import for react-window type.
+    const listRef = useRef<FixedSizeList>(null);
+    const reviewTypes = useMemo(() => ['مراجعة ربع سنوية', 'مراجعة الأداء السنوية', 'مراجعة الأهداف', 'تقييم شهري', 'تقييم سنوي'], []);
 
     const itemCount = hasMore ? reviews.length + 1 : reviews.length;
     const isItemLoaded = (index: number) => !hasMore || index < reviews.length;
@@ -48,16 +47,18 @@ const AllReviews: React.FC<AllReviewsProps> = ({ reviews, onViewReview, filters,
                     <div className="px-6 py-3 w-1/12 text-start text-xs font-medium text-gray-500 uppercase">الحالة</div>
                     <div className="px-6 py-3 w-1/6 text-start text-xs font-medium text-gray-500 uppercase">الإجراء</div>
                 </div>
-                 {reviews.length > 0 ? (
+                 {reviews.length > 0 || hasMore ? (
                     <InfiniteLoader
                         isItemLoaded={isItemLoaded}
                         itemCount={itemCount}
                         loadMoreItems={loadMoreItems}
                     >
                         {({ onItemsRendered, ref }) => (
-                            
-                            <ReactWindow.FixedSizeList
-                                ref={(el) => {
+                            // FIX: Use named import for react-window component.
+                            <FixedSizeList
+                                // FIX: Use named import for react-window type.
+                                ref={(el: FixedSizeList | null) => {
+                                    // @ts-ignore
                                     ref(el);
                                     // @ts-ignore
                                     listRef.current = el;
@@ -68,8 +69,8 @@ const AllReviews: React.FC<AllReviewsProps> = ({ reviews, onViewReview, filters,
                                 itemCount={itemCount}
                                 itemSize={95}
                             >
-                                
-                                {({ index, style }: ReactWindow.ListChildComponentProps) => {
+                                {/* FIX: Use named import for react-window type. */}
+                                {({ index, style }: ListChildComponentProps) => {
                                     if (!isItemLoaded(index)) {
                                         return (
                                             <div style={style} className="flex items-center justify-center text-gray-500">
@@ -88,7 +89,7 @@ const AllReviews: React.FC<AllReviewsProps> = ({ reviews, onViewReview, filters,
                                         </div>
                                     );
                                 }}
-                            </ReactWindow.FixedSizeList>
+                            </FixedSizeList>
                         )}
                     </InfiniteLoader>
                  ) : (
@@ -101,4 +102,4 @@ const AllReviews: React.FC<AllReviewsProps> = ({ reviews, onViewReview, filters,
     );
 };
 
-export default AllReviews;
+export default ReviewsList;

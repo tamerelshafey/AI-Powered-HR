@@ -1,7 +1,8 @@
+
 import React, { useState, useEffect, useCallback } from 'react';
 import { SupportTicket } from '../../types';
 import { getSupportTicketsPaginated } from '../../services/api';
-import PageHeader from './components/PageHeader';
+import PageHeader from '../../components/PageHeader';
 import TicketStats from './components/TicketStats';
 import TicketsTable from './components/TicketsTable';
 import NewTicketModal from './components/NewTicketModal';
@@ -69,7 +70,16 @@ const SupportTicketsPage: React.FC = () => {
     
     return (
         <div>
-            <PageHeader onNewTicketClick={() => setModalOpen(true)} />
+            <PageHeader
+                title={t('page.support.header.title')}
+                subtitle={t('page.support.header.subtitle')}
+                actions={
+                    <button onClick={() => setModalOpen(true)} className="flex items-center space-x-2 space-x-reverse px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+                        <i className="fas fa-plus"></i>
+                        <span>{t('page.support.header.newTicket')}</span>
+                    </button>
+                }
+            />
             <TicketStats tickets={tickets} />
             <TicketsTable 
                 tickets={tickets} 

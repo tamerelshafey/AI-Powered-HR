@@ -1,7 +1,4 @@
 
-
-
-
 import React, { Suspense, lazy } from 'react';
 // FIX: Switched to namespace import for react-router-dom to resolve module resolution errors.
 import * as ReactRouterDOM from 'react-router-dom';
@@ -12,6 +9,7 @@ import LoadingSpinner from './components/LoadingSpinner';
 import { I18nProvider } from './context/I18nContext';
 
 // Lazily import all page components to improve initial load time
+const LoginPage = lazy(() => import('./pages/LoginPage.tsx'));
 const Dashboard = lazy(() => import('./components/Dashboard'));
 const EmployeesPage = lazy(() => import('./pages/employees/index.tsx'));
 const EmployeeProfilePage = lazy(() => import('./pages/employees/profile/index.tsx'));
@@ -45,6 +43,7 @@ const AppRoutes: React.FC = () => {
   
   return (
     <ReactRouterDOM.Routes>
+      <ReactRouterDOM.Route path="/login" element={<LoginPage />} />
       <ReactRouterDOM.Route
         path="/portal"
         element={<EmployeePortalPage />}

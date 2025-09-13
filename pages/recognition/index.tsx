@@ -1,15 +1,17 @@
+
 import React, { useState, useEffect, useCallback } from 'react';
 import { Kudo, Milestone, Employee, CompanyValue } from '../../types';
 import { getKudosFeed, getUpcomingMilestones, getAllEmployees, sendKudo } from '../../services/api';
 import { useUser } from '../../context/UserContext';
 import { ErrorDisplay } from '../../components/ModulePlaceholder';
 import LoadingSpinner from '../../components/LoadingSpinner';
-import PageHeader from './components/PageHeader';
+import PageHeader from '../../components/PageHeader';
 import SendKudos from './components/SendKudos';
 import KudosFeed from './components/KudosFeed';
 import MilestonesWidget from './components/MilestonesWidget';
 import LeaderboardWidget from './components/LeaderboardWidget';
 import ToastNotification from '../../components/ToastNotification';
+import { useI18n } from '../../context/I18nContext';
 
 const RecognitionPage: React.FC = () => {
     const { currentUser } = useUser();
@@ -19,6 +21,7 @@ const RecognitionPage: React.FC = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [toast, setToast] = useState<{ message: string; type: 'success' | 'info' } | null>(null);
+    const { t } = useI18n();
 
     const fetchData = useCallback(async () => {
         setLoading(true);
@@ -77,7 +80,10 @@ const RecognitionPage: React.FC = () => {
     return (
         <div>
             {toast && <ToastNotification message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
-            <PageHeader />
+            <PageHeader
+                title={t('page.recognition.header.title')}
+                subtitle={t('page.recognition.header.subtitle')}
+            />
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
                 <div className="lg:col-span-2 space-y-8">
                     <SendKudos employees={employees} onSendKudo={handleSendKudo} />

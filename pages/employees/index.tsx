@@ -1,15 +1,14 @@
-
 import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 // FIX: Switched to namespace import for react-router-dom to resolve module resolution errors.
 import * as ReactRouterDOM from 'react-router-dom';
-// FIX: Switched to namespace import for react-window to resolve module resolution errors.
-import * as ReactWindow from 'react-window';
+// FIX: Switched to named imports for 'react-window' to resolve module resolution errors.
+import { FixedSizeList, ListChildComponentProps } from 'react-window';
 import InfiniteLoader from 'react-window-infinite-loader';
 import { Employee, UserRole } from '../../types';
-import { getEmployees } from '../../services/api';
+import { getEmployees, addEmployee } from '../../services/api';
 import { useUser } from '../../context/UserContext';
 import { useI18n } from '../../context/I18nContext';
-import PageHeader from './components/PageHeader';
+import PageHeader from '../../components/PageHeader';
 import FilterBar from './components/FilterBar';
 import EmployeeStats from './components/EmployeeStats';
 import EmployeeCard from './components/EmployeeCard';
@@ -29,7 +28,7 @@ const EmployeesPage: React.FC = () => {
     const [viewMode, setViewMode] = useState<ViewMode>('grid');
     const [isAddModalOpen, setAddModalOpen] = useState(false);
     const [error, setError] = useState<string | null>(null);
-    const [toast, setToast] = useState<{ message: string; type: 'success' | 'info' } | null>(null);
+    const [toast, setToast] = useState<{ message: string; type: 'success' | 'info' | 'error' } | null>(null);
     const navigate = ReactRouterDOM.useNavigate();
 
     const { currentUser } = useUser();
@@ -129,10 +128,18 @@ const EmployeesPage: React.FC = () => {
         navigate(`/employees/${employeeId}`);
     }, [navigate]);
 
-    const handleAddEmployee = useCallback((newEmployee: Employee) => {
-        setEmployees(prev => [newEmployee, ...prev]);
-        setToast({ message: `تمت إضافة الموظف ${newEmployee.firstName} بنجاح!`, type: 'success' });
-    }, []);
+    const handleAddEmployee = useCallback(async (employeeData: Omit<Employee, 'id'>) => {
+        try {
+            const newEmployee = await addEmployee(employeeData);
+            setToast({ message: `تمت إضافة الموظف ${newEmployee.firstName} بنجاح!`, type: 'success' });
+            // Refetch all employees to ensure the list is up-to-date with the database.
+            // This is safer than just adding to local state.
+            await fetchInitialEmployees();
+        } catch (error) {
+            console.error("Failed to add employee", error);
+            setToast({ message: 'فشل في إضافة الموظف. يرجى المحاولة مرة أخرى.', type: 'error' });
+        }
+    }, [fetchInitialEmployees]);
 
     // Infinite loader props for react-window
     const isItemLoaded = (index: number) => !hasMore || index < filteredEmployees.length;
@@ -150,12 +157,20 @@ const EmployeesPage: React.FC = () => {
         return <ErrorDisplay message={error} onRetry={fetchInitialEmployees} />;
     }
 
+    const department = currentUser.role === UserRole.DEPARTMENT_MANAGER ? currentUser.department : undefined;
+
     return (
         <div>
             {toast && <ToastNotification message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
             <PageHeader
-                onAddEmployeeClick={() => setAddModalOpen(true)}
-                department={currentUser.role === UserRole.DEPARTMENT_MANAGER ? currentUser.department : undefined}
+                title={t('page.employees.header.title')}
+                subtitle={department ? t('page.employees.header.subtitleDept', { department }) : t('page.employees.header.subtitle')}
+                actions={
+                    <button onClick={() => setAddModalOpen(true)} className="flex items-center space-x-2 space-x-reverse px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+                        <i className="fas fa-plus"></i>
+                        <span>{t('page.employees.header.addEmployee')}</span>
+                    </button>
+                }
             />
             <FilterBar viewMode={viewMode} onViewChange={setViewMode} />
             <EmployeeStats employees={filteredEmployees} />
@@ -197,8 +212,8 @@ const EmployeesPage: React.FC = () => {
                             loadMoreItems={loadMoreItems}
                         >
                             {({ onItemsRendered, ref }) => (
-                                
-                                <ReactWindow.FixedSizeList
+                                // FIX: Use named import for react-window component.
+                                <FixedSizeList
                                     ref={ref}
                                     onItemsRendered={onItemsRendered}
                                     height={listDimensions.height}
@@ -206,9 +221,8 @@ const EmployeesPage: React.FC = () => {
                                     itemCount={itemCount}
                                     itemSize={92}
                                 >
-                                    
-                                    
-                                    {({ index, style }: ReactWindow.ListChildComponentProps): React.ReactElement => {
+                                    {/* FIX: Use named import for react-window type. */}
+                                    {({ index, style }: ListChildComponentProps): React.ReactElement => {
                                         if (!isItemLoaded(index)) {
                                             return (
                                                 <div style={style} className="flex items-center justify-center text-gray-500">
@@ -231,7 +245,7 @@ const EmployeesPage: React.FC = () => {
                                             </div>
                                         );
                                     }}
-                                </ReactWindow.FixedSizeList>
+                                </FixedSizeList>
                             )}
                         </InfiniteLoader>
                     )}

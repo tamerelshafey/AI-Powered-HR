@@ -20,7 +20,7 @@ const SurveyList: React.FC<SurveyListProps> = ({ surveys }) => {
                 <table className="w-full">
                     <thead className="bg-gray-50">
                         <tr>
-                            <th className="px-6 py-3 text-start text-xs font-medium text-gray-500 uppercase">{t('dashboard.module.employeesDesc')}</th>
+                            <th className="px-6 py-3 text-start text-xs font-medium text-gray-500 uppercase">{t('page.surveys.list.surveyName')}</th>
                             <th className="px-6 py-3 text-start text-xs font-medium text-gray-500 uppercase">{t('page.surveys.list.status')}</th>
                             <th className="px-6 py-3 text-start text-xs font-medium text-gray-500 uppercase">{t('page.surveys.list.completion')}</th>
                             <th className="px-6 py-3 text-start text-xs font-medium text-gray-500 uppercase">{t('page.surveys.list.endDate')}</th>

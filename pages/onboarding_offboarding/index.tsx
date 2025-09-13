@@ -1,7 +1,8 @@
+
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 // FIX: Switched to namespace import for react-router-dom to resolve module resolution errors.
 import * as ReactRouterDOM from 'react-router-dom';
-import PageHeader from './components/PageHeader';
+import PageHeader from '../../components/PageHeader';
 import ProcessStats from './components/ProcessStats';
 import ProcessTable from './components/ProcessTable';
 import ChecklistModal from './components/ChecklistModal';
@@ -11,6 +12,7 @@ import { OnboardingProcess, ProcessType, ProcessStatus, OnboardingTaskStatus, Em
 import { getOnboardingProcesses, getAllEmployees } from '../../services/api';
 import { useUser } from '../../context/UserContext';
 import { ErrorDisplay } from '../../components/ModulePlaceholder';
+import { useI18n } from '../../context/I18nContext';
 
 type ActiveTab = 'onboarding' | 'offboarding';
 
@@ -30,6 +32,7 @@ const OnboardingOffboardingPage: React.FC = () => {
     
     const location = ReactRouterDOM.useLocation();
     const { currentUser } = useUser();
+    const { t } = useI18n();
 
     const fetchData = useCallback(async () => {
         setLoading(true);
@@ -212,8 +215,18 @@ const OnboardingOffboardingPage: React.FC = () => {
         <div>
             {toast && <ToastNotification message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
             <PageHeader 
-                onStartOnboarding={handleStartOnboarding}
-                onStartOffboarding={handleStartOffboarding}
+                title={t('page.onboarding.header.title')}
+                subtitle={t('page.onboarding.header.subtitle')}
+                actions={<>
+                    <button onClick={handleStartOffboarding} className="flex items-center space-x-2 space-x-reverse px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors">
+                        <i className="fas fa-door-closed"></i>
+                        <span>{t('page.onboarding.header.startOffboarding')}</span>
+                    </button>
+                    <button onClick={handleStartOnboarding} className="flex items-center space-x-2 space-x-reverse px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+                        <i className="fas fa-door-open"></i>
+                        <span>{t('page.onboarding.header.startOnboarding')}</span>
+                    </button>
+                </>}
             />
             <ProcessStats processes={processes} />
 
