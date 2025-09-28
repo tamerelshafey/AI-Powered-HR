@@ -1,4 +1,5 @@
 
+
 import React, { useState, lazy, Suspense } from 'react';
 import LoadingSpinner from '../../../components/LoadingSpinner';
 
@@ -9,9 +10,10 @@ const SettingsPlaceholder = lazy(() => import('./SettingsPlaceholder'));
 const LeaveSettings = lazy(() => import('./LeaveSettings'));
 const PayrollSettings = lazy(() => import('./PayrollSettings'));
 const AttendanceSettings = lazy(() => import('./AttendanceSettings'));
+const MissionSettings = lazy(() => import('./MissionSettings'));
 
 
-type ActiveTab = 'general' | 'users' | 'payroll' | 'leaves' | 'attendance' | 'integrations';
+type ActiveTab = 'general' | 'users' | 'payroll' | 'leaves' | 'attendance' | 'missions' | 'integrations';
 
 interface NavItem {
     id: ActiveTab;
@@ -25,6 +27,7 @@ const navItems: NavItem[] = [
     { id: 'payroll', name: 'الرواتب', icon: 'fas fa-money-bill-wave' },
     { id: 'leaves', name: 'الإجازات', icon: 'fas fa-calendar-alt' },
     { id: 'attendance', name: 'الحضور', icon: 'fas fa-clock' },
+    { id: 'missions', name: 'المهام', icon: 'fas fa-tasks' },
     { id: 'integrations', name: 'التكامل', icon: 'fas fa-plug' },
 ];
 
@@ -43,6 +46,8 @@ const SettingsLayout: React.FC = () => {
                 return <LeaveSettings />;
             case 'attendance':
                 return <AttendanceSettings />;
+            case 'missions':
+                return <MissionSettings />;
             case 'integrations':
                 return <SettingsPlaceholder title="التكامل مع الأنظمة الأخرى" icon="fas fa-plug" description="ربط النظام مع أنظمة خارجية مثل ERPNext لتسهيل تدفق البيانات." />;
             default:

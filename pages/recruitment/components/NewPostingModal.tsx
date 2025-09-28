@@ -59,13 +59,11 @@ const NewPostingModal: React.FC<NewPostingModalProps> = ({ isOpen, onClose, onAd
         اجعل الوصف جذابًا وواضحًا وموجهًا لجذب أفضل الكفاءات. استخدم تنسيق Markdown.
       `;
 
-      // FIX: Updated deprecated model 'gemini-1.5-flash' to 'gemini-2.5-flash'.
       const response = await client.models.generateContent({
         model: 'gemini-2.5-flash',
         contents: prompt,
       });
 
-      // FIX: Access the generated text directly from the `text` property of the response object.
       const generatedDescription = response.text;
       if (!generatedDescription || generatedDescription.trim() === '') {
         throw new Error("Received an empty description from the AI.");

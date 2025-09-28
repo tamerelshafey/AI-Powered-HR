@@ -1,10 +1,10 @@
 
 
-import { isSupabaseConfigured, supabase } from './supabaseClient';
+import { supabase } from './supabaseClient';
 // FIX: Added missing 'AttendanceStatus' import to resolve type errors.
-import { Employee, JobPosting, Candidate, OnboardingProcess, EmployeeDocument, PayrollRun, CompanyAsset, JobTitle, Course, EmployeeEnrollment, HelpCenterCategory, HelpCenterArticle, SupportTicket, EmployeeActivity, AssetStatus, PerformanceReview, CompanyGoal, LeaveRequest, LeaveType, Payslip, CourseCategory, EmployeeLeaveBalance, ExternalCourseRecord, CompRequestStatus, CompensationChangeRequest, IndividualDevelopmentPlan, DevelopmentGoalStatus, ChatMessage, Department, Branch, DocumentStatus, PerformanceStatus, TicketStatus, TicketDepartment, User, AttendanceRecord, AttendanceStatus, FeedItem, AttendanceStatsData, PayrollStatus, LeaveStatus, Notification, EmployeeProfileOverviewData, Survey, SurveyAnalytics, SurveyStatus, SurveyQuestionType, Sentiment, Kudo, Milestone, CompanyValue, WeeklyStat, LeaveBalance, ActivityItem, Kpi, Performer, Report, PredictiveInsight, PortalNavItem, UpcomingEvent, PortalActivity, Announcement, LearningCourse, Skill, Achievement, Benefit, Feedback, LeaveTypeSetting, PublicHoliday, SalaryComponent, AttendanceSettings, EmployeeStatus, OnlineStatus, UserRole } from '../types';
+import { Employee, JobPosting, Candidate, OnboardingProcess, EmployeeDocument, PayrollRun, CompanyAsset, JobTitle, Course, EmployeeEnrollment, HelpCenterCategory, HelpCenterArticle, SupportTicket, EmployeeActivity, AssetStatus, PerformanceReview, CompanyGoal, LeaveRequest, LeaveType, Payslip, CourseCategory, EmployeeLeaveBalance, ExternalCourseRecord, CompRequestStatus, CompensationChangeRequest, IndividualDevelopmentPlan, DevelopmentGoalStatus, ChatMessage, Department, Branch, DocumentStatus, PerformanceStatus, TicketStatus, TicketDepartment, User, AttendanceRecord, AttendanceStatus, FeedItem, AttendanceStatsData, PayrollStatus, LeaveStatus, Notification, EmployeeProfileOverviewData, Survey, SurveyAnalytics, SurveyStatus, SurveyQuestionType, Sentiment, Kudo, Milestone, CompanyValue, WeeklyStat, LeaveBalance, ActivityItem, Kpi, Performer, Report, PredictiveInsight, PortalNavItem, UpcomingEvent, PortalActivity, Announcement, LearningCourse, Skill, Achievement, Benefit, Feedback, LeaveTypeSetting, PublicHoliday, SalaryComponent, AttendanceSettings, EmployeeStatus, OnlineStatus, UserRole, Mission, MissionStatus, MissionSettings } from '../types';
 
-const USE_MOCK_DATA = !isSupabaseConfigured;
+const USE_MOCK_DATA = true;
 
 // Helper mapping for demo purposes until user and employee IDs are unified.
 const userIdToEmployeeIdMap: Record<string, string> = {
@@ -275,6 +275,7 @@ export const updateLeaveRequestStatus = async (requestId: string, status: LeaveS
     const { employees: mockEmployees } = await import('../pages/employees/data');
     return fromSupabaseLeaveRequest(data, mockEmployees);
 };
+
 
 // --- Mocked Functions (Aggregations, AI, Demo-specific) ---
 // These functions will remain mocked for now as they represent complex queries or demo-specific logic.
@@ -595,10 +596,12 @@ export const getAttendanceRecords = async (): Promise<AttendanceRecord[]> => {
         else if (random < 0.85) status = AttendanceStatus.LATE;
         else status = AttendanceStatus.ABSENT;
         if (employee.id === 'EMP003') status = AttendanceStatus.ON_LEAVE;
-        return { employee, checkIn: status === AttendanceStatus.ABSENT || status === AttendanceStatus.ON_LEAVE ? null : "09:05", checkOut: null, status, hours: '...' };
+        if (employee.id === 'EMP014') status = AttendanceStatus.ON_MISSION;
+        const checkIn = (status === AttendanceStatus.ABSENT || status === AttendanceStatus.ON_LEAVE || status === AttendanceStatus.ON_MISSION) ? null : "09:05";
+        return { employee, checkIn, checkOut: null, status, hours: '...' };
     });
 };
-export const getAttendanceStats = async (): Promise<AttendanceStatsData> => ({ present: 180, late: 22, absent: 15, onLeave: 30, earlyDeparture: 8, attendanceRate: 92.5 });
+export const getAttendanceStats = async (): Promise<AttendanceStatsData> => ({ present: 180, late: 22, absent: 15, onLeave: 30, earlyDeparture: 8, attendanceRate: 92.5, onMission: 2 });
 
 export const getInitialFeedItems = async (): Promise<FeedItem[]> => {
     const { initialFeedItems: mockInitialFeedItems } = await import('../pages/attendance/data');
@@ -724,4 +727,45 @@ export const getSalaryComponents = async (): Promise<SalaryComponent[]> => {
 export const getAttendanceSettings = async (): Promise<{ defaultSettings: Required<AttendanceSettings>, branchSettings: Record<string, AttendanceSettings> }> => {
     const { defaultAttendanceSettings, branchAttendanceSettings } = await import('../pages/settings/data');
     return { defaultSettings: defaultAttendanceSettings, branchSettings: branchAttendanceSettings };
+};
+
+// --- Missions API (NEW MOCK) ---
+export const getMissions = async (): Promise<Mission[]> => {
+    const { missions } = await import('../pages/missions/data');
+    return [...missions];
+};
+
+export const addMission = async (missionData: Omit<Mission, 'id'>): Promise<Mission> => {
+    const { missions } = await import('../pages/missions/data');
+    const newMission: Mission = {
+        id: `MSN${Date.now().toString().slice(-6)}`,
+        ...missionData
+    };
+    missions.unshift(newMission);
+    return newMission;
+};
+
+export const updateMissionStatus = async (missionId: string, status: MissionStatus): Promise<Mission> => {
+    const { missions } = await import('../pages/missions/data');
+    const missionIndex = missions.findIndex(m => m.id === missionId);
+    if (missionIndex === -1) throw new Error('Mission not found in mock data');
+    missions[missionIndex].status = status;
+    return missions[missionIndex];
+};
+
+export const getMissionsByEmployeeId = async (employeeId: string): Promise<Mission[]> => {
+    const allMissions = await getMissions();
+    return allMissions.filter(m => m.employee.id === employeeId);
+};
+
+// --- Settings -> Missions ---
+export const getMissionSettings = async (): Promise<MissionSettings> => {
+    const { missionSettingsData } = await import('../pages/settings/data');
+    return Promise.resolve(missionSettingsData);
+};
+
+export const updateMissionSettings = async (newSettings: MissionSettings): Promise<MissionSettings> => {
+    let { missionSettingsData } = await import('../pages/settings/data');
+    missionSettingsData = newSettings;
+    return Promise.resolve(missionSettingsData);
 };

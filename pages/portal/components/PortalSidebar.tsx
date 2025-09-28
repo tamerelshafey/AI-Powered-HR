@@ -1,6 +1,8 @@
 
+
 import React from 'react';
 import { PortalNavItem } from '../../../types';
+import { useI18n } from '../../../context/I18nContext';
 
 interface PortalSidebarProps {
   navItems: PortalNavItem[];
@@ -9,6 +11,7 @@ interface PortalSidebarProps {
 }
 
 const PortalSidebar: React.FC<PortalSidebarProps> = ({ navItems, activeSection, setActiveSection }) => {
+  const { t } = useI18n();
   return (
     <aside
       className={`bg-white shadow-lg h-screen flex-shrink-0 flex flex-col transition-all duration-300 ease-in-out w-20 lg:w-64`}
@@ -25,28 +28,31 @@ const PortalSidebar: React.FC<PortalSidebarProps> = ({ navItems, activeSection, 
       </div>
       <div className="flex-1 p-2 lg:p-6 overflow-y-auto">
         <nav className="space-y-2">
-          {navItems.map((item) => (
-            <button
-              key={item.id}
-              onClick={() => {
-                setActiveSection(item.id);
-              }}
-              title={item.name}
-              className={`w-full flex items-center justify-center lg:justify-start lg:space-x-3 lg:space-x-reverse p-3 lg:px-4 lg:py-3 rounded-lg transition-colors duration-200 text-start ${
-                activeSection === item.id
-                  ? 'bg-blue-50 text-blue-600 font-medium'
-                  : 'text-gray-700 hover:bg-gray-100'
-              }`}
-            >
-              <i className={`${item.icon} w-6 text-center`}></i>
-              <span className="hidden lg:inline">{item.name}</span>
-              {item.badge && (
-                <span className={`ms-auto text-white text-xs px-2 py-0.5 rounded-full ${item.badgeColor} hidden lg:inline-block`}>
-                  {item.badge}
-                </span>
-              )}
-            </button>
-          ))}
+          {navItems.map((item) => {
+            const badgeContent = item.badgeKey ? t(item.badgeKey) : item.badgeCount;
+            return (
+              <button
+                key={item.id}
+                onClick={() => {
+                  setActiveSection(item.id);
+                }}
+                title={t(item.nameKey)}
+                className={`w-full flex items-center justify-center lg:justify-start lg:space-x-3 lg:space-x-reverse p-3 lg:px-4 lg:py-3 rounded-lg transition-colors duration-200 text-start ${
+                  activeSection === item.id
+                    ? 'bg-blue-50 text-blue-600 font-medium'
+                    : 'text-gray-700 hover:bg-gray-100'
+                }`}
+              >
+                <i className={`${item.icon} w-6 text-center`}></i>
+                <span className="hidden lg:inline">{t(item.nameKey)}</span>
+                {badgeContent && (
+                  <span className={`ms-auto text-white text-xs px-2 py-0.5 rounded-full ${item.badgeColor} hidden lg:inline-block`}>
+                    {badgeContent}
+                  </span>
+                )}
+              </button>
+            )
+          })}
         </nav>
       </div>
     </aside>

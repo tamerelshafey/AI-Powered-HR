@@ -92,6 +92,7 @@ export interface AttendanceStatsData {
     onLeave: number;
     earlyDeparture: number;
     attendanceRate: number;
+    onMission: number;
 }
 
 export enum AttendanceStatus {
@@ -100,6 +101,7 @@ export enum AttendanceStatus {
   LATE = 'LATE',
   EARLY_DEPARTURE = 'EARLY_DEPARTURE',
   ON_LEAVE = 'ON_LEAVE',
+  ON_MISSION = 'ON_MISSION',
 }
 
 export interface AttendanceRecord {
@@ -236,9 +238,10 @@ export interface AiAnalysisResult {
 // Employee Portal Types
 export interface PortalNavItem {
     id: string;
-    name: string;
+    nameKey: string;
     icon: string;
-    badge?: string;
+    badgeCount?: number;
+    badgeKey?: string;
     badgeColor?: string;
 }
 
@@ -902,4 +905,59 @@ export interface Milestone {
     type: 'BIRTHDAY' | 'ANNIVERSARY';
     date: string; // e.g., "July 25" for birthday, "July 25, 2024" for anniversary
     years?: number; // for anniversaries
+}
+
+// Module Management
+export type OptionalModuleKey = 
+  | 'payroll' 
+  | 'documents' 
+  | 'recruitment' 
+  | 'performance' 
+  | 'learning' 
+  | 'onboarding' 
+  | 'assets' 
+  | 'support' 
+  | 'help_center' 
+  | 'recognition' 
+  | 'surveys'
+  | 'missions';
+
+export type ActiveModules = Record<OptionalModuleKey, boolean>;
+
+export interface ModuleContextType {
+    activeModules: ActiveModules;
+    toggleModule: (moduleKey: OptionalModuleKey) => void;
+    dependencyConfirmation: {
+        isOpen: boolean;
+        moduleToDisable: OptionalModuleKey | null;
+        dependentsToDisable: OptionalModuleKey[];
+    };
+    confirmDisable: () => void;
+    cancelDisable: () => void;
+}
+
+// Mission Management Types
+export enum MissionStatus {
+    PENDING = 'PENDING',
+    APPROVED = 'APPROVED',
+    REJECTED = 'REJECTED',
+    COMPLETED = 'COMPLETED',
+}
+
+export interface Mission {
+    id: string;
+    employee: Employee;
+    title: string;
+    description: string;
+    startDate: string;
+    endDate: string;
+    status: MissionStatus;
+    requestedBy: 'employee' | 'manager';
+    isMultiDay: boolean;
+    startTime?: string | null;
+    endTime?: string | null;
+}
+
+export interface MissionSettings {
+    isTimeMandatoryForSingleDay: boolean;
 }

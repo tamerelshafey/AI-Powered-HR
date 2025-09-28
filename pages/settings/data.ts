@@ -1,5 +1,6 @@
 
-import { LeaveTypeSetting, PublicHoliday, SalaryComponent, SalaryComponentType, LeaveCategory, AttendanceSettings, LeaveType } from '../../types';
+
+import { LeaveTypeSetting, PublicHoliday, SalaryComponent, SalaryComponentType, LeaveCategory, AttendanceSettings, LeaveType, MissionSettings } from '../../types';
 
 export const leaveTypeSettingsData: LeaveTypeSetting[] = [
     { id: 'lts_01', name: LeaveType.VACATION, balanceDays: 21, color: 'blue', category: LeaveCategory.STANDARD, isDeductedFromAnnual: false },
@@ -63,3 +64,7 @@ export const branchAttendanceSettings: Record<string, AttendanceSettings> = {
       overtimeEnabled: false,
     }
   };
+  
+export let missionSettingsData: MissionSettings = {
+    isTimeMandatoryForSingleDay: false, // Default is optional
+};

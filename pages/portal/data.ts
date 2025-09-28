@@ -1,15 +1,16 @@
 import { PortalNavItem, UpcomingEvent, PortalActivity, Announcement, TimeOffRequestPortal, LeaveStatus, LearningCourse, Skill, Achievement, Benefit, Feedback } from '../../types';
 
+// FIX: Corrected 'portalNavItems' to use 'nameKey' instead of 'name' and updated badge properties to match the 'PortalNavItem' type.
 export const portalNavItems: PortalNavItem[] = [
-    { id: 'dashboard', name: 'لوحة التحكم', icon: 'fas fa-home' },
-    { id: 'profile', name: 'ملفي الشخصي', icon: 'fas fa-user' },
-    { id: 'timeoff', name: 'الإجازات', icon: 'fas fa-calendar-alt', badge: '2', badgeColor: 'bg-orange-500' },
-    { id: 'payroll', name: 'الرواتب', icon: 'fas fa-dollar-sign' },
-    { id: 'benefits', name: 'المنافع', icon: 'fas fa-shield-alt' },
-    { id: 'documents', name: 'المستندات', icon: 'fas fa-file-alt' },
-    { id: 'learning', name: 'التعلم', icon: 'fas fa-graduation-cap' },
-    { id: 'development_plan', name: 'خطتي التطويرية', icon: 'fas fa-rocket', badge: 'جديد', badgeColor: 'bg-purple-500' },
-    { id: 'feedback', name: 'الملاحظات', icon: 'fas fa-comment' },
+    { id: 'dashboard', nameKey: 'portalNav.dashboard', icon: 'fas fa-home' },
+    { id: 'profile', nameKey: 'portalNav.profile', icon: 'fas fa-user' },
+    { id: 'timeoff', nameKey: 'portalNav.timeoff', icon: 'fas fa-calendar-alt', badgeCount: 2, badgeColor: 'bg-orange-500' },
+    { id: 'payroll', nameKey: 'portalNav.payroll', icon: 'fas fa-dollar-sign' },
+    { id: 'benefits', nameKey: 'portalNav.benefits', icon: 'fas fa-shield-alt' },
+    { id: 'documents', nameKey: 'portalNav.documents', icon: 'fas fa-file-alt' },
+    { id: 'learning', nameKey: 'portalNav.learning', icon: 'fas fa-graduation-cap' },
+    { id: 'development_plan', nameKey: 'portalNav.development_plan', icon: 'fas fa-rocket', badgeKey: 'portalNav.badge.new', badgeColor: 'bg-purple-500' },
+    { id: 'feedback', nameKey: 'portalNav.feedback', icon: 'fas fa-comment' },
 ];
 
 export const upcomingEvents: UpcomingEvent[] = [

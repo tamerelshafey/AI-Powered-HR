@@ -6,6 +6,7 @@ import { useUser } from '../../../context/UserContext';
 import UserSwitcher from '../../../components/UserSwitcher';
 import { ADMIN_ROLES } from '../../../permissions';
 import { useI18n } from '../../../context/I18nContext';
+import LanguageSwitcher from '../../../components/LanguageSwitcher';
 
 const PortalHeader: React.FC = () => {
   const { currentUser, availableUsers, switchUser } = useUser();
@@ -33,8 +34,8 @@ const PortalHeader: React.FC = () => {
               <i className="fas fa-user-circle text-white text-lg"></i>
             </div>
             <div>
-              <h1 className="text-xl font-bold text-gray-900">بوابة الموظف</h1>
-              <p className="text-xs text-gray-500">مرحباً بعودتك، {currentUser.name.split(' ')[0]}!</p>
+              <h1 className="text-xl font-bold text-gray-900">{t('portal.header.title')}</h1>
+              <p className="text-xs text-gray-500">{t('portal.header.welcome', { name: currentUser.name.split(' ')[0] })}</p>
             </div>
           </div>
         </div>
@@ -42,7 +43,7 @@ const PortalHeader: React.FC = () => {
         <div className="flex items-center space-x-4 space-x-reverse">
           <div className="hidden md:flex items-center space-x-2 space-x-reverse bg-green-50 px-3 py-1 rounded-full">
             <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-            <span className="text-sm text-green-700 font-medium">متصل</span>
+            <span className="text-sm text-green-700 font-medium">{t('portal.header.online')}</span>
           </div>
           
           {isAdminSession && (
@@ -55,6 +56,7 @@ const PortalHeader: React.FC = () => {
                   <span className="hidden sm:inline text-sm font-medium">{t('header.returnToDashboard')}</span>
               </button>
           )}
+          <LanguageSwitcher />
           <UserSwitcher />
           
           <button className="relative p-2 text-gray-600 hover:text-gray-900" aria-label="Notifications">

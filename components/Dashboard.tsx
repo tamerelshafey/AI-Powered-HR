@@ -1,5 +1,5 @@
 
-import React, { useState, useCallback } from 'react';
+import React from 'react';
 import StatsCard from './dashboard/StatsCard';
 import ModuleCard from './dashboard/ModuleCard';
 import AiInsightCard from './dashboard/AiInsightCard';
@@ -7,26 +7,80 @@ import QuickActionButton from './dashboard/QuickActionButton';
 import { useUser } from '../context/UserContext';
 import RoleBanner from './dashboard/RoleBanner';
 import { useI18n } from '../context/I18nContext';
+import { useModules } from '../App';
+import { UserRole, OptionalModuleKey } from '../types';
+import Modal, { ModalBody, ModalFooter } from './Modal';
 
-const initialModules = {
-    payroll: true,
-    documents: false,
-    recruitment: true,
-    performance: false,
-    learning: true,
-    onboarding: false,
-    assets: false,
-    support: true,
+
+interface DependencyConfirmationModalProps {
+    isOpen: boolean;
+    onClose: () => void;
+    onConfirm: () => void;
+    moduleToDisable: OptionalModuleKey | null;
+    dependentsToDisable: OptionalModuleKey[];
+    moduleNames: Record<OptionalModuleKey, string>;
+}
+
+const DependencyConfirmationModal: React.FC<DependencyConfirmationModalProps> = ({
+    isOpen,
+    onClose,
+    onConfirm,
+    moduleToDisable,
+    dependentsToDisable,
+    moduleNames,
+}) => {
+    if (!isOpen || !moduleToDisable) return null;
+
+    const handleConfirm = () => {
+        onConfirm();
+        onClose();
+    };
+
+    return (
+        <Modal isOpen={isOpen} onClose={onClose} size="lg">
+             <ModalBody>
+                <div className="text-center">
+                    <div className="w-12 h-12 bg-yellow-100 text-yellow-500 rounded-full mx-auto flex items-center justify-center mb-4">
+                        <i className="fas fa-exclamation-triangle text-2xl"></i>
+                    </div>
+                    <h3 className="text-lg font-semibold text-gray-900">تأكيد تعطيل الوحدة</h3>
+                    <p className="text-gray-600 mt-2 text-sm">
+                        إن تعطيل وحدة "{moduleNames[moduleToDisable]}" يتطلب تعطيل الوحدات الأخرى التي تعتمد عليها.
+                    </p>
+                    <div className="mt-4 text-start bg-gray-50 p-3 rounded-lg border">
+                         <p className="text-sm font-medium text-gray-800">سيتم تعطيل الوحدات التالية أيضًا:</p>
+                         <ul className="list-disc list-inside mt-2 space-y-1 text-sm text-gray-600">
+                             {dependentsToDisable.map(key => (
+                                 <li key={key}>{moduleNames[key]}</li>
+                             ))}
+                         </ul>
+                    </div>
+                     <p className="text-gray-600 mt-4 text-sm">
+                        هل أنت متأكد أنك تريد المتابعة؟
+                    </p>
+                </div>
+            </ModalBody>
+            <ModalFooter>
+                 <div className="flex justify-center space-x-4 space-x-reverse">
+                    <button type="button" onClick={onClose} className="px-6 py-2 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-100 font-medium">
+                        إلغاء
+                    </button>
+                    <button type="button" onClick={handleConfirm} className="px-6 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 font-medium">
+                        نعم، قم بالتعطيل
+                    </button>
+                </div>
+            </ModalFooter>
+        </Modal>
+    );
 };
+
 
 const Dashboard: React.FC = () => {
     const { currentUser } = useUser();
     const { t } = useI18n();
-    const [optionalModules, setOptionalModules] = useState(initialModules);
+    const { activeModules, toggleModule, dependencyConfirmation, confirmDisable, cancelDisable } = useModules();
 
-    const handleToggleModule = useCallback((moduleKey: keyof typeof initialModules) => {
-        setOptionalModules(prev => ({ ...prev, [moduleKey]: !prev[moduleKey] }));
-    }, []);
+    const isSuperAdmin = currentUser.role === UserRole.SYSTEM_ADMINISTRATOR;
 
     const coreModules = [
         { nameKey: 'dashboard.module.employees', descriptionKey: 'dashboard.module.employeesDesc', icon: 'fas fa-users' },
@@ -35,17 +89,26 @@ const Dashboard: React.FC = () => {
         { nameKey: 'dashboard.module.jobTitles', descriptionKey: 'dashboard.module.jobTitlesDesc', icon: 'fas fa-sitemap' },
     ];
 
-    const optionalModuleConfig = [
+    const optionalModuleConfig: { key: OptionalModuleKey, nameKey: string, descriptionKey: string, icon: string }[] = [
         { key: 'payroll', nameKey: 'dashboard.module.payroll', descriptionKey: 'dashboard.module.payrollDesc', icon: 'fas fa-money-bill-wave' },
         { key: 'documents', nameKey: 'dashboard.module.documents', descriptionKey: 'dashboard.module.documentsDesc', icon: 'fas fa-file-alt' },
         { key: 'recruitment', nameKey: 'dashboard.module.recruitment', descriptionKey: 'dashboard.module.recruitmentDesc', icon: 'fas fa-user-plus' },
         { key: 'performance', nameKey: 'dashboard.module.performance', descriptionKey: 'dashboard.module.performanceDesc', icon: 'fas fa-chart-line' },
         { key: 'learning', nameKey: 'dashboard.module.learning', descriptionKey: 'dashboard.module.learningDesc', icon: 'fas fa-graduation-cap' },
         { key: 'onboarding', nameKey: 'dashboard.module.onboarding', descriptionKey: 'dashboard.module.onboardingDesc', icon: 'fas fa-door-open' },
-        { key: 'assets', nameKey: 'dashboard.module.assets', descriptionKey: 'dashboard.module.assetsDesc', icon: 'fas fa-laptop' },
+        { key: 'assets', nameKey: 'dashboard.module.assets', descriptionKey: 'dashboard.module.assetsDesc', icon: 'fas fa-laptop-house' },
+        { key: 'missions', nameKey: 'dashboard.module.missions', descriptionKey: 'dashboard.module.missionsDesc', icon: 'fas fa-tasks' },
         { key: 'support', nameKey: 'dashboard.module.support', descriptionKey: 'dashboard.module.supportDesc', icon: 'fas fa-headset' },
+        { key: 'help_center', nameKey: 'dashboard.module.help_center', descriptionKey: 'dashboard.module.help_centerDesc', icon: 'fas fa-question-circle' },
+        { key: 'recognition', nameKey: 'dashboard.module.recognition', descriptionKey: 'dashboard.module.recognitionDesc', icon: 'fas fa-award' },
+        { key: 'surveys', nameKey: 'dashboard.module.surveys', descriptionKey: 'dashboard.module.surveysDesc', icon: 'fas fa-poll' },
     ];
     
+    const moduleNames = optionalModuleConfig.reduce((acc, mod) => {
+        acc[mod.key] = t(mod.nameKey);
+        return acc;
+    }, {} as Record<OptionalModuleKey, string>);
+
     return (
         <div>
             <RoleBanner role={currentUser.role} />
@@ -90,8 +153,9 @@ const Dashboard: React.FC = () => {
                                     name={t(mod.nameKey)}
                                     description={t(mod.descriptionKey)}
                                     icon={mod.icon}
-                                    isActive={optionalModules[mod.key as keyof typeof initialModules]}
-                                    onToggle={() => handleToggleModule(mod.key as keyof typeof initialModules)}
+                                    isActive={activeModules[mod.key]}
+                                    onToggle={() => toggleModule(mod.key)}
+                                    isToggleable={isSuperAdmin}
                                 />
                             ))}
                         </div>
@@ -126,6 +190,15 @@ const Dashboard: React.FC = () => {
                     </div>
                 </div>
             </div>
+            
+            <DependencyConfirmationModal
+                isOpen={dependencyConfirmation.isOpen}
+                onClose={cancelDisable}
+                onConfirm={confirmDisable}
+                moduleToDisable={dependencyConfirmation.moduleToDisable}
+                dependentsToDisable={dependencyConfirmation.dependentsToDisable}
+                moduleNames={moduleNames}
+            />
         </div>
     );
 };

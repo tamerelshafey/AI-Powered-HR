@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { GoogleGenAI, Type } from '@google/genai';
 import { useI18n } from '../../../context/I18nContext';
@@ -61,7 +62,6 @@ const AiAnalyst: React.FC = () => {
         };
 
         try {
-            // FIX: Updated deprecated model 'gemini-1.5-pro' to 'gemini-2.5-flash'.
             const response = await ai.models.generateContent({
                 model: 'gemini-2.5-flash',
                 contents: prompt,
@@ -71,7 +71,6 @@ const AiAnalyst: React.FC = () => {
                 }
             });
 
-            // FIX: Access the generated text directly from the `text` property of the response object.
             const jsonText = response.text;
             const parsedResult = JSON.parse(jsonText);
             const data = JSON.parse(parsedResult.data);

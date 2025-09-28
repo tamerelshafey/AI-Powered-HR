@@ -2,16 +2,50 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
 import { NAV_ITEMS } from '../constants';
-import { NavItem } from '../types';
+import { NavItem, OptionalModuleKey } from '../types';
 import { useUser } from '../context/UserContext';
 import { ROLE_PERMISSIONS } from '../permissions';
 import { useI18n } from '../context/I18nContext';
+import { useModules } from '../App';
+
+const MODULE_PATHS: Record<OptionalModuleKey, string> = {
+    payroll: '/payroll',
+    documents: '/documents',
+    recruitment: '/recruitment',
+    performance: '/performance',
+    learning: '/learning',
+    onboarding: '/onboarding-offboarding',
+    assets: '/assets',
+    support: '/support-tickets',
+    help_center: '/help-center',
+    recognition: '/recognition',
+    surveys: '/surveys',
+    missions: '/missions'
+};
 
 const Sidebar: React.FC = () => {
   const { currentUser } = useUser();
+  const { activeModules } = useModules();
   const { t } = useI18n();
   const allowedPaths = ROLE_PERMISSIONS[currentUser.role] || [];
-  const visibleNavItems = NAV_ITEMS.filter(item => allowedPaths.includes(item.path));
+  
+  const visibleNavItems = NAV_ITEMS.filter(item => {
+    if (!allowedPaths.includes(item.path)) {
+      return false;
+    }
+    
+    const moduleKey = Object.keys(MODULE_PATHS).find(
+        key => MODULE_PATHS[key as OptionalModuleKey] === item.path
+    ) as OptionalModuleKey | undefined;
+
+    // If it's an optional module, check if it's active
+    if (moduleKey) {
+        return activeModules[moduleKey];
+    }
+
+    // If it's a core module/page, it's visible if it's in allowedPaths
+    return true;
+  });
 
   return (
     <aside

@@ -35,6 +35,7 @@ export const ATTENDANCE_STATUS_CLASSES: Record<AttendanceStatus, string> = {
   [AttendanceStatus.LATE]: 'bg-orange-100 text-orange-800',
   [AttendanceStatus.EARLY_DEPARTURE]: 'bg-purple-100 text-purple-800',
   [AttendanceStatus.ON_LEAVE]: 'bg-yellow-100 text-yellow-800',
+  [AttendanceStatus.ON_MISSION]: 'bg-cyan-100 text-cyan-800',
 };
 
 export const LEAVE_STATUS_CLASSES: Record<LeaveStatus, string> = {

@@ -97,13 +97,11 @@ const RecruitmentPage: React.FC = () => {
         const client = getAiClient();
         const prompt = `بصفتك خبير توظيف، قم بإنشاء ملخص احترافي وموجز للمرشح التالي لوظيفة "${candidate.positionApplied}". ركز على نقاط قوته الرئيسية بناءً على مهاراته المعلنة وكيف تتناسب مع الوظيفة. المهارات: ${candidate.skills.join(', ')}.`;
 
-        // FIX: Updated deprecated model 'gemini-1.5-flash' to 'gemini-2.5-flash'.
         const response = await client.models.generateContent({
             model: 'gemini-2.5-flash',
             contents: prompt,
         });
 
-        // FIX: Access the generated text directly from the `text` property of the response object.
         const newSummary = response.text;
 
         if (!newSummary || newSummary.trim() === '') {

@@ -22,8 +22,9 @@ import { HelpCenterArticle, Payslip } from '../../types';
 import PayrollSection from './components/PayrollSection';
 import PayslipModal from '../payroll/components/PayslipModal';
 import BiometricModal from '../attendance/components/BiometricModal';
+import MissionsSection from './components/MissionsSection';
 
-type PortalSection = 'dashboard' | 'profile' | 'timeoff' | 'payroll' | 'benefits' | 'learning' | 'documents' | 'feedback' | 'development_plan';
+type PortalSection = 'dashboard' | 'profile' | 'timeoff' | 'payroll' | 'benefits' | 'learning' | 'documents' | 'feedback' | 'development_plan' | 'missions';
 
 const EmployeePortalPage: React.FC = () => {
     const [activeSection, setActiveSection] = useState<PortalSection>('dashboard');
@@ -63,6 +64,8 @@ const EmployeePortalPage: React.FC = () => {
                 return <ProfileSection />;
             case 'timeoff':
                 return <TimeOffSection onOpenTimeOffModal={() => setTimeOffModalOpen(true)} />;
+            case 'missions':
+                return <MissionsSection />;
             case 'learning':
                 return <LearningSection onOpenExternalCourseModal={() => setExternalCourseModalOpen(true)} />;
             case 'development_plan':

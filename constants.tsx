@@ -1,5 +1,4 @@
 
-
 import React from 'react';
 import { NavItem, PortalNavItem } from './types';
 
@@ -20,6 +19,7 @@ export const NAV_ITEMS: NavItem[] = [
     { path: '/learning', nameKey: 'nav.learning', icon: <i className="fas fa-graduation-cap w-6 text-center"></i> },
     { path: '/onboarding-offboarding', nameKey: 'nav.onboarding_offboarding', icon: <i className="fas fa-door-open w-6 text-center"></i> },
     { path: '/assets', nameKey: 'nav.assets', icon: <i className="fas fa-laptop-house w-6 text-center"></i> },
+    { path: '/missions', nameKey: 'nav.missions', icon: <i className="fas fa-tasks w-6 text-center"></i> },
     { path: '/recognition', nameKey: 'nav.recognition', icon: <i className="fas fa-award w-6 text-center"></i> },
     { path: '/surveys', nameKey: 'nav.surveys', icon: <i className="fas fa-poll w-6 text-center"></i> },
     { path: '/support-tickets', nameKey: 'nav.support_tickets', icon: <i className="fas fa-headset w-6 text-center"></i> },
@@ -28,13 +28,14 @@ export const NAV_ITEMS: NavItem[] = [
 ];
 
 export const PORTAL_NAV_ITEMS: PortalNavItem[] = [
-    { id: 'dashboard', name: 'لوحة التحكم', icon: 'fas fa-home' },
-    { id: 'profile', name: 'ملفي الشخصي', icon: 'fas fa-user' },
-    { id: 'timeoff', name: 'الإجازات', icon: 'fas fa-calendar-alt', badge: '2', badgeColor: 'bg-orange-500' },
-    { id: 'payroll', name: 'الرواتب', icon: 'fas fa-dollar-sign' },
-    { id: 'benefits', name: 'المنافع', icon: 'fas fa-shield-alt' },
-    { id: 'documents', name: 'المستندات', icon: 'fas fa-file-alt' },
-    { id: 'learning', name: 'التعلم', icon: 'fas fa-graduation-cap' },
-    { id: 'development_plan', name: 'خطتي التطويرية', icon: 'fas fa-rocket', badge: 'جديد', badgeColor: 'bg-purple-500' },
-    { id: 'feedback', name: 'الملاحظات', icon: 'fas fa-comment' },
+    { id: 'dashboard', nameKey: 'portalNav.dashboard', icon: 'fas fa-home' },
+    { id: 'profile', nameKey: 'portalNav.profile', icon: 'fas fa-user' },
+    { id: 'timeoff', nameKey: 'portalNav.timeoff', icon: 'fas fa-calendar-alt', badgeCount: 2, badgeColor: 'bg-orange-500' },
+    { id: 'missions', nameKey: 'portalNav.missions', icon: 'fas fa-tasks' },
+    { id: 'payroll', nameKey: 'portalNav.payroll', icon: 'fas fa-dollar-sign' },
+    { id: 'benefits', nameKey: 'portalNav.benefits', icon: 'fas fa-shield-alt' },
+    { id: 'documents', nameKey: 'portalNav.documents', icon: 'fas fa-file-alt' },
+    { id: 'learning', nameKey: 'portalNav.learning', icon: 'fas fa-graduation-cap' },
+    { id: 'development_plan', nameKey: 'portalNav.development_plan', icon: 'fas fa-rocket', badgeKey: 'portalNav.badge.new', badgeColor: 'bg-purple-500' },
+    { id: 'feedback', nameKey: 'portalNav.feedback', icon: 'fas fa-comment' },
 ];

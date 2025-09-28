@@ -1,11 +1,12 @@
 
-import React, { Suspense, lazy } from 'react';
+import React, { Suspense, lazy, createContext, useState, useContext, ReactNode, useEffect } from 'react';
 import { Routes, Route, Navigate, HashRouter } from 'react-router-dom';
 import Layout from './components/Layout';
 import { UserProvider, useUser } from './context/UserContext';
 import ProtectedRoute from './components/ProtectedRoute';
 import LoadingSpinner from './components/LoadingSpinner';
 import { I18nProvider } from './context/I18nContext';
+import { ActiveModules, ModuleContextType, OptionalModuleKey } from './types';
 
 // Lazily import all page components to improve initial load time
 const LoginPage = lazy(() => import('./pages/LoginPage.tsx'));
@@ -32,6 +33,123 @@ const BranchesPage = lazy(() => import('./pages/branches/index.tsx'));
 const OrgChartPage = lazy(() => import('./pages/org_chart/index.tsx'));
 const SurveysPage = lazy(() => import('./pages/surveys/index.tsx'));
 const RecognitionPage = lazy(() => import('./pages/recognition/index.tsx'));
+const MissionsPage = lazy(() => import('./pages/missions/index.tsx'));
+
+// --- Module Management Context ---
+
+const initialModules: ActiveModules = {
+    payroll: true,
+    documents: false,
+    recruitment: true,
+    performance: false,
+    learning: true,
+    onboarding: true,
+    assets: false,
+    support: true,
+    help_center: true,
+    recognition: false,
+    surveys: false,
+    missions: true,
+};
+
+const DEPENDENCIES: Partial<Record<OptionalModuleKey, OptionalModuleKey[]>> = {
+  onboarding: ['recruitment'],
+  assets: ['onboarding'],
+  help_center: ['support'],
+};
+
+const DEPENDENTS: Partial<Record<OptionalModuleKey, OptionalModuleKey[]>> = {
+  recruitment: ['onboarding', 'assets'],
+  onboarding: ['assets'],
+  support: ['help_center'],
+};
+
+const ModuleContext = createContext<ModuleContextType | undefined>(undefined);
+
+const ModuleProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+    const [activeModules, setActiveModules] = useState<ActiveModules>(() => {
+        try {
+            const stored = localStorage.getItem('activeModules');
+            return stored ? JSON.parse(stored) : initialModules;
+        } catch {
+            return initialModules;
+        }
+    });
+
+    const [dependencyConfirmation, setDependencyConfirmation] = useState({
+        isOpen: false,
+        moduleToDisable: null as OptionalModuleKey | null,
+        dependentsToDisable: [] as OptionalModuleKey[],
+    });
+
+    useEffect(() => {
+        localStorage.setItem('activeModules', JSON.stringify(activeModules));
+    }, [activeModules]);
+
+    const toggleModule = (moduleKey: OptionalModuleKey) => {
+        const isCurrentlyActive = activeModules[moduleKey];
+
+        if (!isCurrentlyActive) { // Enabling a module
+            const toEnable = new Set<OptionalModuleKey>([moduleKey]);
+            const queue: OptionalModuleKey[] = [moduleKey];
+
+            while(queue.length > 0) {
+                const current = queue.shift()!;
+                const deps = DEPENDENCIES[current];
+                if (deps) {
+                    deps.forEach(dep => {
+                        if (!activeModules[dep]) {
+                            toEnable.add(dep);
+                            queue.push(dep);
+                        }
+                    });
+                }
+            }
+            setActiveModules(prev => ({...prev, ...Object.fromEntries(Array.from(toEnable).map(k => [k, true]))}));
+        } else { // Disabling a module
+            const dependents = DEPENDENTS[moduleKey] || [];
+            const activeDependents = dependents.filter(d => activeModules[d]);
+
+            if (activeDependents.length > 0) {
+                setDependencyConfirmation({
+                    isOpen: true,
+                    moduleToDisable: moduleKey,
+                    dependentsToDisable: activeDependents,
+                });
+            } else {
+                setActiveModules(prev => ({ ...prev, [moduleKey]: false }));
+            }
+        }
+    };
+    
+    const confirmDisable = () => {
+        if (dependencyConfirmation.moduleToDisable) {
+             const toDisable = [dependencyConfirmation.moduleToDisable, ...dependencyConfirmation.dependentsToDisable];
+             setActiveModules(prev => ({...prev, ...Object.fromEntries(toDisable.map(k => [k, false]))}));
+        }
+        cancelDisable();
+    };
+
+    const cancelDisable = () => {
+        setDependencyConfirmation({ isOpen: false, moduleToDisable: null, dependentsToDisable: [] });
+    };
+
+    return (
+        <ModuleContext.Provider value={{ activeModules, toggleModule, dependencyConfirmation, confirmDisable, cancelDisable }}>
+            {children}
+        </ModuleContext.Provider>
+    );
+};
+
+export const useModules = (): ModuleContextType => {
+  const context = useContext(ModuleContext);
+  if (!context) {
+    throw new Error('useModules must be used within a ModuleProvider');
+  }
+  return context;
+};
+
+// --- App Routes & Main Component ---
 
 const AppRoutes: React.FC = () => {
   const { loading } = useUser();
@@ -66,6 +184,7 @@ const AppRoutes: React.FC = () => {
         <Route path="learning" element={<LearningPage />} />
         <Route path="onboarding-offboarding" element={<OnboardingOffboardingPage />} />
         <Route path="assets" element={<AssetsPage />} />
+        <Route path="missions" element={<MissionsPage />} />
         <Route path="recognition" element={<RecognitionPage />} />
         <Route path="surveys" element={<SurveysPage />} />
         <Route path="support-tickets" element={<SupportTicketsPage />} />
@@ -82,9 +201,11 @@ const App: React.FC = () => {
     <I18nProvider>
       <HashRouter>
         <UserProvider>
-          <Suspense fallback={<LoadingSpinner fullScreen />}>
-            <AppRoutes />
-          </Suspense>
+          <ModuleProvider>
+            <Suspense fallback={<LoadingSpinner fullScreen />}>
+              <AppRoutes />
+            </Suspense>
+          </ModuleProvider>
         </UserProvider>
       </HashRouter>
     </I18nProvider>

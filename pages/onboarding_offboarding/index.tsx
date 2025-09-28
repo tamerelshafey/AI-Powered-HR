@@ -1,4 +1,5 @@
 
+
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useLocation } from 'react-router-dom';
 import PageHeader from '../../components/PageHeader';
@@ -14,6 +15,34 @@ import { ErrorDisplay } from '../../components/ModulePlaceholder';
 import { useI18n } from '../../context/I18nContext';
 
 type ActiveTab = 'onboarding' | 'offboarding';
+
+interface TabButtonProps {
+    tabName: ActiveTab;
+    labelKey: string;
+    activeTab: ActiveTab;
+    setActiveTab: (tab: ActiveTab) => void;
+}
+
+const TabButton: React.FC<TabButtonProps> = ({ tabName, labelKey, activeTab, setActiveTab }) => {
+    const { t } = useI18n();
+    return (
+        <button
+            onClick={() => setActiveTab(tabName)}
+            className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
+                activeTab === tabName
+                    ? 'bg-blue-600 text-white'
+                    : 'text-gray-600 hover:bg-gray-100'
+            }`}
+            role="tab"
+            aria-selected={activeTab === tabName}
+            aria-controls={`${tabName}-panel`}
+            id={`${tabName}-tab`}
+        >
+            {t(labelKey)}
+        </button>
+    );
+};
+
 
 const OnboardingOffboardingPage: React.FC = () => {
     const [processes, setProcesses] = useState<OnboardingProcess[]>([]);
@@ -193,23 +222,6 @@ const OnboardingOffboardingPage: React.FC = () => {
         return <ErrorDisplay message={error} onRetry={fetchData} />;
     }
 
-    const TabButton: React.FC<{ tabName: ActiveTab; label: string }> = ({ tabName, label }) => (
-        <button
-            onClick={() => setActiveTab(tabName)}
-            className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
-                activeTab === tabName
-                    ? 'bg-blue-600 text-white'
-                    : 'text-gray-600 hover:bg-gray-100'
-            }`}
-            role="tab"
-            aria-selected={activeTab === tabName}
-            aria-controls={`${tabName}-panel`}
-            id={`${tabName}-tab`}
-        >
-            {label}
-        </button>
-    );
-
     return (
         <div>
             {toast && <ToastNotification message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
@@ -232,8 +244,8 @@ const OnboardingOffboardingPage: React.FC = () => {
             <div className="bg-white rounded-xl shadow-sm border border-gray-100">
                 <div className="p-4 border-b border-gray-100 flex items-center justify-between">
                     <div className="flex items-center space-x-2 space-x-reverse" role="tablist" aria-label="Process Type">
-                        <TabButton tabName="onboarding" label="عمليات التعيين" />
-                        <TabButton tabName="offboarding" label="عمليات الفصل" />
+                        <TabButton tabName="onboarding" labelKey="page.onboarding.tab.onboarding" activeTab={activeTab} setActiveTab={setActiveTab} />
+                        <TabButton tabName="offboarding" labelKey="page.onboarding.tab.offboarding" activeTab={activeTab} setActiveTab={setActiveTab} />
                     </div>
                 </div>
                 <div id={`${activeTab}-panel`} role="tabpanel" aria-labelledby={`${activeTab}-tab`}>
