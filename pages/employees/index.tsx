@@ -1,10 +1,9 @@
+
 import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-// FIX: Use named imports for react-window components and types.
 import { FixedSizeList, ListChildComponentProps } from 'react-window';
-import InfiniteLoader from 'react-window-infinite-loader';
-import { Employee, UserRole } from '../../types';
-import { getEmployees, addEmployee } from '../../services/api';
+import { Employee, UserRole, Department, Branch } from '../../types';
+import { addEmployee, getAllEmployees, getDepartments, getBranches } from '../../services/api';
 import { useUser } from '../../context/UserContext';
 import { useI18n } from '../../context/I18nContext';
 import PageHeader from '../../components/PageHeader';
@@ -15,89 +14,53 @@ import AddEmployeeModal from './components/AddEmployeeModal';
 import EmployeeListItem from './components/EmployeeListItem';
 import { ErrorDisplay } from '../../components/ModulePlaceholder';
 import ToastNotification from '../../components/ToastNotification';
+import LoadingSpinner from '../../components/LoadingSpinner';
 
 type ViewMode = 'grid' | 'list';
 
 const EmployeesPage: React.FC = () => {
-    const [employees, setEmployees] = useState<Employee[]>([]);
-    const [initialLoading, setInitialLoading] = useState(true);
-    const [moreLoading, setMoreLoading] = useState(false);
-    const [page, setPage] = useState(1);
-    const [hasMore, setHasMore] = useState(true);
+    const [allEmployees, setAllEmployees] = useState<Employee[]>([]);
+    const [departments, setDepartments] = useState<Department[]>([]);
+    const [branches, setBranches] = useState<Branch[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
+
     const [viewMode, setViewMode] = useState<ViewMode>('grid');
     const [isAddModalOpen, setAddModalOpen] = useState(false);
-    const [error, setError] = useState<string | null>(null);
     const [toast, setToast] = useState<{ message: string; type: 'success' | 'info' | 'error' } | null>(null);
+    const [filters, setFilters] = useState({ searchTerm: '', department: 'All', role: 'All', branch: 'All' });
+    
     const navigate = useNavigate();
-
     const { currentUser } = useUser();
     const { t } = useI18n();
 
-    // Refs for infinite scroll and list virtualization
-    const observer = useRef<IntersectionObserver | null>(null);
+    // Virtualization refs
     const listContainerRef = useRef<HTMLDivElement>(null);
     const [listDimensions, setListDimensions] = useState({ height: 0, width: 0 });
     
-    // A single, robust function for loading more items, compatible with both grid and list loaders.
-    // It returns a Promise that resolves after the fetch and state updates are complete,
-    // and uses a timeout to prevent race conditions with react-window-infinite-loader.
-    const loadMoreItems = useCallback((startIndex?: number, stopIndex?: number): Promise<void> => {
-        return new Promise(resolve => {
-            if (moreLoading || !hasMore) {
-                resolve();
-                return;
-            }
-
-            setMoreLoading(true);
-
-            // A timeout helps prevent race conditions and ensures smooth state transitions with virtualized lists.
-            setTimeout(async () => {
-                try {
-                    const { data, hasMore: newHasMore } = await getEmployees(page, 12);
-                    setEmployees(prev => [...prev, ...data]);
-                    setHasMore(newHasMore);
-                    setPage(prev => prev + 1);
-                } catch (error) {
-                    console.error("Failed to fetch more employees", error);
-                } finally {
-                    setMoreLoading(false);
-                    resolve();
-                }
-            }, 500);
-        });
-    }, [moreLoading, hasMore, page]);
-
-    // Infinite scroll for grid view
-    const gridLoaderRef = useCallback(node => {
-        if (observer.current) observer.current.disconnect();
-        observer.current = new IntersectionObserver(entries => {
-            if (entries[0].isIntersecting && hasMore) {
-                loadMoreItems();
-            }
-        });
-        if (node) observer.current.observe(node);
-    }, [hasMore, loadMoreItems]);
-
-
-    const fetchInitialEmployees = useCallback(async () => {
-        setInitialLoading(true);
+    const fetchData = useCallback(async () => {
+        setLoading(true);
         setError(null);
         try {
-            const { data, hasMore: newHasMore } = await getEmployees(1, 12);
-            setEmployees(data);
-            setHasMore(newHasMore);
-            setPage(2);
+            const [emps, depts, brnchs] = await Promise.all([
+                getAllEmployees(),
+                getDepartments(),
+                getBranches(),
+            ]);
+            setAllEmployees(emps);
+            setDepartments(depts);
+            setBranches(brnchs);
         } catch (error) {
-            console.error("Failed to fetch employees", error);
+            console.error("Failed to fetch employees data", error);
             setError(t('page.employees.error.loadFailed'));
         } finally {
-            setInitialLoading(false);
+            setLoading(false);
         }
     }, [t]);
 
     useEffect(() => {
-        fetchInitialEmployees();
-    }, [fetchInitialEmployees]);
+        fetchData();
+    }, [fetchData]);
 
     // Effect to measure the container for the virtualized list
     useEffect(() => {
@@ -113,15 +76,27 @@ const EmployeesPage: React.FC = () => {
         }
     }, [viewMode]);
 
-    const filteredEmployees = useMemo(() => {
+    const permissionFilteredEmployees = useMemo(() => {
         if ([UserRole.HR_MANAGER, UserRole.SYSTEM_ADMINISTRATOR, UserRole.BOARD_MEMBER, UserRole.BRANCH_MANAGER].includes(currentUser.role)) {
-            return employees;
+            return allEmployees;
         }
         if (currentUser.role === UserRole.DEPARTMENT_MANAGER) {
-            return employees.filter(emp => emp.department === currentUser.department);
+            return allEmployees.filter(emp => emp.department === currentUser.department);
         }
         return [];
-    }, [currentUser, employees]);
+    }, [currentUser, allEmployees]);
+
+    const finalFilteredEmployees = useMemo(() => {
+        return permissionFilteredEmployees.filter(emp => {
+            const searchTermLower = filters.searchTerm.toLowerCase();
+            const nameMatch = `${emp.firstName} ${emp.lastName}`.toLowerCase().includes(searchTermLower) || emp.jobTitle.toLowerCase().includes(searchTermLower);
+            const departmentMatch = filters.department === 'All' || emp.department === filters.department;
+            const roleMatch = filters.role === 'All' || emp.role === filters.role;
+            const branchMatch = filters.branch === 'All' || emp.branch === filters.branch;
+            return nameMatch && departmentMatch && roleMatch && branchMatch;
+        });
+    }, [permissionFilteredEmployees, filters]);
+
 
     const handleEmployeeClick = useCallback((employeeId: string) => {
         navigate(`/employees/${employeeId}`);
@@ -129,31 +104,21 @@ const EmployeesPage: React.FC = () => {
 
     const handleAddEmployee = useCallback(async (employeeData: Omit<Employee, 'id'>) => {
         try {
-            const newEmployee = await addEmployee(employeeData);
-            setToast({ message: `تمت إضافة الموظف ${newEmployee.firstName} بنجاح!`, type: 'success' });
-            // Refetch all employees to ensure the list is up-to-date with the database.
-            // This is safer than just adding to local state.
-            await fetchInitialEmployees();
+            await addEmployee(employeeData);
+            setToast({ message: `تمت إضافة الموظف ${employeeData.firstName} بنجاح!`, type: 'success' });
+            fetchData();
         } catch (error) {
             console.error("Failed to add employee", error);
             setToast({ message: 'فشل في إضافة الموظف. يرجى المحاولة مرة أخرى.', type: 'error' });
         }
-    }, [fetchInitialEmployees]);
+    }, [fetchData]);
 
-    // Infinite loader props for react-window
-    const isItemLoaded = (index: number) => !hasMore || index < filteredEmployees.length;
-    const itemCount = hasMore ? filteredEmployees.length + 1 : filteredEmployees.length;
-
-    if (initialLoading) {
-        return (
-            <div className="flex justify-center items-center h-96">
-                <i className="fas fa-spinner fa-spin text-4xl text-blue-600"></i>
-            </div>
-        );
+    if (loading) {
+        return <LoadingSpinner fullScreen />;
     }
 
     if (error) {
-        return <ErrorDisplay message={error} onRetry={fetchInitialEmployees} />;
+        return <ErrorDisplay message={error} onRetry={fetchData} />;
     }
 
     const department = currentUser.role === UserRole.DEPARTMENT_MANAGER ? currentUser.department : undefined;
@@ -171,92 +136,56 @@ const EmployeesPage: React.FC = () => {
                     </button>
                 }
             />
-            <FilterBar viewMode={viewMode} onViewChange={setViewMode} />
-            <EmployeeStats employees={filteredEmployees} />
+            <FilterBar 
+                viewMode={viewMode} 
+                onViewChange={setViewMode} 
+                filters={filters}
+                onFilterChange={setFilters}
+                departments={departments}
+                branches={branches}
+            />
+            <EmployeeStats employees={finalFilteredEmployees} />
             
             {viewMode === 'grid' && (
-                <>
-                    <div id="employeeGrid" className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                        {filteredEmployees.map((employee, index) => {
-                            // The ref is attached to the last element to trigger loading
-                            if (filteredEmployees.length === index + 1) {
-                                return (
-                                    <div ref={gridLoaderRef} key={employee.id}>
-                                        <EmployeeCard employee={employee} onClick={handleEmployeeClick} />
-                                    </div>
-                                );
-                            }
-                            return <EmployeeCard key={employee.id} employee={employee} onClick={handleEmployeeClick} />;
-                        })}
-                    </div>
-                    {moreLoading && (
-                        <div className="text-center py-6">
-                            <i className="fas fa-spinner fa-spin text-2xl text-blue-600"></i>
-                        </div>
-                    )}
-                    {!hasMore && employees.length > 0 && (
-                        <div className="text-center mt-8 text-gray-500">
-                            {t('page.employees.listEnd')}
-                        </div>
-                    )}
-                </>
+                <div id="employeeGrid" className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                    {finalFilteredEmployees.map((employee) => (
+                        <EmployeeCard key={employee.id} employee={employee} onClick={handleEmployeeClick} />
+                    ))}
+                </div>
             )}
             
             {viewMode === 'list' && (
                 <div id="employeeListContainer" ref={listContainerRef} className="h-[70vh] w-full">
                     {listDimensions.height > 0 && (
-                        <InfiniteLoader
-                            isItemLoaded={isItemLoaded}
-                            itemCount={itemCount}
-                            loadMoreItems={loadMoreItems}
+                        <FixedSizeList
+                            height={listDimensions.height}
+                            width={listDimensions.width}
+                            itemCount={finalFilteredEmployees.length}
+                            itemSize={92}
                         >
-                            {({ onItemsRendered, ref }) => (
-                                // FIX: Use named import for react-window component.
-                                <FixedSizeList
-                                    ref={ref}
-                                    onItemsRendered={onItemsRendered}
-                                    height={listDimensions.height}
-                                    width={listDimensions.width}
-                                    itemCount={itemCount}
-                                    itemSize={92}
-                                >
-                                    {/* FIX: Use named import for react-window type. */}
-                                    {({ index, style }: ListChildComponentProps): React.ReactElement => {
-                                        if (!isItemLoaded(index)) {
-                                            return (
-                                                <div style={style} className="flex items-center justify-center text-gray-500">
-                                                    <i className="fas fa-spinner fa-spin me-2"></i> {t('common.loading')}
-                                                </div>
-                                            );
-                                        }
-                                        const employee = filteredEmployees[index];
-                                        if (!employee) {
-                                            return <div style={style}></div>;
-                                        }
-                                        return (
-                                            <div style={style}>
-                                                <div style={{ paddingBottom: '12px' }}>
-                                                    <EmployeeListItem
-                                                        employee={employee}
-                                                        onClick={handleEmployeeClick}
-                                                    />
-                                                </div>
-                                            </div>
-                                        );
-                                    }}
-                                </FixedSizeList>
-                            )}
-                        </InfiniteLoader>
+                            {({ index, style }: ListChildComponentProps): React.ReactElement => {
+                                const employee = finalFilteredEmployees[index];
+                                return (
+                                    <div style={style}>
+                                        <div style={{ paddingBottom: '12px' }}>
+                                            <EmployeeListItem
+                                                employee={employee}
+                                                onClick={handleEmployeeClick}
+                                            />
+                                        </div>
+                                    </div>
+                                );
+                            }}
+                        </FixedSizeList>
                     )}
                 </div>
             )}
 
-
-            {filteredEmployees.length === 0 && !initialLoading && !error && (
+            {finalFilteredEmployees.length === 0 && !loading && !error && (
                  <div className="text-center py-12 bg-white rounded-lg shadow-sm border">
                     <i className="fas fa-users-slash text-5xl text-gray-400 mb-4"></i>
                     <h3 className="text-xl font-semibold text-gray-700">{t('page.employees.noEmployees.title')}</h3>
-                    <p className="text-gray-500 mt-2">{t('page.employees.noEmployees.description')}</p>
+                    <p className="text-gray-500 mt-2">{filters.searchTerm || filters.department !== 'All' || filters.branch !== 'All' || filters.role !== 'All' ? 'لا توجد نتائج تطابق الفلاتر المحددة.' : t('page.employees.noEmployees.description')}</p>
                      <button
                         onClick={() => setAddModalOpen(true)}
                         className="mt-6 flex items-center space-x-2 space-x-reverse px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors mx-auto"
@@ -267,7 +196,12 @@ const EmployeesPage: React.FC = () => {
                 </div>
             )}
 
-            <AddEmployeeModal isOpen={isAddModalOpen} onClose={() => setAddModalOpen(false)} onAddEmployee={handleAddEmployee} />
+            <AddEmployeeModal 
+                isOpen={isAddModalOpen} 
+                onClose={() => setAddModalOpen(false)} 
+                onAddEmployee={handleAddEmployee}
+                branches={branches}
+            />
         </div>
     );
 };

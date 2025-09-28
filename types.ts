@@ -59,6 +59,7 @@ export interface Employee {
   avatarColor: string;
   jobTitle: string;
   department: string;
+  branch: string;
   status: EmployeeStatus;
   onlineStatus: OnlineStatus;
   role: UserRole;

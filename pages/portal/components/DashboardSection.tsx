@@ -1,5 +1,6 @@
 
 
+
 import React, { useEffect, useState } from 'react';
 import { useUser } from '../../../context/UserContext';
 import { useI18n } from '../../../context/I18nContext';
@@ -12,6 +13,7 @@ interface DashboardSectionProps {
     onShowSection: (sectionId: any) => void;
     onOpenTimeOffModal: () => void;
     onOpenFeedbackModal: () => void;
+    onOpenBiometricModal: () => void;
 }
 
 const QuickActionButton: React.FC<{ icon: string; title: string; color: string; onClick: () => void }> = ({ icon, title, color, onClick }) => (
@@ -23,9 +25,9 @@ const QuickActionButton: React.FC<{ icon: string; title: string; color: string; 
     </button>
 );
 
-const DashboardSection: React.FC<DashboardSectionProps> = ({ onShowSection, onOpenTimeOffModal, onOpenFeedbackModal }) => {
+const DashboardSection: React.FC<DashboardSectionProps> = ({ onShowSection, onOpenTimeOffModal, onOpenFeedbackModal, onOpenBiometricModal }) => {
     const { currentUser } = useUser();
-    const { language } = useI18n();
+    const { t, language } = useI18n();
     const [currentDate, setCurrentDate] = useState('');
     
     const [events, setEvents] = useState<UpcomingEvent[]>([]);
@@ -77,9 +79,10 @@ const DashboardSection: React.FC<DashboardSectionProps> = ({ onShowSection, onOp
                 </div>
             </div>
 
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+            <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-8">
                 <QuickActionButton icon="fas fa-calendar-plus" title="طلب إجازة" color="text-blue-600" onClick={onOpenTimeOffModal} />
                 <QuickActionButton icon="fas fa-file-invoice-dollar" title="عرض قسيمة الدفع" color="text-green-600" onClick={() => onShowSection('payroll')} />
+                <QuickActionButton icon="fas fa-fingerprint" title={t('portal.dashboard.action.biometricCheckin')} color="text-indigo-600" onClick={onOpenBiometricModal} />
                 <QuickActionButton icon="fas fa-user-edit" title="تحديث الملف الشخصي" color="text-purple-600" onClick={() => onShowSection('profile')} />
                 <QuickActionButton icon="fas fa-comment-dots" title="تقديم ملاحظات" color="text-orange-600" onClick={onOpenFeedbackModal} />
             </div>

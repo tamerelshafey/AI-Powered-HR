@@ -46,6 +46,8 @@ const NewProcessModal: React.FC<NewProcessModalProps> = ({ isOpen, onClose, proc
             avatarInitials: newHire.avatarInitials,
             jobTitle: newHire.positionApplied,
             department: 'غير محدد', // Placeholder, ideally this would come from the job posting
+            // FIX: Added missing 'branch' property to satisfy the Employee type.
+            branch: 'غير محدد',
             status: EmployeeStatus.ACTIVE,
             onlineStatus: OnlineStatus.OFFLINE,
             role: UserRole.EMPLOYEE,

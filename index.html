@@ -41,28 +41,31 @@
         .leave-rejected { background: #fee2e2; color: #991b1b; }
         .leave-holiday { background: #e0e7ff; color: #3730a3; }
         .workflow-step { position: relative; }
+        /* LTR Arrow: Points right, positioned off the right edge */
         .workflow-step:not(:last-child)::after {
             content: '';
             position: absolute;
             top: 50%;
-            left: -20px;
+            right: -25px; /* Centers in a 40px gap (10px arrow width) */
             width: 0;
             height: 0;
-            border-right: 10px solid #e5e7eb;
+            border-left: 10px solid #e5e7eb; /* default gray arrow */
             border-top: 8px solid transparent;
             border-bottom: 8px solid transparent;
             transform: translateY(-50%);
         }
+        /* RTL Arrow: Points left, positioned off the left edge */
         html[dir="rtl"] .workflow-step:not(:last-child)::after {
-            right: -20px;
-            left: auto;
-            border-left: 10px solid #e5e7eb;
-            border-right: none;
+            left: -25px;
+            right: auto;
+            border-right: 10px solid #e5e7eb; /* default gray arrow */
+            border-left: none;
         }
-        .workflow-step.active::after { border-left-color: #3b82f6; }
-        html[dir="rtl"] .workflow-step.active::after { border-left-color: #3b82f6; border-right-color: transparent; }
-        .workflow-step.completed::after { border-left-color: #10b981; }
-        html[dir="rtl"] .workflow-step.completed::after { border-left-color: #10b981; border-right-color: transparent; }
+        /* Color the arrow based on the step's status */
+        .workflow-step.completed:not(:last-child)::after { border-left-color: #10b981; }
+        html[dir="rtl"] .workflow-step.completed:not(:last-child)::after { border-right-color: #10b981; border-left-color: transparent; }
+        .workflow-step.active:not(:last-child)::after { border-left-color: #3b82f6; }
+        html[dir="rtl"] .workflow-step.active:not(:last-child)::after { border-right-color: #3b82f6; border-left-color: transparent; }
         .kpi-indicator { 
             position: relative;
             overflow: hidden;
@@ -225,11 +228,18 @@
         }
 
         /* Org Chart Styles */
+        .org-chart { text-align: center; }
         .org-chart .tree ul {
-            padding-top: 20px; position: relative;
+            padding-top: 20px;
+            position: relative;
             transition: all 0.5s;
+            display: flex;
+            justify-content: center;
         }
         .org-chart .tree li {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
             text-align: center;
             list-style-type: none;
             position: relative;
@@ -238,61 +248,105 @@
         }
         .org-chart .tree li::before, .org-chart .tree li::after {
             content: '';
-            position: absolute; top: 0; right: 50%;
+            position: absolute;
+            top: 0;
+            right: 50%;
             border-top: 2px solid #ccc;
-            width: 50%; height: 20px;
-            transition: all 0.5s;
+            width: 50%;
+            height: 20px;
         }
         .org-chart .tree li::after {
-            right: auto; left: 50%;
+            right: auto;
+            left: 50%;
             border-left: 2px solid #ccc;
         }
         html[dir="rtl"] .org-chart .tree li::after {
-            right: 50%; left: auto;
+            right: 50%; 
+            left: auto;
             border-left: none;
             border-right: 2px solid #ccc;
         }
-        .org-chart .tree li:only-child::after, .org-chart .tree li:only-child::before {
-            display: none;
-        }
+        .org-chart .tree li:only-child::after, .org-chart .tree li:only-child::before { display: none; }
         .org-chart .tree li:only-child { padding-top: 0; }
-        .org-chart .tree li:first-child::before, .org-chart .tree li:last-child::after {
-            border: 0 none;
-        }
-        .org-chart .tree li:last-child::before {
-            border-right: 2px solid #ccc;
-            border-radius: 0 5px 0 0;
-        }
-        html[dir="rtl"] .org-chart .tree li:last-child::before {
-            border-right: none;
-            border-left: 2px solid #ccc;
-            border-radius: 5px 0 0 0;
-        }
-        .org-chart .tree li:first-child::after {
-            border-radius: 5px 0 0 0;
-        }
-        html[dir="rtl"] .org-chart .tree li:first-child::after {
-            border-radius: 0 5px 0 0;
-        }
+        .org-chart .tree li:first-child::before, .org-chart .tree li:last-child::after { border: 0 none; }
+        .org-chart .tree li:last-child::before { border-right: 2px solid #ccc; border-radius: 0 5px 0 0; }
+        html[dir="rtl"] .org-chart .tree li:last-child::before { border-right: none; border-left: 2px solid #ccc; border-radius: 5px 0 0 0; }
+        .org-chart .tree li:first-child::after { border-radius: 5px 0 0 0; }
+        html[dir="rtl"] .org-chart .tree li:first-child::after { border-radius: 0 5px 0 0; }
         .org-chart .tree ul ul::before {
             content: '';
-            position: absolute; top: 0; left: 50%;
+            position: absolute;
+            top: 0;
+            left: 50%;
             border-left: 2px solid #ccc;
-            width: 0; height: 20px;
+            width: 0;
+            height: 20px;
         }
-        html[dir="rtl"] .org-chart .tree ul ul::before {
-            left: auto; right: 50%;
-            border-left: none;
-            border-right: 2px solid #ccc;
-        }
-        .org-chart .tree li .node-card {
-            border: 1px solid #ccc;
+        html[dir="rtl"] .org-chart .tree ul ul::before { left: auto; right: 50%; border-left: 0; border-right: 2px solid #ccc; }
+        .org-chart .node-card {
+            border: 1px solid #e2e8f0;
             padding: 16px;
             display: inline-block;
             border-radius: 8px;
             background-color: #fff;
-            min-width: 200px;
-            transition: all 0.5s;
+            min-width: 220px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            transition: all 0.3s;
+            position: relative;
+        }
+        html[dir="rtl"] .org-chart .node-card { text-align: right; }
+        html[lang="en"] .org-chart .node-card { text-align: left; }
+        .org-chart .node-toggle {
+            position: absolute;
+            bottom: -12px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 24px;
+            height: 24px;
+            background-color: #fff;
+            border: 2px solid #ccc;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            z-index: 10;
+            color: #6b7280;
+        }
+        .org-chart .node-toggle:hover { background-color: #f3f4f6; border-color: #3b82f6; color: #3b82f6; }
+        .org-chart ul.collapsed { display: none; }
+
+        /* NEW Leave Calendar Styles */
+        .calendar-popover {
+            position: absolute;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            border: 1px solid #e2e8f0;
+            z-index: 60;
+            width: 280px;
+            transform-origin: top center;
+        }
+        .calendar-popover-arrow {
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            height: 0;
+            border-left: 8px solid transparent;
+            border-right: 8px solid transparent;
+            border-bottom: 8px solid white;
+        }
+        .event-pill {
+            display: block;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            font-size: 0.75rem;
+            padding: 2px 6px;
+            border-radius: 9999px;
+            margin-top: 2px;
         }
     </style>
   <script type="importmap">

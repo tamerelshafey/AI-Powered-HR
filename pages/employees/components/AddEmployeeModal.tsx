@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { UserRole, Employee, EmployeeStatus, OnlineStatus } from '../../../types';
+import { UserRole, Employee, EmployeeStatus, OnlineStatus, Branch } from '../../../types';
 import { useI18n } from '../../../context/I18nContext';
 import Modal, { ModalHeader, ModalBody, ModalFooter } from '../../../components/Modal';
 
@@ -8,9 +8,10 @@ interface AddEmployeeModalProps {
   isOpen: boolean;
   onClose: () => void;
   onAddEmployee: (employeeData: Omit<Employee, 'id'>) => void;
+  branches: Branch[];
 }
 
-const AddEmployeeModal: React.FC<AddEmployeeModalProps> = ({ isOpen, onClose, onAddEmployee }) => {
+const AddEmployeeModal: React.FC<AddEmployeeModalProps> = ({ isOpen, onClose, onAddEmployee, branches }) => {
   const { t } = useI18n();
   
   const [formData, setFormData] = useState({
@@ -22,6 +23,7 @@ const AddEmployeeModal: React.FC<AddEmployeeModalProps> = ({ isOpen, onClose, on
     jobTitle: '',
     role: UserRole.EMPLOYEE,
     startDate: new Date().toISOString().split('T')[0],
+    branch: branches[0]?.name || '',
   });
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
@@ -42,6 +44,7 @@ const AddEmployeeModal: React.FC<AddEmployeeModalProps> = ({ isOpen, onClose, on
         avatarColor: randomColor,
         jobTitle: formData.jobTitle,
         department: formData.department,
+        branch: formData.branch,
         status: EmployeeStatus.ACTIVE,
         onlineStatus: OnlineStatus.OFFLINE,
         role: formData.role as UserRole,
@@ -68,48 +71,54 @@ const AddEmployeeModal: React.FC<AddEmployeeModalProps> = ({ isOpen, onClose, on
         <ModalBody>
             <form id="add-employee-form" className="space-y-6" onSubmit={handleSubmit}>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">{t('page.employees.addModal.firstName')}</label>
-                    <input type="text" name="firstName" value={formData.firstName} onChange={handleInputChange} className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" required />
-                </div>
-                <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">{t('page.employees.addModal.lastName')}</label>
-                    <input type="text" name="lastName" value={formData.lastName} onChange={handleInputChange} className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" required />
-                </div>
-                <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">{t('page.employees.addModal.email')}</label>
-                    <input type="email" name="email" value={formData.email} onChange={handleInputChange} className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" required/>
-                </div>
-                <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">{t('page.employees.addModal.phone')}</label>
-                    <input type="tel" name="phone" value={formData.phone} onChange={handleInputChange} className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" />
-                </div>
-                <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">{t('page.employees.addModal.department')}</label>
-                    <select name="department" value={formData.department} onChange={handleInputChange} className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" required>
-                    <option>الهندسة</option>
-                    <option>التسويق</option>
-                    <option>المبيعات</option>
-                    <option>الموارد البشرية</option>
-                    <option>المالية</option>
-                    </select>
-                </div>
-                <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">{t('page.employees.addModal.jobTitle')}</label>
-                    <input type="text" name="jobTitle" value={formData.jobTitle} onChange={handleInputChange} className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" required/>
-                </div>
-                <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">{t('page.employees.addModal.userRole')}</label>
-                    <select name="role" value={formData.role} onChange={handleInputChange} className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" required>
-                        {Object.values(UserRole).map(role => (
-                            <option key={role} value={role}>{t(`enum.userRole.${role}`)}</option>
-                        ))}
-                    </select>
-                </div>
-                <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">{t('page.employees.addModal.startDate')}</label>
-                    <input type="date" name="startDate" value={formData.startDate} onChange={handleInputChange} className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" required />
-                </div>
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">{t('page.employees.addModal.firstName')}</label>
+                        <input type="text" name="firstName" value={formData.firstName} onChange={handleInputChange} className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" required />
+                    </div>
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">{t('page.employees.addModal.lastName')}</label>
+                        <input type="text" name="lastName" value={formData.lastName} onChange={handleInputChange} className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" required />
+                    </div>
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">{t('page.employees.addModal.email')}</label>
+                        <input type="email" name="email" value={formData.email} onChange={handleInputChange} className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" required/>
+                    </div>
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">{t('page.employees.addModal.phone')}</label>
+                        <input type="tel" name="phone" value={formData.phone} onChange={handleInputChange} className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" />
+                    </div>
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">{t('page.employees.addModal.jobTitle')}</label>
+                        <input type="text" name="jobTitle" value={formData.jobTitle} onChange={handleInputChange} className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" required/>
+                    </div>
+                     <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">الفرع</label>
+                        <select name="branch" value={formData.branch} onChange={handleInputChange} className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" required>
+                            {branches.map(branch => <option key={branch.id} value={branch.name}>{branch.name}</option>)}
+                        </select>
+                    </div>
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">{t('page.employees.addModal.department')}</label>
+                        <select name="department" value={formData.department} onChange={handleInputChange} className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" required>
+                        <option>الهندسة</option>
+                        <option>التسويق</option>
+                        <option>المبيعات</option>
+                        <option>الموارد البشرية</option>
+                        <option>المالية</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">{t('page.employees.addModal.userRole')}</label>
+                        <select name="role" value={formData.role} onChange={handleInputChange} className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" required>
+                            {Object.values(UserRole).map(role => (
+                                <option key={role} value={role}>{t(`enum.userRole.${role}`)}</option>
+                            ))}
+                        </select>
+                    </div>
+                    <div className="md:col-span-2">
+                        <label className="block text-sm font-medium text-gray-700 mb-2">{t('page.employees.addModal.startDate')}</label>
+                        <input type="date" name="startDate" value={formData.startDate} onChange={handleInputChange} className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" required />
+                    </div>
                 </div>
             </form>
         </ModalBody>

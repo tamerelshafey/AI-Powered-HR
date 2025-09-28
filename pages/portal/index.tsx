@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import PortalHeader from './components/PortalHeader';
 import PortalSidebar from './components/PortalSidebar';
@@ -20,17 +21,18 @@ import { getHelpCenterArticles } from '../../services/api';
 import { HelpCenterArticle, Payslip } from '../../types';
 import PayrollSection from './components/PayrollSection';
 import PayslipModal from '../payroll/components/PayslipModal';
+import BiometricModal from '../attendance/components/BiometricModal';
 
 type PortalSection = 'dashboard' | 'profile' | 'timeoff' | 'payroll' | 'benefits' | 'learning' | 'documents' | 'feedback' | 'development_plan';
 
 const EmployeePortalPage: React.FC = () => {
     const [activeSection, setActiveSection] = useState<PortalSection>('dashboard');
-    const [isSidebarOpen, setSidebarOpen] = useState(false);
     const [isTimeOffModalOpen, setTimeOffModalOpen] = useState(false);
     const [isFeedbackModalOpen, setFeedbackModalOpen] = useState(false);
     const [isExternalCourseModalOpen, setExternalCourseModalOpen] = useState(false);
     const [isChatbotOpen, setChatbotOpen] = useState(false);
     const [selectedPayslip, setSelectedPayslip] = useState<Payslip | null>(null);
+    const [isBiometricModalOpen, setBiometricModalOpen] = useState(false);
 
 
     const [articles, setArticles] = useState<HelpCenterArticle[]>([]);
@@ -55,6 +57,7 @@ const EmployeePortalPage: React.FC = () => {
                             onShowSection={setActiveSection} 
                             onOpenTimeOffModal={() => setTimeOffModalOpen(true)}
                             onOpenFeedbackModal={() => setFeedbackModalOpen(true)}
+                            onOpenBiometricModal={() => setBiometricModalOpen(true)}
                         />;
             case 'profile':
                 return <ProfileSection />;
@@ -77,26 +80,21 @@ const EmployeePortalPage: React.FC = () => {
                             onShowSection={setActiveSection} 
                             onOpenTimeOffModal={() => setTimeOffModalOpen(true)}
                             onOpenFeedbackModal={() => setFeedbackModalOpen(true)}
+                            onOpenBiometricModal={() => setBiometricModalOpen(true)}
                         />;
         }
     };
 
     return (
         <div className="flex h-screen bg-gray-50 font-sans">
-            <div 
-                className={`fixed inset-0 bg-black bg-opacity-50 z-30 lg:hidden ${isSidebarOpen ? 'block' : 'hidden'}`}
-                onClick={() => setSidebarOpen(false)}
-            ></div>
             <PortalSidebar
-                isOpen={isSidebarOpen}
-                setIsOpen={setSidebarOpen}
                 navItems={PORTAL_NAV_ITEMS}
                 activeSection={activeSection}
                 setActiveSection={setActiveSection}
             />
-            <div className="flex-1 flex flex-col overflow-hidden">
-                <PortalHeader onSidebarToggle={() => setSidebarOpen(!isSidebarOpen)} />
-                <main className="flex-1 overflow-x-hidden overflow-y-auto p-6">
+            <div className="flex-1 flex flex-col overflow-y-auto">
+                <PortalHeader />
+                <main className="flex-1 p-6">
                     {renderSection()}
                 </main>
             </div>
@@ -117,6 +115,10 @@ const EmployeePortalPage: React.FC = () => {
                 isOpen={!!selectedPayslip}
                 onClose={() => setSelectedPayslip(null)}
                 payslip={selectedPayslip}
+            />
+            <BiometricModal
+                isOpen={isBiometricModalOpen}
+                onClose={() => setBiometricModalOpen(false)}
             />
             <FloatingActionButton onClick={() => setChatbotOpen(true)} />
         </div>

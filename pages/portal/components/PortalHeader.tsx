@@ -1,22 +1,33 @@
 
+
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useUser } from '../../../context/UserContext';
 import UserSwitcher from '../../../components/UserSwitcher';
+import { ADMIN_ROLES } from '../../../permissions';
+import { useI18n } from '../../../context/I18nContext';
 
-interface PortalHeaderProps {
-  onSidebarToggle: () => void;
-}
+const PortalHeader: React.FC = () => {
+  const { currentUser, availableUsers, switchUser } = useUser();
+  const { t } = useI18n();
+  const navigate = useNavigate();
 
-const PortalHeader: React.FC<PortalHeaderProps> = ({ onSidebarToggle }) => {
-  const { currentUser } = useUser();
+  const isAdminSession = availableUsers.some(u => ADMIN_ROLES.includes(u.role));
+  const adminUser = availableUsers.find(u => ADMIN_ROLES.includes(u.role));
+
+  const handleReturnToDashboard = () => {
+    if (adminUser) {
+        switchUser(adminUser);
+        // Explicitly navigate to the dashboard after switching user context.
+        // The ProtectedRoute will then allow access as the user is now an admin.
+        navigate('/dashboard');
+    }
+  };
 
   return (
     <header className="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-20">
       <div className="flex items-center justify-between px-6 py-4">
         <div className="flex items-center space-x-4 space-x-reverse">
-          <button onClick={onSidebarToggle} className="lg:hidden text-gray-600 hover:text-gray-900" aria-label="Toggle sidebar">
-            <i className="fas fa-bars text-xl"></i>
-          </button>
           <div className="flex items-center space-x-3 space-x-reverse">
             <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-lg flex items-center justify-center">
               <i className="fas fa-user-circle text-white text-lg"></i>
@@ -34,6 +45,16 @@ const PortalHeader: React.FC<PortalHeaderProps> = ({ onSidebarToggle }) => {
             <span className="text-sm text-green-700 font-medium">متصل</span>
           </div>
           
+          {isAdminSession && (
+             <button 
+                onClick={handleReturnToDashboard} 
+                className="flex items-center space-x-2 space-x-reverse px-3 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors" 
+                title={t('header.returnToDashboard')}
+              >
+                  <i className="fas fa-shield-alt"></i>
+                  <span className="hidden sm:inline text-sm font-medium">{t('header.returnToDashboard')}</span>
+              </button>
+          )}
           <UserSwitcher />
           
           <button className="relative p-2 text-gray-600 hover:text-gray-900" aria-label="Notifications">

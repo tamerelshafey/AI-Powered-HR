@@ -1,8 +1,10 @@
 
 
-import { supabase } from './supabaseClient';
-import { Employee, JobPosting, Candidate, OnboardingProcess, EmployeeDocument, PayrollRun, CompanyAsset, JobTitle, Course, EmployeeEnrollment, HelpCenterCategory, HelpCenterArticle, SupportTicket, EmployeeActivity, AssetStatus, PerformanceReview, CompanyGoal, LeaveRequest, LeaveType, Payslip, CourseCategory, EmployeeLeaveBalance, ExternalCourseRecord, CompRequestStatus, CompensationChangeRequest, IndividualDevelopmentPlan, DevelopmentGoalStatus, ChatMessage, Department, Branch, DocumentStatus, PerformanceStatus, TicketStatus, TicketDepartment, User, AttendanceRecord, FeedItem, AttendanceStatus, AttendanceStatsData, PayrollStatus, LeaveStatus, Notification, EmployeeProfileOverviewData, Survey, SurveyAnalytics, SurveyStatus, SurveyQuestionType, Sentiment, Kudo, Milestone, CompanyValue, WeeklyStat, LeaveBalance, ActivityItem, Kpi, Performer, Report, PredictiveInsight, PortalNavItem, UpcomingEvent, PortalActivity, Announcement, LearningCourse, Skill, Achievement, Benefit, Feedback, LeaveTypeSetting, PublicHoliday, SalaryComponent, AttendanceSettings, EmployeeStatus, OnlineStatus, UserRole } from '../types';
+import { isSupabaseConfigured, supabase } from './supabaseClient';
+// FIX: Added missing 'AttendanceStatus' import to resolve type errors.
+import { Employee, JobPosting, Candidate, OnboardingProcess, EmployeeDocument, PayrollRun, CompanyAsset, JobTitle, Course, EmployeeEnrollment, HelpCenterCategory, HelpCenterArticle, SupportTicket, EmployeeActivity, AssetStatus, PerformanceReview, CompanyGoal, LeaveRequest, LeaveType, Payslip, CourseCategory, EmployeeLeaveBalance, ExternalCourseRecord, CompRequestStatus, CompensationChangeRequest, IndividualDevelopmentPlan, DevelopmentGoalStatus, ChatMessage, Department, Branch, DocumentStatus, PerformanceStatus, TicketStatus, TicketDepartment, User, AttendanceRecord, AttendanceStatus, FeedItem, AttendanceStatsData, PayrollStatus, LeaveStatus, Notification, EmployeeProfileOverviewData, Survey, SurveyAnalytics, SurveyStatus, SurveyQuestionType, Sentiment, Kudo, Milestone, CompanyValue, WeeklyStat, LeaveBalance, ActivityItem, Kpi, Performer, Report, PredictiveInsight, PortalNavItem, UpcomingEvent, PortalActivity, Announcement, LearningCourse, Skill, Achievement, Benefit, Feedback, LeaveTypeSetting, PublicHoliday, SalaryComponent, AttendanceSettings, EmployeeStatus, OnlineStatus, UserRole } from '../types';
 
+const USE_MOCK_DATA = !isSupabaseConfigured;
 
 // Helper mapping for demo purposes until user and employee IDs are unified.
 const userIdToEmployeeIdMap: Record<string, string> = {
@@ -48,6 +50,7 @@ const fromSupabaseEmployee = (dbEmployee: any): Employee => ({
     avatarColor: dbEmployee.avatar_color,
     jobTitle: dbEmployee.job_title,
     department: dbEmployee.department,
+    branch: dbEmployee.branch,
     status: dbEmployee.status as EmployeeStatus,
     onlineStatus: dbEmployee.online_status as OnlineStatus,
     role: dbEmployee.role as UserRole,
@@ -62,6 +65,7 @@ const toSupabaseEmployee = (appEmployee: Partial<Employee>) => ({
     avatar_color: appEmployee.avatarColor,
     job_title: appEmployee.jobTitle,
     department: appEmployee.department,
+    branch: appEmployee.branch,
     status: appEmployee.status,
     online_status: appEmployee.onlineStatus,
     role: appEmployee.role,
@@ -93,27 +97,23 @@ const fromSupabaseLeaveRequest = (dbRequest: any, mockEmployees: Employee[]): Le
 // --- Employee API (Now using Supabase with Mock Fallback) ---
 
 export const getAllEmployees = async (): Promise<Employee[]> => {
-    const { data, error } = await supabase.from('employees').select('*');
-    if (error) {
-        console.warn("Supabase connection failed for getAllEmployees. Falling back to mock data.", error.message);
+    if (USE_MOCK_DATA) {
         const { employees: mockEmployees } = await import('../pages/employees/data');
         return [...mockEmployees];
+    }
+    const { data, error } = await supabase.from('employees').select('*');
+    if (error) {
+        console.error("Supabase error in getAllEmployees:", error.message);
+        throw new Error("Failed to fetch employees from the database.");
     }
     return data.map(fromSupabaseEmployee);
 };
 
 
 export const getEmployees = async (page: number = 1, limit: number = 12): Promise<PaginatedEmployeesResponse> => {
-    const start = (page - 1) * limit;
-    const end = start + limit - 1;
-
-    const { data, error, count } = await supabase
-        .from('employees')
-        .select('*', { count: 'exact' })
-        .range(start, end);
-
-    if (error) {
-        console.warn(`Supabase connection failed for getEmployees (Page: ${page}). Falling back to mock data.`, error.message);
+    if (USE_MOCK_DATA) {
+        const start = (page - 1) * limit;
+        const end = start + limit - 1;
         const { employees: mockEmployees } = await import('../pages/employees/data');
         const paginatedMockData = mockEmployees.slice(start, end + 1);
         return {
@@ -121,6 +121,16 @@ export const getEmployees = async (page: number = 1, limit: number = 12): Promis
             total: mockEmployees.length,
             hasMore: end < mockEmployees.length - 1,
         };
+    }
+    const start = (page - 1) * limit;
+    const end = start + limit - 1;
+    const { data, error, count } = await supabase
+        .from('employees')
+        .select('*', { count: 'exact' })
+        .range(start, end);
+    if (error) {
+        console.error(`Supabase error in getEmployees (Page: ${page}):`, error.message);
+        throw new Error("Failed to fetch paginated employees from the database.");
     }
     const total = count || 0;
     return {
@@ -131,18 +141,7 @@ export const getEmployees = async (page: number = 1, limit: number = 12): Promis
 };
 
 export const addEmployee = async (employeeData: Omit<Employee, 'id'>): Promise<Employee> => {
-    const newEmployeeRecord = {
-        ...toSupabaseEmployee(employeeData),
-    };
-
-    const { data, error } = await supabase
-        .from('employees')
-        .insert(newEmployeeRecord)
-        .select()
-        .single();
-    
-    if (error) {
-        console.warn("Supabase connection failed for addEmployee. Adding to in-memory mock data.", error.message);
+    if (USE_MOCK_DATA) {
         const { employees: mockEmployees } = await import('../pages/employees/data');
         const newEmployee: Employee = {
             id: `EMP${Date.now().toString().slice(-6)}`,
@@ -151,16 +150,33 @@ export const addEmployee = async (employeeData: Omit<Employee, 'id'>): Promise<E
         mockEmployees.unshift(newEmployee);
         return newEmployee;
     }
+    const newEmployeeRecord = {
+        ...toSupabaseEmployee(employeeData),
+    };
+    const { data, error } = await supabase
+        .from('employees')
+        .insert(newEmployeeRecord)
+        .select()
+        .single();
+    if (error) {
+        console.error("Supabase error in addEmployee:", error.message);
+        throw new Error("Failed to add employee to the database.");
+    }
     return fromSupabaseEmployee(data);
 };
 
 
 export const getEmployeeById = async (id: string): Promise<Employee | undefined> => {
-    const { data, error } = await supabase.from('employees').select('*').eq('id', id).single();
-    if (error) {
-        console.warn(`Supabase query failed for getEmployeeById (ID: ${id}). Falling back to mock data.`, error.message);
+    if (USE_MOCK_DATA) {
         const { employees: mockEmployees } = await import('../pages/employees/data');
         return mockEmployees.find(emp => emp.id === id);
+    }
+    const { data, error } = await supabase.from('employees').select('*').eq('id', id).single();
+    if (error) {
+        // 'PGRST116' is the code for 'No rows found'
+        if (error.code === 'PGRST116') return undefined;
+        console.error(`Supabase error in getEmployeeById (ID: ${id}):`, error.message);
+        throw new Error("Failed to fetch employee from the database.");
     }
     return data ? fromSupabaseEmployee(data) : undefined;
 };
@@ -168,11 +184,14 @@ export const getEmployeeById = async (id: string): Promise<Employee | undefined>
 
 // --- Departments API ---
 export const getDepartments = async (): Promise<Department[]> => {
-    const { data, error } = await supabase.from('departments').select('*, manager:manager_id(*)');
-    if (error) {
-        console.warn("Supabase failed for getDepartments. Falling back to mock data.", error.message);
+    if (USE_MOCK_DATA) {
         const { departments: mockDepartments } = await import('../pages/departments/data');
         return [...mockDepartments];
+    }
+    const { data, error } = await supabase.from('departments').select('*, manager:manager_id(*)');
+    if (error) {
+        console.error("Supabase error in getDepartments:", error.message);
+        throw new Error("Failed to fetch departments from the database.");
     }
     const { employees: mockEmployees } = await import('../pages/employees/data');
     return data.map(d => fromSupabaseDepartment(d, mockEmployees));
@@ -180,14 +199,16 @@ export const getDepartments = async (): Promise<Department[]> => {
 
 // --- Branches API ---
 export const getBranches = async (): Promise<Branch[]> => {
-    const { data, error } = await supabase.from('branches').select('*, manager:manager_id(*)');
-     if (error) {
-        console.warn("Supabase failed for getBranches. Falling back to mock data.", error.message);
+    if (USE_MOCK_DATA) {
         const { branches: mockBranches } = await import('../pages/branches/data');
         return [...mockBranches];
     }
+    const { data, error } = await supabase.from('branches').select('*, manager:manager_id(*)');
+    if (error) {
+        console.error("Supabase error in getBranches:", error.message);
+        throw new Error("Failed to fetch branches from the database.");
+    }
     const { employees: mockEmployees } = await import('../pages/employees/data');
-    // Basic mapper, assuming manager is expanded
     return data.map(b => ({
         id: b.id,
         name: b.name,
@@ -199,11 +220,14 @@ export const getBranches = async (): Promise<Branch[]> => {
 
 // --- Job Titles API ---
 export const getJobTitles = async (): Promise<JobTitle[]> => {
-    const { data, error } = await supabase.from('job_titles').select('*');
-    if (error) {
-        console.warn("Supabase failed for getJobTitles. Falling back to mock data.", error.message);
+    if (USE_MOCK_DATA) {
         const { jobTitles: mockJobTitles } = await import('../pages/job_titles/data');
         return [...mockJobTitles];
+    }
+    const { data, error } = await supabase.from('job_titles').select('*');
+    if (error) {
+        console.error("Supabase error in getJobTitles:", error.message);
+        throw new Error("Failed to fetch job titles from the database.");
     }
     return data.map(jt => ({
         id: jt.id,
@@ -217,31 +241,36 @@ export const getJobTitles = async (): Promise<JobTitle[]> => {
 
 // --- Leave Requests API ---
 export const getAllLeaveRequests = async (): Promise<LeaveRequest[]> => {
-    const { data, error } = await supabase.from('leave_requests').select('*, employee:employee_id(*)');
-    if (error) {
-        console.warn("Supabase failed for getAllLeaveRequests. Falling back to mock data.", error.message);
+    if (USE_MOCK_DATA) {
         const { allLeaveRequests: mockAllLeaveRequests } = await import('../pages/leaves/data');
         return [...mockAllLeaveRequests];
+    }
+    const { data, error } = await supabase.from('leave_requests').select('*, employee:employee_id(*)');
+    if (error) {
+        console.error("Supabase error in getAllLeaveRequests:", error.message);
+        throw new Error("Failed to fetch leave requests from the database.");
     }
     const { employees: mockEmployees } = await import('../pages/employees/data');
     return data.map(r => fromSupabaseLeaveRequest(r, mockEmployees));
 };
 
 export const updateLeaveRequestStatus = async (requestId: string, status: LeaveStatus): Promise<LeaveRequest> => {
+    if (USE_MOCK_DATA) {
+        const { allLeaveRequests: mockAllLeaveRequests } = await import('../pages/leaves/data');
+        const requestIndex = mockAllLeaveRequests.findIndex(r => r.id === requestId);
+        if (requestIndex === -1) throw new Error('Request not found in mock data');
+        mockAllLeaveRequests[requestIndex].status = status;
+        return mockAllLeaveRequests[requestIndex];
+    }
     const { data, error } = await supabase
         .from('leave_requests')
         .update({ status: status })
         .eq('id', requestId)
         .select('*, employee:employee_id(*)')
         .single();
-
     if (error) {
-        console.warn(`Supabase failed to update leave request ${requestId}. Falling back to mock data.`, error.message);
-        const { allLeaveRequests: mockAllLeaveRequests } = await import('../pages/leaves/data');
-        const requestIndex = mockAllLeaveRequests.findIndex(r => r.id === requestId);
-        if (requestIndex === -1) throw new Error('Request not found in mock data');
-        mockAllLeaveRequests[requestIndex].status = status;
-        return mockAllLeaveRequests[requestIndex];
+        console.error(`Supabase error updating leave request ${requestId}:`, error.message);
+        throw new Error("Failed to update leave request in the database.");
     }
     const { employees: mockEmployees } = await import('../pages/employees/data');
     return fromSupabaseLeaveRequest(data, mockEmployees);
@@ -601,11 +630,11 @@ export const getNotifications = async (): Promise<Notification[]> => {
 };
 
 export const getKudosFeed = async (): Promise<Kudo[]> => {
-    const mockKudos: Kudo[] = [ { id: 'kudo1', sender: { id: 'EMP002', firstName: 'Jane', lastName: 'Smith', avatar: '', avatarInitials: 'JS', avatarColor: 'bg-purple-500', jobTitle: 'Marketing Manager', department: 'Marketing', status: EmployeeStatus.ACTIVE, onlineStatus: OnlineStatus.ONLINE, role: UserRole.DEPARTMENT_MANAGER }, receiver: { id: 'EMP008', firstName: 'سمير', lastName: 'صالح', avatar: '', avatarInitials: 'سص', avatarColor: 'bg-cyan-500', jobTitle: 'Marketing Specialist', department: 'Marketing', status: EmployeeStatus.ACTIVE, onlineStatus: OnlineStatus.ONLINE, role: UserRole.EMPLOYEE }, message: 'شكرًا لك على جهودك الاستثنائية في حملة الربع الثاني، لقد كانت نتائجك مذهلة!', values: [CompanyValue.EXCELLENCE, CompanyValue.CUSTOMER_FOCUS], timestamp: 'منذ ساعتين', reactions: { count: 5 } }, ];
+    const mockKudos: Kudo[] = [ { id: 'kudo1', sender: { id: 'EMP002', firstName: 'Jane', lastName: 'Smith', avatar: '', avatarInitials: 'JS', avatarColor: 'bg-purple-500', jobTitle: 'Marketing Manager', department: 'Marketing', status: EmployeeStatus.ACTIVE, onlineStatus: OnlineStatus.ONLINE, role: UserRole.DEPARTMENT_MANAGER, branch: 'فرع الرياض الرئيسي' }, receiver: { id: 'EMP008', firstName: 'سمير', lastName: 'صالح', avatar: '', avatarInitials: 'سص', avatarColor: 'bg-cyan-500', jobTitle: 'Marketing Specialist', department: 'Marketing', status: EmployeeStatus.ACTIVE, onlineStatus: OnlineStatus.ONLINE, role: UserRole.EMPLOYEE, branch: 'فرع جدة' }, message: 'شكرًا لك على جهودك الاستثنائية في حملة الربع الثاني، لقد كانت نتائجك مذهلة!', values: [CompanyValue.EXCELLENCE, CompanyValue.CUSTOMER_FOCUS], timestamp: 'منذ ساعتين', reactions: { count: 5 } }, ];
     return mockKudos;
 };
 export const getUpcomingMilestones = async (): Promise<Milestone[]> => {
-    const mockMilestones: Milestone[] = [ { id: 'mile1', employee: { id: 'EMP004', firstName: 'Sarah', lastName: 'Johnson', avatar: '', avatarInitials: 'SJ', avatarColor: 'bg-red-500', jobTitle: 'HR Manager', department: 'HR', status: EmployeeStatus.ACTIVE, onlineStatus: OnlineStatus.ONLINE, role: UserRole.HR_MANAGER }, type: 'ANNIVERSARY', date: 'July 28, 2024', years: 3 }, { id: 'mile2', employee: { id: 'EMP003', firstName: 'Mike', lastName: 'Wilson', avatar: '', avatarInitials: 'MW', avatarColor: 'bg-green-500', jobTitle: 'Sales Rep', department: 'Sales', status: EmployeeStatus.ON_LEAVE, onlineStatus: OnlineStatus.AWAY, role: UserRole.EMPLOYEE }, type: 'BIRTHDAY', date: 'July 30' }, ];
+    const mockMilestones: Milestone[] = [ { id: 'mile1', employee: { id: 'EMP004', firstName: 'Sarah', lastName: 'Johnson', avatar: '', avatarInitials: 'SJ', avatarColor: 'bg-red-500', jobTitle: 'HR Manager', department: 'HR', status: EmployeeStatus.ACTIVE, onlineStatus: OnlineStatus.ONLINE, role: UserRole.HR_MANAGER, branch: 'فرع الرياض الرئيسي' }, type: 'ANNIVERSARY', date: 'July 28, 2024', years: 3 }, { id: 'mile2', employee: { id: 'EMP003', firstName: 'Mike', lastName: 'Wilson', avatar: '', avatarInitials: 'MW', avatarColor: 'bg-green-500', jobTitle: 'Sales Rep', department: 'Sales', status: EmployeeStatus.ON_LEAVE, onlineStatus: OnlineStatus.AWAY, role: UserRole.EMPLOYEE, branch: 'فرع جدة' }, type: 'BIRTHDAY', date: 'July 30' }, ];
     return mockMilestones;
 };
 export const sendKudo = async (kudoData: Omit<Kudo, 'id'|'timestamp'|'reactions'>): Promise<Kudo> => {

@@ -3,6 +3,7 @@ import React from 'react';
 import { LeaveRequest, LeaveType, LeaveStatus } from '../../../types';
 import { useI18n } from '../../../context/I18nContext';
 import { LEAVE_TYPE_CLASSES } from '../../../utils/styleUtils';
+import { formatDaysString } from '../../../utils/formatters';
 
 interface PendingApprovalsProps {
     requests: LeaveRequest[];
@@ -10,7 +11,7 @@ interface PendingApprovalsProps {
 }
 
 const PendingApprovals: React.FC<PendingApprovalsProps> = ({ requests, onAction }) => {
-    const { t } = useI18n();
+    const { t, language } = useI18n();
     return (
         <div className="bg-white rounded-xl shadow-sm border border-gray-100">
             <div className="p-6 border-b border-gray-100">
@@ -38,7 +39,7 @@ const PendingApprovals: React.FC<PendingApprovalsProps> = ({ requests, onAction 
                                         <p className="text-sm text-gray-600">{request.employee.jobTitle}</p>
                                         <div className="flex items-center flex-wrap gap-x-4 gap-y-1 mt-2 text-sm text-gray-500">
                                             <span><i className="fas fa-calendar me-1"></i>{request.startDate} - {request.endDate}</span>
-                                            <span><i className="fas fa-clock me-1"></i>{t('common.day', { count: request.days })}</span>
+                                            <span><i className="fas fa-clock me-1"></i>{formatDaysString(request.days, t, language)}</span>
                                             <span className={`${LEAVE_TYPE_CLASSES[request.leaveType]} px-2 py-1 rounded-full text-xs`}>{t(`enum.leaveType.${request.leaveType}`)}</span>
                                         </div>
                                         <p className="text-sm text-gray-600 mt-2">{request.reason}</p>

@@ -3,12 +3,13 @@ import { AttendanceRecord, AttendanceStatus, FeedItem, WeeklyStat } from '../../
 import { employees } from '../employees/data';
 
 export const attendanceRecords: AttendanceRecord[] = [
-    { employee: employees[0], checkIn: '09:15', checkOut: null, status: AttendanceStatus.PRESENT, hours: '2:45' },
-    { employee: employees[1], checkIn: '08:55', checkOut: null, status: AttendanceStatus.PRESENT, hours: '3:05' },
-    { employee: employees[2], checkIn: '09:45', checkOut: null, status: AttendanceStatus.LATE, hours: '2:15' },
-    { employee: employees[3], checkIn: '09:00', checkOut: '17:05', status: AttendanceStatus.PRESENT, hours: '8:05' },
-    { employee: employees[4], checkIn: null, checkOut: null, status: AttendanceStatus.ABSENT, hours: '0:00' },
-    { employee: employees[5], checkIn: '09:00', checkOut: '16:30', status: AttendanceStatus.EARLY_DEPARTURE, hours: '7:30' },
+    { employee: employees[0], checkIn: '09:15', checkOut: null, status: AttendanceStatus.PRESENT, hours: '...', shift: {id: 'shift_morning', name: 'MORNING'} },
+    { employee: employees[1], checkIn: '08:55', checkOut: null, status: AttendanceStatus.PRESENT, hours: '...', shift: {id: 'shift_morning', name: 'MORNING'} },
+    { employee: employees[2], checkIn: '09:45', checkOut: null, status: AttendanceStatus.LATE, hours: '...', shift: {id: 'shift_morning', name: 'MORNING'} },
+    { employee: employees[3], checkIn: '09:00', checkOut: '17:05', status: AttendanceStatus.PRESENT, hours: '8:05', shift: {id: 'shift_morning', name: 'MORNING'} },
+    { employee: employees[4], checkIn: null, checkOut: null, status: AttendanceStatus.ABSENT, hours: '0:00', shift: {id: 'shift_evening', name: 'EVENING'} },
+    { employee: employees[5], checkIn: '09:00', checkOut: '16:30', status: AttendanceStatus.EARLY_DEPARTURE, hours: '7:30', shift: {id: 'shift_morning', name: 'MORNING'} },
+    { employee: employees[7], checkIn: '13:00', checkOut: null, status: AttendanceStatus.PRESENT, hours: '...', shift: {id: 'shift_evening', name: 'EVENING'} },
 ];
 
 export const initialFeedItems: FeedItem[] = [

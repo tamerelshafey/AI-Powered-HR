@@ -86,3 +86,39 @@ export const formatTimeSince = (dateString: string): string => {
     if (interval > 1) return `منذ ${Math.floor(interval)} دقائق`;
     return 'الآن';
 };
+
+export const formatDaysString = (
+    count: number,
+    t: (key: string, params?: { [key: string]: string | number }) => string,
+    lang: Language
+): string => {
+    const roundedCount = Math.floor(count);
+    if (lang === 'en') {
+        return roundedCount === 1 ? t('common.days_singular', { count: roundedCount }) : t('common.days_plural', { count: roundedCount });
+    }
+    // Arabic
+    if (roundedCount === 1) return t('common.days_singular');
+    if (roundedCount === 2) return t('common.days_dual');
+    if (roundedCount >= 3 && roundedCount <= 10) return t('common.days_plural_few', { count: roundedCount });
+    return t('common.days_plural_many', { count: roundedCount });
+};
+
+export const formatDaysRemainingString = (
+    count: number,
+    t: (key: string, params?: { [key: string]: string | number }) => string,
+    lang: Language
+): string => {
+    const roundedCount = Math.floor(count);
+     if (lang === 'en') {
+        if (roundedCount === 0) return t('page.leaves.leaveBalance.daysRemaining.zero');
+        return roundedCount === 1 
+            ? t('page.leaves.leaveBalance.daysRemaining.singular', { count: roundedCount }) 
+            : t('page.leaves.leaveBalance.daysRemaining.plural', { count: roundedCount });
+    }
+    // Arabic
+    if (roundedCount === 0) return t('page.leaves.leaveBalance.daysRemaining.zero');
+    if (roundedCount === 1) return t('page.leaves.leaveBalance.daysRemaining.singular');
+    if (roundedCount === 2) return t('page.leaves.leaveBalance.daysRemaining.dual');
+    if (roundedCount >= 3 && roundedCount <= 10) return t('page.leaves.leaveBalance.daysRemaining.plural_few', { count: roundedCount });
+    return t('page.leaves.leaveBalance.daysRemaining.plural_many', { count: roundedCount });
+};

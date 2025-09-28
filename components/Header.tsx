@@ -1,4 +1,5 @@
 
+
 import React, { useState, useEffect, useRef } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useUser } from '../context/UserContext';
@@ -9,6 +10,7 @@ import { Notification } from '../types';
 import { getNotifications } from '../services/api';
 import UserSwitcher from './UserSwitcher';
 import { formatTime } from '../utils/formatters';
+import { ADMIN_ROLES } from '../permissions';
 
 interface HeaderProps {
   onOpenSmartSearch: () => void;
@@ -94,6 +96,8 @@ const Header: React.FC<HeaderProps> = ({ onOpenSmartSearch }) => {
     </>
   ) : null;
 
+  const isAdmin = ADMIN_ROLES.includes(currentUser.role);
+
   return (
     <>
       <header className="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-20">
@@ -139,6 +143,16 @@ const Header: React.FC<HeaderProps> = ({ onOpenSmartSearch }) => {
             <button onClick={onOpenSmartSearch} className="p-2 text-gray-600 hover:text-gray-900" aria-label={t('header.smartSearchAria')}>
               <i className="fas fa-wand-magic-sparkles text-lg"></i>
             </button>
+            {isAdmin && (
+              <button 
+                onClick={() => navigate('/portal')} 
+                className="flex items-center space-x-2 space-x-reverse px-3 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors" 
+                title={t('header.viewPortal')}
+              >
+                  <i className="fas fa-user-circle"></i>
+                  <span className="hidden sm:inline text-sm font-medium">{t('header.viewPortal')}</span>
+              </button>
+            )}
             <LanguageSwitcher />
             <UserSwitcher />
             

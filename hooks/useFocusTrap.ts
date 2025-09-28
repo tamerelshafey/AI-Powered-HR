@@ -1,7 +1,8 @@
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, RefObject } from 'react';
 
-export function useFocusTrap(ref: React.RefObject<HTMLElement>, isOpen: boolean) {
+// FIX: Changed React.RefObject to RefObject and imported it from 'react'.
+export function useFocusTrap(ref: RefObject<HTMLElement>, isOpen: boolean) {
   const firstFocusableElement = useRef<HTMLElement | null>(null);
   const lastFocusableElement = useRef<HTMLElement | null>(null);
 

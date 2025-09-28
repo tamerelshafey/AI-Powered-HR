@@ -1,6 +1,8 @@
 
 
+
 import React from 'react';
+import { Link } from 'react-router-dom';
 import { AttendanceRecord, AttendanceStatus } from '../../../types';
 import { useI18n } from '../../../context/I18nContext';
 import { ATTENDANCE_STATUS_CLASSES } from '../../../utils/styleUtils';
@@ -8,12 +10,14 @@ import { formatTimeFromString } from '../../../utils/formatters';
 
 interface AttendanceTableProps {
   records: AttendanceRecord[];
+  onRowClick: (employeeId: string) => void;
 }
 
-const AttendanceTable: React.FC<AttendanceTableProps> = ({ records }) => {
+const AttendanceTable: React.FC<AttendanceTableProps> = ({ records, onRowClick }) => {
     const { t, language } = useI18n();
 
     const formatHours = (hoursString: string) => {
+        if (hoursString === '...') return '...';
         const [hours, minutes] = hoursString.split(':');
         return t('page.attendance.table.hoursUnit', { hours, minutes });
     };
@@ -23,13 +27,7 @@ const AttendanceTable: React.FC<AttendanceTableProps> = ({ records }) => {
         <div className="p-6 border-b border-gray-100">
             <div className="flex items-center justify-between">
                 <h3 className="text-lg font-semibold text-gray-900">{t('page.attendance.table.title')}</h3>
-                <div className="flex items-center space-x-2 space-x-reverse">
-                    <select className="text-sm border border-gray-300 rounded-lg px-3 py-1">
-                        <option>{t('page.attendance.table.allDepartments')}</option>
-                        <option>{t('nav.departments')}</option>
-                    </select>
-                    <button className="text-sm text-blue-600 hover:text-blue-700">{t('page.attendance.table.viewAll')}</button>
-                </div>
+                 <span className="text-sm text-gray-500">{records.length} سجل</span>
             </div>
         </div>
         
@@ -37,15 +35,16 @@ const AttendanceTable: React.FC<AttendanceTableProps> = ({ records }) => {
         <div className="md:hidden">
             <div className="p-4 space-y-4">
                 {records.map(({ employee, checkIn, checkOut, status, hours, shift }) => (
-                    <div key={employee.id} className="bg-gray-50 border border-gray-200 rounded-lg p-4 space-y-3">
+                    <div key={employee.id} onClick={() => onRowClick(employee.id)} className="bg-gray-50 border border-gray-200 rounded-lg p-4 space-y-3 cursor-pointer">
                         <div className="flex items-center justify-between">
                              <div className="flex items-center">
-                                <div className={`w-8 h-8 ${employee.avatarColor} rounded-full flex items-center justify-center me-3 flex-shrink-0`}>
-                                    <span className="text-white text-xs font-medium">{employee.avatarInitials}</span>
+                                <div className={`w-10 h-10 ${employee.avatarColor} rounded-full flex items-center justify-center me-3 flex-shrink-0`}>
+                                    <span className="text-white text-sm font-medium">{employee.avatarInitials}</span>
                                 </div>
                                 <div>
                                     <div className="text-sm font-medium text-gray-900">{`${employee.firstName} ${employee.lastName}`}</div>
-                                    <div className="text-sm text-gray-500">{employee.department}</div>
+                                    <div className="text-xs text-gray-500">{employee.jobTitle}</div>
+                                    <div className="text-sm text-gray-500 mt-1">{employee.branch} &bull; {employee.department}</div>
                                 </div>
                             </div>
                             <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${ATTENDANCE_STATUS_CLASSES[status]}`}>
@@ -63,10 +62,6 @@ const AttendanceTable: React.FC<AttendanceTableProps> = ({ records }) => {
                             <div><p className="text-xs text-gray-500">{t('page.attendance.table.header.checkOut')}</p><p className="font-medium text-gray-800">{formatTimeFromString(checkOut, language)}</p></div>
                             <div><p className="text-xs text-gray-500">{t('page.attendance.table.header.hours')}</p><p className="font-medium text-gray-800">{formatHours(hours)}</p></div>
                         </div>
-                         <div className="flex justify-end space-x-3 space-x-reverse text-sm font-medium">
-                            <button className="text-blue-600 hover:text-blue-900">{t('common.edit')}</button>
-                            <button className="text-red-600 hover:text-red-900">{t('page.attendance.table.report')}</button>
-                        </div>
                     </div>
                 ))}
             </div>
@@ -78,18 +73,18 @@ const AttendanceTable: React.FC<AttendanceTableProps> = ({ records }) => {
                 <thead className="bg-gray-50">
                     <tr>
                         <th scope="col" className="px-6 py-3 text-start text-xs font-medium text-gray-500 uppercase">{t('page.attendance.table.header.employee')}</th>
+                        <th scope="col" className="px-6 py-3 text-start text-xs font-medium text-gray-500 uppercase">{t('page.attendance.table.header.branch')}</th>
                         <th scope="col" className="px-6 py-3 text-start text-xs font-medium text-gray-500 uppercase">{t('page.attendance.table.header.department')}</th>
                         <th scope="col" className="px-6 py-3 text-start text-xs font-medium text-gray-500 uppercase">{t('page.attendance.table.header.shift')}</th>
                         <th scope="col" className="px-6 py-3 text-start text-xs font-medium text-gray-500 uppercase">{t('page.attendance.table.header.checkIn')}</th>
                         <th scope="col" className="px-6 py-3 text-start text-xs font-medium text-gray-500 uppercase">{t('page.attendance.table.header.checkOut')}</th>
                         <th scope="col" className="px-6 py-3 text-start text-xs font-medium text-gray-500 uppercase">{t('page.attendance.table.header.status')}</th>
                         <th scope="col" className="px-6 py-3 text-start text-xs font-medium text-gray-500 uppercase">{t('page.attendance.table.header.hours')}</th>
-                        <th scope="col" className="px-6 py-3 text-start text-xs font-medium text-gray-500 uppercase">{t('page.attendance.table.header.actions')}</th>
                     </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
                     {records.map(({ employee, checkIn, checkOut, status, hours, shift }) => (
-                        <tr key={employee.id} className="hover:bg-gray-50">
+                        <tr key={employee.id} onClick={() => onRowClick(employee.id)} className="hover:bg-gray-50 cursor-pointer">
                             <td className="px-6 py-4 whitespace-nowrap">
                                 <div className="flex items-center">
                                     <div className={`w-8 h-8 ${employee.avatarColor} rounded-full flex items-center justify-center me-3 flex-shrink-0`}>
@@ -101,6 +96,7 @@ const AttendanceTable: React.FC<AttendanceTableProps> = ({ records }) => {
                                     </div>
                                 </div>
                             </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{employee.branch}</td>
                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{employee.department}</td>
                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{shift ? t(`enum.shift.${shift.name}`) : '--'}</td>
                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{formatTimeFromString(checkIn, language)}</td>
@@ -111,10 +107,6 @@ const AttendanceTable: React.FC<AttendanceTableProps> = ({ records }) => {
                                 </span>
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{formatHours(hours)}</td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                <button className="text-blue-600 hover:text-blue-900 me-3">{t('common.edit')}</button>
-                                <button className="text-red-600 hover:text-red-900">{t('page.attendance.table.report')}</button>
-                            </td>
                         </tr>
                     ))}
                 </tbody>
