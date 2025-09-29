@@ -1,4 +1,5 @@
 
+
 import React, { Suspense, lazy, createContext, useState, useContext, ReactNode, useEffect } from 'react';
 import { Routes, Route, Navigate, HashRouter } from 'react-router-dom';
 import Layout from './components/Layout';
@@ -34,6 +35,9 @@ const OrgChartPage = lazy(() => import('./pages/org_chart/index.tsx'));
 const SurveysPage = lazy(() => import('./pages/surveys/index.tsx'));
 const RecognitionPage = lazy(() => import('./pages/recognition/index.tsx'));
 const MissionsPage = lazy(() => import('./pages/missions/index.tsx'));
+const SuccessionPage = lazy(() => import('./pages/succession/index.tsx'));
+const ExpensesPage = lazy(() => import('./pages/expenses/index.tsx'));
+const WorkforcePlanningPage = lazy(() => import('./pages/workforce_planning/index.tsx'));
 
 // --- Module Management Context ---
 
@@ -50,6 +54,9 @@ const initialModules: ActiveModules = {
     recognition: false,
     surveys: false,
     missions: true,
+    succession: false,
+    expenses: true,
+    workforce_planning: true,
 };
 
 const DEPENDENCIES: Partial<Record<OptionalModuleKey, OptionalModuleKey[]>> = {
@@ -185,8 +192,11 @@ const AppRoutes: React.FC = () => {
         <Route path="onboarding-offboarding" element={<OnboardingOffboardingPage />} />
         <Route path="assets" element={<AssetsPage />} />
         <Route path="missions" element={<MissionsPage />} />
+        <Route path="expenses" element={<ExpensesPage />} />
         <Route path="recognition" element={<RecognitionPage />} />
         <Route path="surveys" element={<SurveysPage />} />
+        <Route path="succession" element={<SuccessionPage />} />
+        <Route path="workforce-planning" element={<WorkforcePlanningPage />} />
         <Route path="support-tickets" element={<SupportTicketsPage />} />
         <Route path="help-center" element={<HelpCenterPage />} />
         <Route path="settings" element={<SettingsPage />} />

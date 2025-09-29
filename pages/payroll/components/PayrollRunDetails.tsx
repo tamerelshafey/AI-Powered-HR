@@ -1,6 +1,7 @@
 
+
 import React, { useState, useEffect } from 'react';
-import { PayrollRun, Payslip, PayrollStatus } from '../../../types';
+import { PayrollRun, Payslip, PayrollStatus, Employee } from '../../../types';
 import { getEmployeePayslips } from '../../../services/api';
 import ConfirmationModal from '../../../components/ConfirmationModal';
 import { useI18n } from '../../../context/I18nContext';
@@ -8,7 +9,7 @@ import { useI18n } from '../../../context/I18nContext';
 interface PayrollRunDetailsProps {
     run: PayrollRun;
     onBack: () => void;
-    onViewPayslip: (payslip: Payslip) => void;
+    onViewPayslip: (employee: Employee, run: PayrollRun) => void;
     onUpdateStatus: (runId: string, status: PayrollStatus) => void;
 }
 
@@ -141,7 +142,7 @@ const PayrollRunDetails: React.FC<PayrollRunDetailsProps> = ({ run, onBack, onVi
                                         </div>
                                         <div className="text-end">
                                             <p className="font-semibold text-green-600">{formatCurrency(payslip.netPay)}</p>
-                                            <button onClick={() => onViewPayslip(payslip)} className="text-xs text-blue-600 hover:underline">عرض الكشف</button>
+                                            <button onClick={() => onViewPayslip(payslip.employee, run)} className="text-xs text-blue-600 hover:underline">عرض الكشف</button>
                                         </div>
                                     </div>
                                 </div>

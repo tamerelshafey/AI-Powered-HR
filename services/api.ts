@@ -2,7 +2,7 @@
 
 import { supabase } from './supabaseClient';
 // FIX: Added missing 'AttendanceStatus' import to resolve type errors.
-import { Employee, JobPosting, Candidate, OnboardingProcess, EmployeeDocument, PayrollRun, CompanyAsset, JobTitle, Course, EmployeeEnrollment, HelpCenterCategory, HelpCenterArticle, SupportTicket, EmployeeActivity, AssetStatus, PerformanceReview, CompanyGoal, LeaveRequest, LeaveType, Payslip, CourseCategory, EmployeeLeaveBalance, ExternalCourseRecord, CompRequestStatus, CompensationChangeRequest, IndividualDevelopmentPlan, DevelopmentGoalStatus, ChatMessage, Department, Branch, DocumentStatus, PerformanceStatus, TicketStatus, TicketDepartment, User, AttendanceRecord, AttendanceStatus, FeedItem, AttendanceStatsData, PayrollStatus, LeaveStatus, Notification, EmployeeProfileOverviewData, Survey, SurveyAnalytics, SurveyStatus, SurveyQuestionType, Sentiment, Kudo, Milestone, CompanyValue, WeeklyStat, LeaveBalance, ActivityItem, Kpi, Performer, Report, PredictiveInsight, PortalNavItem, UpcomingEvent, PortalActivity, Announcement, LearningCourse, Skill, Achievement, Benefit, Feedback, LeaveTypeSetting, PublicHoliday, SalaryComponent, AttendanceSettings, EmployeeStatus, OnlineStatus, UserRole, Mission, MissionStatus, MissionSettings } from '../types';
+import { Employee, JobPosting, Candidate, OnboardingProcess, EmployeeDocument, PayrollRun, CompanyAsset, JobTitle, Course, EmployeeEnrollment, HelpCenterCategory, HelpCenterArticle, SupportTicket, EmployeeActivity, AssetStatus, PerformanceReview, CompanyGoal, LeaveRequest, LeaveType, Payslip, CourseCategory, EmployeeLeaveBalance, ExternalCourseRecord, CompRequestStatus, CompensationChangeRequest, IndividualDevelopmentPlan, DevelopmentGoalStatus, ChatMessage, Department, Branch, DocumentStatus, PerformanceStatus, TicketStatus, TicketDepartment, User, AttendanceRecord, AttendanceStatus, FeedItem, AttendanceStatsData, PayrollStatus, LeaveStatus, Notification, EmployeeProfileOverviewData, Survey, SurveyAnalytics, SurveyStatus, SurveyQuestionType, Sentiment, Kudo, Milestone, CompanyValue, WeeklyStat, LeaveBalance, ActivityItem, Kpi, Performer, Report, PredictiveInsight, PortalNavItem, UpcomingEvent, PortalActivity, Announcement, LearningCourse, Skill, Achievement, Benefit, Feedback, LeaveTypeSetting, PublicHoliday, SalaryComponent, AttendanceSettings, EmployeeStatus, OnlineStatus, UserRole, Mission, MissionStatus, MissionSettings, SuccessionPlan, ExpenseClaim, ExpenseStatus, DepartmentWorkforce } from '../types';
 
 const USE_MOCK_DATA = true;
 
@@ -41,6 +41,7 @@ export interface PaginatedEmployeesResponse {
 
 // --- Mappers: Supabase (snake_case) to Application (camelCase) ---
 
+// FIX: Added missing properties to the Employee object mapping.
 const fromSupabaseEmployee = (dbEmployee: any): Employee => ({
     id: dbEmployee.id,
     firstName: dbEmployee.first_name,
@@ -55,6 +56,10 @@ const fromSupabaseEmployee = (dbEmployee: any): Employee => ({
     onlineStatus: dbEmployee.online_status as OnlineStatus,
     role: dbEmployee.role as UserRole,
     shiftId: dbEmployee.shift_id,
+    dateOfBirth: dbEmployee.date_of_birth,
+    hireDate: dbEmployee.hire_date,
+    isPersonWithDisability: dbEmployee.is_person_with_disability,
+    maternityLeavesTaken: dbEmployee.maternity_leaves_taken,
 });
 
 const toSupabaseEmployee = (appEmployee: Partial<Employee>) => ({
@@ -70,6 +75,10 @@ const toSupabaseEmployee = (appEmployee: Partial<Employee>) => ({
     online_status: appEmployee.onlineStatus,
     role: appEmployee.role,
     shift_id: appEmployee.shiftId,
+    date_of_birth: appEmployee.dateOfBirth,
+    hire_date: appEmployee.hireDate,
+    is_person_with_disability: appEmployee.isPersonWithDisability,
+    maternity_leaves_taken: appEmployee.maternityLeavesTaken,
 });
 
 const fromSupabaseDepartment = (dbDepartment: any, mockEmployees: Employee[]): Department => ({
@@ -276,6 +285,12 @@ export const updateLeaveRequestStatus = async (requestId: string, status: LeaveS
     return fromSupabaseLeaveRequest(data, mockEmployees);
 };
 
+// --- Succession Planning API ---
+export const getSuccessionPlans = async (): Promise<SuccessionPlan[]> => {
+    const { successionPlans } = await import('../pages/succession/data');
+    return [...successionPlans];
+};
+
 
 // --- Mocked Functions (Aggregations, AI, Demo-specific) ---
 // These functions will remain mocked for now as they represent complex queries or demo-specific logic.
@@ -343,6 +358,13 @@ export const getEmployeeDocumentsPaginated = async (page: number, limit: number,
     const start = (page - 1) * limit;
     return { data: filteredData.slice(start, start + limit), totalItems, totalPages, currentPage: page, hasMore: start + limit < totalItems };
 };
+
+// FIX: Added missing exported function 'getExpiringDocuments'.
+export const getExpiringDocuments = async (): Promise<EmployeeDocument[]> => {
+    const { employeeDocuments: mockEmployeeDocuments } = await import('../pages/documents/data');
+    return mockEmployeeDocuments.filter(doc => doc.status === DocumentStatus.EXPIRING_SOON);
+};
+
 export const getPayrollRuns = async (): Promise<PayrollRun[]> => {
     const { payrollRuns: mockPayrollRuns } = await import('../pages/payroll/data');
     return mockPayrollRuns;
@@ -632,12 +654,14 @@ export const getNotifications = async (): Promise<Notification[]> => {
     return mockNotifications;
 };
 
+// FIX: Added missing properties to the Employee objects.
 export const getKudosFeed = async (): Promise<Kudo[]> => {
-    const mockKudos: Kudo[] = [ { id: 'kudo1', sender: { id: 'EMP002', firstName: 'Jane', lastName: 'Smith', avatar: '', avatarInitials: 'JS', avatarColor: 'bg-purple-500', jobTitle: 'Marketing Manager', department: 'Marketing', status: EmployeeStatus.ACTIVE, onlineStatus: OnlineStatus.ONLINE, role: UserRole.DEPARTMENT_MANAGER, branch: 'فرع الرياض الرئيسي' }, receiver: { id: 'EMP008', firstName: 'سمير', lastName: 'صالح', avatar: '', avatarInitials: 'سص', avatarColor: 'bg-cyan-500', jobTitle: 'Marketing Specialist', department: 'Marketing', status: EmployeeStatus.ACTIVE, onlineStatus: OnlineStatus.ONLINE, role: UserRole.EMPLOYEE, branch: 'فرع جدة' }, message: 'شكرًا لك على جهودك الاستثنائية في حملة الربع الثاني، لقد كانت نتائجك مذهلة!', values: [CompanyValue.EXCELLENCE, CompanyValue.CUSTOMER_FOCUS], timestamp: 'منذ ساعتين', reactions: { count: 5 } }, ];
+    const mockKudos: Kudo[] = [ { id: 'kudo1', sender: { id: 'EMP002', firstName: 'Jane', lastName: 'Smith', avatar: '', avatarInitials: 'JS', avatarColor: 'bg-purple-500', jobTitle: 'Marketing Manager', department: 'Marketing', status: EmployeeStatus.ACTIVE, onlineStatus: OnlineStatus.ONLINE, role: UserRole.DEPARTMENT_MANAGER, branch: 'فرع الرياض الرئيسي', dateOfBirth: '1985-08-20', hireDate: '2018-03-12', isPersonWithDisability: false, maternityLeavesTaken: 2 }, receiver: { id: 'EMP008', firstName: 'سمير', lastName: 'صالح', avatar: '', avatarInitials: 'سص', avatarColor: 'bg-cyan-500', jobTitle: 'Marketing Specialist', department: 'Marketing', status: EmployeeStatus.ACTIVE, onlineStatus: OnlineStatus.ONLINE, role: UserRole.EMPLOYEE, branch: 'فرع جدة', dateOfBirth: '1998-09-05', hireDate: '2023-10-01', isPersonWithDisability: false, maternityLeavesTaken: 0 }, message: 'شكرًا لك على جهودك الاستثنائية في حملة الربع الثاني، لقد كانت نتائجك مذهلة!', values: [CompanyValue.EXCELLENCE, CompanyValue.CUSTOMER_FOCUS], timestamp: 'منذ ساعتين', reactions: { count: 5 } }, ];
     return mockKudos;
 };
+// FIX: Added missing properties to the Employee objects.
 export const getUpcomingMilestones = async (): Promise<Milestone[]> => {
-    const mockMilestones: Milestone[] = [ { id: 'mile1', employee: { id: 'EMP004', firstName: 'Sarah', lastName: 'Johnson', avatar: '', avatarInitials: 'SJ', avatarColor: 'bg-red-500', jobTitle: 'HR Manager', department: 'HR', status: EmployeeStatus.ACTIVE, onlineStatus: OnlineStatus.ONLINE, role: UserRole.HR_MANAGER, branch: 'فرع الرياض الرئيسي' }, type: 'ANNIVERSARY', date: 'July 28, 2024', years: 3 }, { id: 'mile2', employee: { id: 'EMP003', firstName: 'Mike', lastName: 'Wilson', avatar: '', avatarInitials: 'MW', avatarColor: 'bg-green-500', jobTitle: 'Sales Rep', department: 'Sales', status: EmployeeStatus.ON_LEAVE, onlineStatus: OnlineStatus.AWAY, role: UserRole.EMPLOYEE, branch: 'فرع جدة' }, type: 'BIRTHDAY', date: 'July 30' }, ];
+    const mockMilestones: Milestone[] = [ { id: 'mile1', employee: { id: 'EMP004', firstName: 'Sarah', lastName: 'Johnson', avatar: '', avatarInitials: 'SJ', avatarColor: 'bg-red-500', jobTitle: 'HR Manager', department: 'HR', status: EmployeeStatus.ACTIVE, onlineStatus: OnlineStatus.ONLINE, role: UserRole.HR_MANAGER, branch: 'فرع الرياض الرئيسي', dateOfBirth: '1982-02-10', hireDate: '2012-05-01', isPersonWithDisability: false, maternityLeavesTaken: 1 }, type: 'ANNIVERSARY', date: 'July 28, 2024', years: 3 }, { id: 'mile2', employee: { id: 'EMP003', firstName: 'Mike', lastName: 'Wilson', avatar: '', avatarInitials: 'MW', avatarColor: 'bg-green-500', jobTitle: 'Sales Rep', department: 'Sales', status: EmployeeStatus.ON_LEAVE, onlineStatus: OnlineStatus.AWAY, role: UserRole.EMPLOYEE, branch: 'فرع جدة', dateOfBirth: '1992-11-30', hireDate: '2021-07-22', isPersonWithDisability: false, maternityLeavesTaken: 0 }, type: 'BIRTHDAY', date: 'July 30' }, ];
     return mockMilestones;
 };
 export const sendKudo = async (kudoData: Omit<Kudo, 'id'|'timestamp'|'reactions'>): Promise<Kudo> => {
@@ -768,4 +792,42 @@ export const updateMissionSettings = async (newSettings: MissionSettings): Promi
     let { missionSettingsData } = await import('../pages/settings/data');
     missionSettingsData = newSettings;
     return Promise.resolve(missionSettingsData);
+};
+
+// --- Expense Management API (NEW MOCK) ---
+export const getExpenseClaims = async (): Promise<ExpenseClaim[]> => {
+    const { expenseClaims } = await import('../pages/expenses/data');
+    return [...expenseClaims];
+};
+
+export const addExpenseClaim = async (claimData: Omit<ExpenseClaim, 'id'>): Promise<ExpenseClaim> => {
+    const { expenseClaims } = await import('../pages/expenses/data');
+    const newClaim: ExpenseClaim = {
+        id: `EXP${Date.now().toString().slice(-6)}`,
+        ...claimData
+    };
+    expenseClaims.unshift(newClaim);
+    return newClaim;
+};
+
+export const updateExpenseClaimStatus = async (claimId: string, status: ExpenseStatus): Promise<ExpenseClaim> => {
+    const { expenseClaims } = await import('../pages/expenses/data');
+    const claimIndex = expenseClaims.findIndex(c => c.id === claimId);
+    if (claimIndex === -1) throw new Error('Claim not found in mock data');
+    expenseClaims[claimIndex].status = status;
+    
+    // If approved, add it to payroll (mock logic)
+    if (status === ExpenseStatus.APPROVED) {
+        // In a real app, you'd have a more robust link to payroll runs.
+        // For now, let's just log it.
+        console.log(`Expense claim ${claimId} approved. Will be added to the next payroll.`);
+    }
+
+    return expenseClaims[claimIndex];
+};
+
+// --- Workforce Planning API (NEW MOCK) ---
+export const getWorkforceData = async (): Promise<DepartmentWorkforce[]> => {
+    const { departmentWorkforceData } = await import('../pages/workforce_planning/data');
+    return [...departmentWorkforceData];
 };

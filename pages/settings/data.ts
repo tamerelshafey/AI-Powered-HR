@@ -3,7 +3,7 @@
 import { LeaveTypeSetting, PublicHoliday, SalaryComponent, SalaryComponentType, LeaveCategory, AttendanceSettings, LeaveType, MissionSettings } from '../../types';
 
 export const leaveTypeSettingsData: LeaveTypeSetting[] = [
-    { id: 'lts_01', name: LeaveType.VACATION, balanceDays: 21, color: 'blue', category: LeaveCategory.STANDARD, isDeductedFromAnnual: false },
+    { id: 'lts_01', name: LeaveType.VACATION, balanceDays: 21, color: 'blue', category: LeaveCategory.STANDARD, isDeductedFromAnnual: false, usableAfterMonths: 6 },
     { id: 'lts_02', name: LeaveType.SICK, balanceDays: 14, color: 'orange', category: LeaveCategory.STANDARD, isDeductedFromAnnual: false },
     { id: 'lts_06', name: LeaveType.CASUAL, balanceDays: 7, color: 'yellow', category: LeaveCategory.CASUAL, isDeductedFromAnnual: true, maxDaysPerRequest: 2 },
     { id: 'lts_04', name: LeaveType.MATERNITY, balanceDays: 120, color: 'pink', category: LeaveCategory.SPECIAL, isDeductedFromAnnual: false, maxTimesInService: 3 },
@@ -46,7 +46,7 @@ export const defaultAttendanceSettings: Required<AttendanceSettings> = {
     ],
     overtimeEnabled: true,
     overtimeMinimumMinutes: 30,
-    overtimeRateWeekday: 1.5,
+    overtimeRateWeekday: 1.35,
     overtimeRateWeekend: 2.0,
     overtimeRateHoliday: 2.0,
     weekendDays: ['Friday', 'Saturday'],

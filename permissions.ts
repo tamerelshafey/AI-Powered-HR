@@ -1,4 +1,5 @@
 
+
 import { UserRole } from './types';
 
 export const ROLE_PERMISSIONS: Record<UserRole, string[]> = {
@@ -6,14 +7,14 @@ export const ROLE_PERMISSIONS: Record<UserRole, string[]> = {
     '/dashboard', '/reports', '/employees', '/departments', '/branches', '/attendance', '/leaves', '/job-titles', 
     '/payroll', '/documents', '/recruitment', '/performance', '/learning', 
     '/onboarding-offboarding', '/assets', '/support-tickets', '/help-center', 
-    '/portal', '/org-chart', '/surveys', '/recognition', '/missions',
+    '/portal', '/org-chart', '/surveys', '/recognition', '/missions', '/succession', '/expenses', '/workforce-planning',
     '/settings'
   ],
   [UserRole.HR_MANAGER]: [
     '/dashboard', '/reports', '/employees', '/departments', '/branches', '/attendance', '/leaves', '/job-titles', 
     '/payroll', '/documents', '/recruitment', '/performance', '/learning', 
     '/onboarding-offboarding', '/assets', '/support-tickets', '/help-center',
-    '/portal', '/org-chart', '/surveys', '/recognition', '/missions'
+    '/portal', '/org-chart', '/surveys', '/recognition', '/missions', '/succession', '/expenses', '/workforce-planning'
   ],
   [UserRole.HR_EMPLOYEE]: [
     '/dashboard', '/employees', '/departments', '/branches', '/attendance', '/leaves', '/documents', 
@@ -33,7 +34,7 @@ export const ROLE_PERMISSIONS: Record<UserRole, string[]> = {
     '/portal', '/org-chart', '/recognition', '/missions'
   ],
   [UserRole.BOARD_MEMBER]: [
-    '/dashboard', '/reports', '/org-chart',
+    '/dashboard', '/reports', '/org-chart', '/workforce-planning',
     '/portal', '/recognition'
   ],
   [UserRole.EMPLOYEE]: [],

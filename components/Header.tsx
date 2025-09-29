@@ -1,13 +1,13 @@
 
 
 import React, { useState, useEffect, useRef } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate, Link } from 'react-router-dom';
 import { useUser } from '../context/UserContext';
 import LanguageSwitcher from './LanguageSwitcher';
 import { useI18n } from '../context/I18nContext';
 import NotificationsPopover from './NotificationsPopover';
-import { Notification } from '../types';
-import { getNotifications } from '../services/api';
+import { Notification, EmployeeDocument } from '../types';
+import { getNotifications, getExpiringDocuments } from '../services/api';
 import UserSwitcher from './UserSwitcher';
 import { formatTime } from '../utils/formatters';
 import { ADMIN_ROLES } from '../permissions';
@@ -29,6 +29,7 @@ const Header: React.FC<HeaderProps> = ({ onOpenSmartSearch }) => {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [isNotificationsOpen, setNotificationsOpen] = useState(false);
+  const [expiringDocs, setExpiringDocs] = useState<EmployeeDocument[]>([]);
   const notificationRef = useRef<HTMLSpanElement>(null);
 
   useEffect(() => {
@@ -38,6 +39,15 @@ const Header: React.FC<HeaderProps> = ({ onOpenSmartSearch }) => {
         setUnreadCount(notifs.filter(n => !n.read).length);
     };
     fetchNotifs();
+    
+    // Proactive Contract Expiry Alert
+    const fetchExpiringDocs = async () => {
+        if (currentUser && ADMIN_ROLES.includes(currentUser.role)) {
+            const docs = await getExpiringDocuments();
+            setExpiringDocs(docs);
+        }
+    };
+    fetchExpiringDocs();
 
     const timer = setInterval(() => setCurrentTime(new Date()), 1000);
     const updateTimer = setInterval(() => setLastUpdate(Math.floor(Math.random() * 5) + 1), 60000);
@@ -54,7 +64,7 @@ const Header: React.FC<HeaderProps> = ({ onOpenSmartSearch }) => {
       window.removeEventListener('online', handleOnline);
       window.removeEventListener('offline', handleOffline);
     }
-  }, []);
+  }, [currentUser]);
 
   const handleToggleNotifications = () => {
     setNotificationsOpen(prev => {
@@ -101,6 +111,13 @@ const Header: React.FC<HeaderProps> = ({ onOpenSmartSearch }) => {
   return (
     <>
       <header className="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-20">
+        {expiringDocs.length > 0 && (
+            <div className="bg-yellow-100 border-b-2 border-yellow-200 text-yellow-800 text-sm font-medium text-center py-2 animate-pulse">
+                <i className="fas fa-exclamation-triangle me-2"></i>
+                {t('header.expiringDocsAlert', { count: expiringDocs.length })}
+                <Link to="/documents" className="underline font-bold ms-2 hover:text-yellow-900">{t('header.reviewNow')}</Link>
+            </div>
+        )}
         <div className="flex items-center justify-between px-6 py-4">
           <div className="flex items-center space-x-4 space-x-reverse">
             <div className="flex items-center space-x-3 space-x-reverse">

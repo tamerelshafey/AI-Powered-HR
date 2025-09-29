@@ -64,6 +64,11 @@ export interface Employee {
   onlineStatus: OnlineStatus;
   role: UserRole;
   shiftId?: string;
+  dateOfBirth: string; // Added for age-based rules
+  hireDate: string; // Added for tenure-based rules
+  isPersonWithDisability: boolean; // Added for special leave rules
+  maternityLeavesTaken: number; // Added for maternity leave tracking
+  salary?: number; // Added for workforce planning
 }
 
 export interface Department {
@@ -163,6 +168,16 @@ export interface LeaveBalance {
     total: number;
     color: string;
 }
+
+export interface CalculatedLeaveBalance {
+    type: LeaveType;
+    nameKey: string;
+    used: number;
+    total: number;
+    color: string;
+    remaining: number;
+}
+
 
 export interface ActivityItem {
     id: number;
@@ -920,7 +935,10 @@ export type OptionalModuleKey =
   | 'help_center' 
   | 'recognition' 
   | 'surveys'
-  | 'missions';
+  | 'missions'
+  | 'succession'
+  | 'expenses'
+  | 'workforce_planning';
 
 export type ActiveModules = Record<OptionalModuleKey, boolean>;
 
@@ -960,4 +978,38 @@ export interface Mission {
 
 export interface MissionSettings {
     isTimeMandatoryForSingleDay: boolean;
+}
+
+// Expense Management
+export enum ExpenseCategory {
+    TRAVEL = 'TRAVEL',
+    MEALS = 'MEALS',
+    SUPPLIES = 'SUPPLIES',
+    OTHER = 'OTHER',
+}
+
+export enum ExpenseStatus {
+    PENDING = 'PENDING',
+    APPROVED = 'APPROVED',
+    REJECTED = 'REJECTED',
+    PAID = 'PAID',
+}
+
+export interface ExpenseClaim {
+    id: string;
+    employee: Employee;
+    category: ExpenseCategory;
+    amount: number;
+    date: string;
+    description: string;
+    status: ExpenseStatus;
+    receiptUrl?: string;
+    missionId?: string;
+}
+
+// Workforce Planning
+export interface DepartmentWorkforce {
+    department: string;
+    headcount: number;
+    averageSalary: number;
 }

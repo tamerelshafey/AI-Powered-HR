@@ -1,3 +1,4 @@
+
 import React, { useState, useMemo, useCallback, useEffect } from 'react';
 import PageHeader from '../../components/PageHeader';
 import LeaveStats from './components/LeaveStats';
@@ -9,8 +10,10 @@ import ApprovalWorkflow from './components/ApprovalWorkflow';
 import LeaveRequestModal from './components/LeaveRequestModal';
 import LeaveCalendarModal from './components/LeaveCalendarModal';
 import ToastNotification from '../../components/ToastNotification';
-import { LeaveRequest, LeaveStatus, ActivityItem, LeaveBalance as LeaveBalanceType } from '../../types';
-import { updateLeaveRequestStatus, getAllLeaveRequests, getUserLeaveBalances, getRecentActivities } from '../../services/api';
+import { LeaveRequest, LeaveStatus, ActivityItem, CalculatedLeaveBalance, Employee } from '../../types';
+import { updateLeaveRequestStatus, getAllLeaveRequests, getRecentActivities, getEmployeeIdForUser, getAllEmployees } from '../../services/api';
+import { calculateLeaveBalances } from '../../services/leaveCalculator';
+import { useUser } from '../../context/UserContext';
 import { useI18n } from '../../context/I18nContext';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import { ErrorDisplay } from '../../components/ModulePlaceholder';
@@ -22,23 +25,35 @@ const LeavesPage: React.FC = () => {
     // State management for dynamic data
     const [allRequests, setAllRequests] = useState<LeaveRequest[]>([]);
     const [activities, setActivities] = useState<ActivityItem[]>([]);
-    const [leaveBalances, setLeaveBalances] = useState<LeaveBalanceType[]>([]);
+    const [leaveBalances, setLeaveBalances] = useState<CalculatedLeaveBalance[]>([]);
+    const [currentEmployee, setCurrentEmployee] = useState<Employee | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string|null>(null);
     const [toast, setToast] = useState<{ message: string; type: 'success' | 'info' } | null>(null);
+    const { currentUser } = useUser();
     const { t } = useI18n();
 
     const fetchData = useCallback(async () => {
+        if (!currentUser) return;
         setLoading(true);
         setError(null);
         try {
-            const [requestsData, balancesData, activitiesData] = await Promise.all([
+            const [requestsData, activitiesData, allEmployees] = await Promise.all([
                 getAllLeaveRequests(),
-                getUserLeaveBalances(),
-                getRecentActivities()
+                getRecentActivities(),
+                getAllEmployees()
             ]);
+
+            const employeeId = getEmployeeIdForUser(currentUser);
+            const employee = allEmployees.find(e => e.id === employeeId);
+
+            if (employee) {
+                const balances = await calculateLeaveBalances(employee);
+                setLeaveBalances(balances);
+                setCurrentEmployee(employee);
+            }
+            
             setAllRequests(requestsData);
-            setLeaveBalances(balancesData);
             setActivities(activitiesData);
         } catch (err) {
             console.error("Failed to fetch leaves data", err);
@@ -46,7 +61,7 @@ const LeavesPage: React.FC = () => {
         } finally {
             setLoading(false);
         }
-    }, []);
+    }, [currentUser]);
 
     useEffect(() => {
         fetchData();
@@ -83,7 +98,7 @@ const LeavesPage: React.FC = () => {
         }
     }, [t]);
     
-    if (loading) return <LoadingSpinner />;
+    if (loading) return <LoadingSpinner fullScreen />;
     if (error) return <ErrorDisplay message={error} onRetry={fetchData} />;
 
 
@@ -123,6 +138,7 @@ const LeavesPage: React.FC = () => {
             <LeaveRequestModal
                 isOpen={isRequestModalOpen}
                 onClose={() => setRequestModalOpen(false)}
+                currentEmployee={currentEmployee}
             />
             <LeaveCalendarModal
                 isOpen={isCalendarModalOpen}

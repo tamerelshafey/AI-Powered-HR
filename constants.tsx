@@ -1,4 +1,5 @@
 
+
 import React from 'react';
 import { NavItem, PortalNavItem } from './types';
 
@@ -20,6 +21,9 @@ export const NAV_ITEMS: NavItem[] = [
     { path: '/onboarding-offboarding', nameKey: 'nav.onboarding_offboarding', icon: <i className="fas fa-door-open w-6 text-center"></i> },
     { path: '/assets', nameKey: 'nav.assets', icon: <i className="fas fa-laptop-house w-6 text-center"></i> },
     { path: '/missions', nameKey: 'nav.missions', icon: <i className="fas fa-tasks w-6 text-center"></i> },
+    { path: '/expenses', nameKey: 'nav.expenses', icon: <i className="fas fa-receipt w-6 text-center"></i> },
+    { path: '/succession', nameKey: 'nav.succession', icon: <i className="fas fa-chess-king w-6 text-center"></i> },
+    { path: '/workforce-planning', nameKey: 'nav.workforce_planning', icon: <i className="fas fa-users-cog w-6 text-center"></i> },
     { path: '/recognition', nameKey: 'nav.recognition', icon: <i className="fas fa-award w-6 text-center"></i> },
     { path: '/surveys', nameKey: 'nav.surveys', icon: <i className="fas fa-poll w-6 text-center"></i> },
     { path: '/support-tickets', nameKey: 'nav.support_tickets', icon: <i className="fas fa-headset w-6 text-center"></i> },
@@ -32,6 +36,7 @@ export const PORTAL_NAV_ITEMS: PortalNavItem[] = [
     { id: 'profile', nameKey: 'portalNav.profile', icon: 'fas fa-user' },
     { id: 'timeoff', nameKey: 'portalNav.timeoff', icon: 'fas fa-calendar-alt', badgeCount: 2, badgeColor: 'bg-orange-500' },
     { id: 'missions', nameKey: 'portalNav.missions', icon: 'fas fa-tasks' },
+    { id: 'expenses', nameKey: 'portalNav.expenses', icon: 'fas fa-receipt' },
     { id: 'payroll', nameKey: 'portalNav.payroll', icon: 'fas fa-dollar-sign' },
     { id: 'benefits', nameKey: 'portalNav.benefits', icon: 'fas fa-shield-alt' },
     { id: 'documents', nameKey: 'portalNav.documents', icon: 'fas fa-file-alt' },

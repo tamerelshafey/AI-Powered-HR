@@ -1,6 +1,8 @@
+
 import React, { useState, useEffect } from 'react';
-import { Employee, EmployeeProfileOverviewData, EmployeeActivity } from '../../../../types';
+import { Employee, EmployeeProfileOverviewData, EmployeeActivity, CalculatedLeaveBalance } from '../../../../types';
 import { getEmployeeProfileOverviewData, getEmployeeActivities } from '../../../../services/api';
+import { calculateLeaveBalances } from '../../../../services/leaveCalculator';
 import StatsCard from '../../../../components/dashboard/StatsCard';
 import LoadingSpinner from '../../../../components/LoadingSpinner';
 import ActivityTimeline from './ActivityTimeline';
@@ -35,6 +37,7 @@ const LeaveBalanceBar: React.FC<{ title: string; used: number; total: number; co
 const OverviewTab: React.FC<OverviewTabProps> = ({ employee }) => {
     const [overviewData, setOverviewData] = useState<EmployeeProfileOverviewData | null>(null);
     const [activities, setActivities] = useState<EmployeeActivity[]>([]);
+    const [leaveBalances, setLeaveBalances] = useState<CalculatedLeaveBalance[]>([]);
     const [loading, setLoading] = useState(true);
     const { t } = useI18n();
 
@@ -42,12 +45,14 @@ const OverviewTab: React.FC<OverviewTabProps> = ({ employee }) => {
         const fetchData = async () => {
             setLoading(true);
             try {
-                const [overview, activityData] = await Promise.all([
+                const [overview, activityData, balancesData] = await Promise.all([
                     getEmployeeProfileOverviewData(employee.id),
                     getEmployeeActivities(employee.id),
+                    calculateLeaveBalances(employee)
                 ]);
                 setOverviewData(overview);
                 setActivities(activityData);
+                setLeaveBalances(balancesData);
             } catch (error) {
                 console.error("Failed to fetch overview data", error);
             } finally {
@@ -55,7 +60,7 @@ const OverviewTab: React.FC<OverviewTabProps> = ({ employee }) => {
             }
         };
         fetchData();
-    }, [employee.id]);
+    }, [employee]);
 
     if (loading) {
         return <div className="h-96"><LoadingSpinner /></div>;
@@ -69,14 +74,14 @@ const OverviewTab: React.FC<OverviewTabProps> = ({ employee }) => {
     const personalInfo = [
         { label: t('profile.info.email'), value: `${employee.firstName.toLowerCase()}@bokra.hr` },
         { label: t('profile.info.phone'), value: '+966 50 123 4567' },
-        { label: t('profile.info.startDate'), value: '15 يناير، 2022' },
+        { label: t('profile.info.startDate'), value: employee.hireDate },
         { label: t('profile.info.manager'), value: 'سارة جونسون' },
     ];
 
     const jobInfo = [
         { label: t('profile.info.userRole'), value: t(`enum.userRole.${employee.role}`) },
         { label: t('profile.info.contractType'), value: 'دوام كامل' },
-        { label: t('profile.info.branch'), value: 'الرياض' },
+        { label: t('profile.info.branch'), value: employee.branch },
         { label: t('profile.info.employeeId'), value: employee.id },
     ];
 
@@ -135,8 +140,15 @@ const OverviewTab: React.FC<OverviewTabProps> = ({ employee }) => {
                      <div className="bg-white rounded-lg border p-6">
                          <h3 className="text-lg font-semibold text-gray-900 mb-4">{t('profile.leave.title')}</h3>
                          <div className="space-y-4">
-                             <LeaveBalanceBar title={t('profile.leave.annual')} used={overviewData.leaveBalance.annual.used} total={overviewData.leaveBalance.annual.total} color="bg-blue-500" />
-                             <LeaveBalanceBar title={t('profile.leave.sick')} used={overviewData.leaveBalance.sick.used} total={overviewData.leaveBalance.sick.total} color="bg-orange-500" />
+                             {leaveBalances.filter(b => b.type === 'VACATION' || b.type === 'SICK').map(balance => (
+                                <LeaveBalanceBar 
+                                    key={balance.type}
+                                    title={t(balance.nameKey)} 
+                                    used={balance.used} 
+                                    total={balance.total} 
+                                    color={balance.color}
+                                />
+                             ))}
                          </div>
                     </div>
                     {/* Activity Timeline Card */}

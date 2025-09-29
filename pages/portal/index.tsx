@@ -1,4 +1,5 @@
 
+
 import React, { useState, useEffect } from 'react';
 import PortalHeader from './components/PortalHeader';
 import PortalSidebar from './components/PortalSidebar';
@@ -23,8 +24,10 @@ import PayrollSection from './components/PayrollSection';
 import PayslipModal from '../payroll/components/PayslipModal';
 import BiometricModal from '../attendance/components/BiometricModal';
 import MissionsSection from './components/MissionsSection';
+import ExpenseSection from './components/ExpenseSection';
+import ExpenseModal from '../expenses/components/ExpenseModal';
 
-type PortalSection = 'dashboard' | 'profile' | 'timeoff' | 'payroll' | 'benefits' | 'learning' | 'documents' | 'feedback' | 'development_plan' | 'missions';
+type PortalSection = 'dashboard' | 'profile' | 'timeoff' | 'payroll' | 'benefits' | 'learning' | 'documents' | 'feedback' | 'development_plan' | 'missions' | 'expenses';
 
 const EmployeePortalPage: React.FC = () => {
     const [activeSection, setActiveSection] = useState<PortalSection>('dashboard');
@@ -34,6 +37,7 @@ const EmployeePortalPage: React.FC = () => {
     const [isChatbotOpen, setChatbotOpen] = useState(false);
     const [selectedPayslip, setSelectedPayslip] = useState<Payslip | null>(null);
     const [isBiometricModalOpen, setBiometricModalOpen] = useState(false);
+    const [isExpenseModalOpen, setExpenseModalOpen] = useState(false);
 
 
     const [articles, setArticles] = useState<HelpCenterArticle[]>([]);
@@ -59,6 +63,7 @@ const EmployeePortalPage: React.FC = () => {
                             onOpenTimeOffModal={() => setTimeOffModalOpen(true)}
                             onOpenFeedbackModal={() => setFeedbackModalOpen(true)}
                             onOpenBiometricModal={() => setBiometricModalOpen(true)}
+                            onOpenExpenseModal={() => setExpenseModalOpen(true)}
                         />;
             case 'profile':
                 return <ProfileSection />;
@@ -66,6 +71,8 @@ const EmployeePortalPage: React.FC = () => {
                 return <TimeOffSection onOpenTimeOffModal={() => setTimeOffModalOpen(true)} />;
             case 'missions':
                 return <MissionsSection />;
+            case 'expenses':
+                return <ExpenseSection onOpenExpenseModal={() => setExpenseModalOpen(true)} />;
             case 'learning':
                 return <LearningSection onOpenExternalCourseModal={() => setExternalCourseModalOpen(true)} />;
             case 'development_plan':
@@ -84,6 +91,7 @@ const EmployeePortalPage: React.FC = () => {
                             onOpenTimeOffModal={() => setTimeOffModalOpen(true)}
                             onOpenFeedbackModal={() => setFeedbackModalOpen(true)}
                             onOpenBiometricModal={() => setBiometricModalOpen(true)}
+                            onOpenExpenseModal={() => setExpenseModalOpen(true)}
                         />;
         }
     };
@@ -117,11 +125,15 @@ const EmployeePortalPage: React.FC = () => {
             <PayslipModal 
                 isOpen={!!selectedPayslip}
                 onClose={() => setSelectedPayslip(null)}
-                payslip={selectedPayslip}
+                payslipInfo={{ employee: selectedPayslip?.employee!, run: selectedPayslip?.run! }}
             />
             <BiometricModal
                 isOpen={isBiometricModalOpen}
                 onClose={() => setBiometricModalOpen(false)}
+            />
+            <ExpenseModal
+                isOpen={isExpenseModalOpen}
+                onClose={() => setExpenseModalOpen(false)}
             />
             <FloatingActionButton onClick={() => setChatbotOpen(true)} />
         </div>

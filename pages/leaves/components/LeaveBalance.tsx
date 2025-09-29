@@ -1,11 +1,11 @@
 
 import React from 'react';
-import { LeaveBalance as LeaveBalanceType } from '../../../types';
+import { CalculatedLeaveBalance } from '../../../types';
 import { useI18n } from '../../../context/I18nContext';
 import { formatDaysRemainingString } from '../../../utils/formatters';
 
 interface LeaveBalanceProps {
-    balances: LeaveBalanceType[];
+    balances: CalculatedLeaveBalance[];
 }
 
 const LeaveBalance: React.FC<LeaveBalanceProps> = ({ balances }) => {
@@ -19,13 +19,13 @@ const LeaveBalance: React.FC<LeaveBalanceProps> = ({ balances }) => {
                 {balances.map(balance => (
                     <div key={balance.type}>
                         <div className="flex items-center justify-between mb-2">
-                            <span className="text-sm font-medium text-gray-700">{t(balance.type)}</span>
+                            <span className="text-sm font-medium text-gray-700">{t(balance.nameKey)}</span>
                             <span className="text-sm text-gray-600">{balance.used}/{balance.total} {t('common.days.unit')}</span>
                         </div>
                         <div className="w-full bg-gray-200 rounded-full h-2">
                             <div className={`${balance.color} h-2 rounded-full`} style={{ width: `${(balance.used / balance.total) * 100}%` }}></div>
                         </div>
-                        <p className="text-xs text-gray-500 mt-1">{formatDaysRemainingString(balance.total - balance.used, t, language)}</p>
+                        <p className="text-xs text-gray-500 mt-1">{formatDaysRemainingString(balance.remaining, t, language)}</p>
                     </div>
                 ))}
                 <div className="pt-4 border-t border-gray-100">

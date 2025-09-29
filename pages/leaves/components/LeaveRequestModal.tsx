@@ -1,28 +1,41 @@
 
 import React, { useState, useMemo } from 'react';
 import { leaveTypeSettingsData } from '../../settings/data';
-import { LeaveTypeSetting } from '../../../types';
+import { LeaveTypeSetting, LeaveType, Employee } from '../../../types';
 import { useI18n } from '../../../context/I18nContext';
 import Modal, { ModalHeader, ModalBody, ModalFooter } from '../../../components/Modal';
 
 interface LeaveRequestModalProps {
   isOpen: boolean;
   onClose: () => void;
+  currentEmployee: Employee | null;
 }
 
-const LeaveRequestModal: React.FC<LeaveRequestModalProps> = ({ isOpen, onClose }) => {
+const LeaveRequestModal: React.FC<LeaveRequestModalProps> = ({ isOpen, onClose, currentEmployee }) => {
   const [selectedLeaveType, setSelectedLeaveType] = useState<LeaveTypeSetting | null>(null);
+  const [error, setError] = useState<string | null>(null);
   const { t } = useI18n();
 
   const handleSubmit = (event: React.FormEvent) => {
       event.preventDefault();
+      if (error) {
+          alert(error);
+          return;
+      }
       alert('تم تقديم طلب الإجازة بنجاح!');
       onClose();
   }
 
   const handleLeaveTypeChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
-    const selectedType = leaveTypeSettingsData.find(lt => lt.name === event.target.value) || null;
+    setError(null);
+    const selectedTypeName = event.target.value as LeaveType;
+    const selectedType = leaveTypeSettingsData.find(lt => lt.name === selectedTypeName) || null;
     setSelectedLeaveType(selectedType);
+
+    // Maternity Leave Enforcement
+    if (selectedTypeName === LeaveType.MATERNITY && currentEmployee && currentEmployee.maternityLeavesTaken >= 3) {
+      setError(t('page.leaves.requestModal.error.maternityLimit'));
+    }
   };
 
   const infoMessage = useMemo(() => {
@@ -45,7 +58,7 @@ const LeaveRequestModal: React.FC<LeaveRequestModalProps> = ({ isOpen, onClose }
       <button type="button" onClick={onClose} className="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors">
         {t('common.cancel')}
       </button>
-      <button type="submit" form="leave-request-form" className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+      <button type="submit" form="leave-request-form" disabled={!!error} className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:bg-blue-300 disabled:cursor-not-allowed">
         {t('page.leaves.requestModal.submit')}
       </button>
     </div>
@@ -92,6 +105,13 @@ const LeaveRequestModal: React.FC<LeaveRequestModalProps> = ({ isOpen, onClose }
                     <i className="fas fa-info-circle me-2"></i>
                     {infoMessage}
                 </div>
+                )}
+
+                {error && (
+                    <div className="p-3 bg-red-50 border-s-4 border-red-500 text-red-800 text-sm rounded-e-lg">
+                        <i className="fas fa-exclamation-triangle me-2"></i>
+                        {error}
+                    </div>
                 )}
                 
                 <div>

@@ -46,11 +46,15 @@ const NewProcessModal: React.FC<NewProcessModalProps> = ({ isOpen, onClose, proc
             avatarInitials: newHire.avatarInitials,
             jobTitle: newHire.positionApplied,
             department: 'غير محدد', // Placeholder, ideally this would come from the job posting
-            // FIX: Added missing 'branch' property to satisfy the Employee type.
             branch: 'غير محدد',
             status: EmployeeStatus.ACTIVE,
             onlineStatus: OnlineStatus.OFFLINE,
             role: UserRole.EMPLOYEE,
+            // Add missing mandatory fields for compliance with the Employee type
+            dateOfBirth: '2000-01-01', // Placeholder DOB, should be collected in a real form
+            hireDate: new Date().toISOString().split('T')[0],
+            isPersonWithDisability: false,
+            maternityLeavesTaken: 0,
           }
         : newHire // is an Employee
       : employees.find(e => e.id === selectedEmployeeId);

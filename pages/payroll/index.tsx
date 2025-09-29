@@ -1,4 +1,5 @@
 
+
 import React, { useState, useEffect, useCallback } from 'react';
 import PageHeader from '../../components/PageHeader';
 import PayrollStats from './components/PayrollStats';
@@ -8,7 +9,7 @@ import PayrollAiInsights from './components/PayrollAiInsights';
 import RunPayrollModal from './components/RunPayrollModal';
 import PayrollRunDetails from './components/PayrollRunDetails';
 import PayslipModal from './components/PayslipModal';
-import { PayrollRun, Payslip, PayrollStatus } from '../../types';
+import { PayrollRun, Payslip, PayrollStatus, Employee } from '../../types';
 import { getPayrollRunsPaginated, getLatestPayrollRun, updatePayrollRunStatus, getCostBreakdownData } from '../../services/api';
 import PendingChanges from './components/PendingChanges';
 import { ErrorDisplay } from '../../components/ModulePlaceholder';
@@ -28,7 +29,7 @@ const PayrollPage: React.FC = () => {
     const [error, setError] = useState<string | null>(null);
     const [isRunModalOpen, setRunModalOpen] = useState(false);
     const [selectedRun, setSelectedRun] = useState<PayrollRun | null>(null);
-    const [selectedPayslip, setSelectedPayslip] = useState<Payslip | null>(null);
+    const [payslipInfo, setPayslipInfo] = useState<{employee: Employee, run: PayrollRun} | null>(null);
     const [toast, setToast] = useState<{ message: string; type: 'success' | 'info' | 'error' } | null>(null);
     const { t } = useI18n();
     
@@ -80,8 +81,8 @@ const PayrollPage: React.FC = () => {
         fetchPaginatedRuns(page);
     };
 
-    const handleViewPayslip = (payslip: Payslip) => {
-        setSelectedPayslip(payslip);
+    const handleViewPayslip = (employee: Employee, run: PayrollRun) => {
+        setPayslipInfo({ employee, run });
     };
 
     const handleCreatePayrollRun = () => {
@@ -191,9 +192,9 @@ const PayrollPage: React.FC = () => {
             />
 
             <PayslipModal 
-                isOpen={!!selectedPayslip}
-                onClose={() => setSelectedPayslip(null)}
-                payslip={selectedPayslip}
+                isOpen={!!payslipInfo}
+                onClose={() => setPayslipInfo(null)}
+                payslipInfo={payslipInfo}
             />
         </div>
     );

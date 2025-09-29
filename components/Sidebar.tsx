@@ -1,4 +1,5 @@
 
+
 import React from 'react';
 import { NavLink } from 'react-router-dom';
 import { NAV_ITEMS } from '../constants';
@@ -20,7 +21,10 @@ const MODULE_PATHS: Record<OptionalModuleKey, string> = {
     help_center: '/help-center',
     recognition: '/recognition',
     surveys: '/surveys',
-    missions: '/missions'
+    missions: '/missions',
+    succession: '/succession',
+    expenses: '/expenses',
+    workforce_planning: '/workforce-planning',
 };
 
 const Sidebar: React.FC = () => {
